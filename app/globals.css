@@ -15,8 +15,8 @@
   --accents-6: #888888;
   --accents-7: #eaeaea;
   --accents-8: #fafafa;
-  --blue-primary: #3b82f6;
-  --blue-hover: #2563eb;
+  --blue-primary: #4060ff;
+  --blue-hover: #3852de;
 }
 
 *,
@@ -58,19 +58,22 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px 0 32px; /* Less padding on right to balance the blue button */
+  padding: 0 16px 0 32px;
+  /* Less padding on right to balance the blue button */
   z-index: 50;
-  
+
   /* Glassmorphism Effect */
   background: rgba(18, 18, 18, 0.6);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  
+
   /* Island Borders & Shadow */
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
 }
+
+
 
 .navbar-left {
   display: flex;
@@ -168,7 +171,8 @@ body {
   position: relative;
   max-width: 1400px;
   margin: 0 auto;
-  border-top: none; /* Remove border if any */
+  border-top: none;
+  /* Remove border if any */
 }
 
 .hero-top-row {
@@ -197,7 +201,8 @@ body {
   align-items: center;
   gap: 12px;
   margin: 0;
-  padding-bottom: 4px; /* Slight alignment tweak */
+  padding-bottom: 4px;
+  /* Slight alignment tweak */
 }
 
 .btn-primary {
@@ -251,21 +256,124 @@ body {
 
 
 @media (max-width: 1024px) {
-  .navbar { padding: 0 24px; }
-  .navbar-links { display: none; }
-  
+  .navbar {
+    padding: 0 24px;
+  }
+
+  .navbar-links {
+    display: none;
+  }
+
   .hero {
     padding: 100px 24px 60px;
   }
-  
+
   .hero-top-row {
     flex-direction: column;
     align-items: flex-start;
     gap: 32px;
   }
-  
+
   .hero-heading {
     font-size: 48px;
     line-height: 48px;
+  }
+}
+
+/* ── COOKIE BANNER ── */
+.cookie-banner {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 100;
+  width: 320px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  /* Reference Card Style */
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+.cookie-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.cookie-text {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--accents-6);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.cookie-link {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.cookie-link:hover {
+  color: #fff;
+}
+
+.cookie-actions {
+  display: flex;
+  flex-direction: column-reverse;
+  /* Reddet altta, Kabul Et üstte */
+  gap: 8px;
+  width: 100%;
+}
+
+.cookie-btn-primary {
+  width: 100%;
+  background: var(--blue-primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  /* Reference button has slight rounded corners */
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s ease;
+}
+
+.cookie-btn-primary:hover {
+  background: var(--blue-hover);
+}
+
+.cookie-btn-secondary {
+  width: 100%;
+  background: transparent;
+  color: var(--accents-6);
+  border: none;
+  padding: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.2s ease;
+}
+
+.cookie-btn-secondary:hover {
+  color: var(--fg);
+}
+
+@media (max-width: 600px) {
+  .cookie-banner {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    padding: 20px;
   }
 }
