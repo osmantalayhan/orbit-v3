@@ -167,12 +167,11 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 140px 48px 80px;
+  padding: 0;
   position: relative;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
+  overflow: hidden;
   border-top: none;
-  /* Remove border if any */
 }
 
 .hero-top-row {
