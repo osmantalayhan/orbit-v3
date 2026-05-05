@@ -1,10 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100;300;500&family=Silkscreen&display=swap');
 @import "tailwindcss";
+@source "../components/**/*.{ts,tsx}";
+@source "../app/**/*.{ts,tsx}";
 
 @theme inline {
   --font-sans: var(--font-plus-jakarta-sans);
 }
 
 :root {
+  --font-osd: 'Silkscreen', cursive;
+  --font-mono: 'JetBrains Mono', monospace;
   --bg: #000000;
   --fg: #ffffff;
   --accents-1: #111111;
@@ -59,21 +64,32 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 16px 0 32px;
-  /* Less padding on right to balance the blue button */
   z-index: 50;
-
-  /* Glassmorphism Effect */
-  background: rgba(18, 18, 18, 0.6);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-
-  /* Island Borders & Shadow */
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Apple Mica Material Style */
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.01) 100%),
+    rgba(15, 15, 15, 0.4);
+  backdrop-filter: blur(40px) saturate(250%) contrast(80%) brightness(1.1);
+  -webkit-backdrop-filter: blur(40px) saturate(250%) contrast(80%) brightness(1.1);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.3),
+    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  position: fixed;
 }
 
-
+/* Subtle Noise Texture Overlay */
+.navbar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Cfilter id='noiseFilter'%3%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3%3C/filter%3%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3%3C/svg%3");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: -1;
+}
 
 .navbar-left {
   display: flex;
@@ -174,14 +190,6 @@ body {
   border-top: none;
 }
 
-.hero-top-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  width: 100%;
-  margin-bottom: 0;
-}
-
 .hero-heading {
   font-size: 60px;
   font-weight: 600;
@@ -201,7 +209,6 @@ body {
   gap: 12px;
   margin: 0;
   padding-bottom: 4px;
-  /* Slight alignment tweak */
 }
 
 .btn-primary {
@@ -244,16 +251,6 @@ body {
   border-color: var(--accents-4);
 }
 
-.hero-description {
-  font-size: 18px;
-  font-weight: 400;
-  color: var(--accents-6);
-  max-width: 600px;
-  line-height: 1.6;
-}
-
-
-
 @media (max-width: 1024px) {
   .navbar {
     padding: 0 24px;
@@ -265,12 +262,6 @@ body {
 
   .hero {
     padding: 100px 24px 60px;
-  }
-
-  .hero-top-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 32px;
   }
 
   .hero-heading {
@@ -290,17 +281,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-
-  /* Reference Card Style */
   background: #0a0a0a;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
-}
-
-.cookie-content {
-  display: flex;
-  flex-direction: column;
 }
 
 .cookie-text {
@@ -326,7 +310,6 @@ body {
 .cookie-actions {
   display: flex;
   flex-direction: column-reverse;
-  /* Reddet altta, Kabul Et üstte */
   gap: 8px;
   width: 100%;
 }
@@ -337,7 +320,6 @@ body {
   color: #fff;
   border: none;
   border-radius: 10px;
-  /* Reference button has slight rounded corners */
   padding: 12px;
   font-size: 14px;
   font-weight: 600;
@@ -375,4 +357,14 @@ body {
     width: auto;
     padding: 20px;
   }
+}
+
+/* Prevent image selection and dragging globally */
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  pointer-events: none;
 }

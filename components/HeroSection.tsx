@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import LiquidShowcase from "./LiquidShowcase";
 
@@ -68,19 +69,25 @@ export default function HeroSection() {
       {/* Massive Flight Control Card (BEHIND THE HILL) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
         <AnimatePresence mode="wait">
-          <motion.img
+          <motion.div
             key={current.image}
-            src={current.image}
-            alt={current.title}
             initial={{ opacity: 0, y: 100, scale: 0.8 }}
             animate={{ opacity: 1, y: 20, scale: 1.0 }}
             exit={{ opacity: 0, y: -50, scale: 0.9 }}
             transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-[75%] max-h-[75%] object-contain select-none opacity-90"
+            className="w-[75%] h-[75%] relative select-none opacity-90"
             style={{
               rotate: -5,
             }}
-          />
+          >
+            <Image
+              src={current.image}
+              alt={current.title}
+              fill
+              priority
+              className="object-contain"
+            />
+          </motion.div>
         </AnimatePresence>
       </div>
 
@@ -90,32 +97,33 @@ export default function HeroSection() {
       <div className="absolute bottom-[50px] left-1/2 -translate-x-1/2 w-[calc(100%-96px)] max-w-[1304px] z-20 pointer-events-none">
         <div className="flex flex-col md:flex-row justify-between items-end gap-10 pointer-events-auto">
           <AnimatePresence mode="wait">
-            <motion.h1
-              key={current.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="hero-heading"
-            >
-              <span>{current.title}</span>
-              <span>{current.desc}</span>
-            </motion.h1>
-          </AnimatePresence>
+            <div className="max-w-4xl" key="hero-text-content">
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                className="hero-heading"
+              >
+                <span>{current.title}</span>
+                <span>{current.desc}</span>
+              </motion.h1>
+            </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="hero-actions"
-          >
-            <a href="#urunler" className="btn-primary">
-              Ürünleri İncele
-            </a>
-            <a href="#iletisim" className="btn-secondary">
-              Bize Ulaşın
-            </a>
-          </motion.div>
+            <motion.div
+              key="hero-actions-content"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
+              className="hero-actions"
+            >
+              <a href="#urunler" className="btn-primary">
+                Ürünleri İncele
+              </a>
+              <a href="#iletisim" className="btn-secondary">
+                Bize Ulaşın
+              </a>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>
