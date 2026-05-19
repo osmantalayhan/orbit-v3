@@ -36,7 +36,7 @@ export default function BlogSection() {
     >
       {/* Header Container - Same as ProductVitrin */}
       <div 
-        className="max-w-[1304px] px-6 flex flex-col items-start mb-10"
+        className="blog-sec-header-wrapper max-w-[1304px] px-6 flex flex-col items-start mb-10"
         style={{ width: 'calc(100% - 96px)' }}
       >
         <header className="w-full relative flex flex-col md:flex-row items-start md:items-end justify-start md:justify-between" style={{ marginBottom: '40px' }}>
@@ -69,7 +69,7 @@ export default function BlogSection() {
       </div>
  
       {/* Blog Cards Grid */}
-      <div className="w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
+      <div className="blog-sec-grid-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {blogs.map((blog, index) => (
             <motion.div
@@ -100,6 +100,7 @@ export default function BlogSection() {
 
                 {/* Blog Info - Using Inline Styles for Padding/Gaps */}
                 <div 
+                  className="blog-sec-card-body"
                   style={{ 
                     padding: '32px', 
                     display: 'flex', 
@@ -121,7 +122,7 @@ export default function BlogSection() {
                   </span>
                   
                   <h3 
-                    className="group-hover:text-blue-400 transition-colors"
+                    className="blog-sec-card-title group-hover:text-blue-400 transition-colors"
                     style={{ 
                       color: 'white', 
                       fontSize: '30px', 

@@ -35,7 +35,7 @@ export default function CareerSection() {
     >
       {/* Header Container - Same as ProductVitrin & Blog */}
       <div
-        className="max-w-[1304px] px-6 flex flex-col items-start mb-10"
+        className="career-sec-header-wrapper max-w-[1304px] px-6 flex flex-col items-start mb-10"
         style={{ width: 'calc(100% - 96px)' }}
       >
         <header className="w-full relative flex flex-col md:flex-row items-start md:items-end justify-start md:justify-between" style={{ marginBottom: '40px' }}>
@@ -79,7 +79,7 @@ export default function CareerSection() {
       </div>
 
       {/* Job Listings List */}
-      <div className="w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
+      <div className="career-sec-grid-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="flex flex-col gap-4">
           {jobs.map((job, index) => (
             <motion.div
@@ -91,7 +91,7 @@ export default function CareerSection() {
               className="group cursor-pointer"
             >
               <div
-                className="bg-[#0d0d0d] border border-white/5 rounded-2xl md:rounded-[24px] overflow-hidden transition-all hover:border-white/20 hover:bg-[#111] flex flex-col md:flex-row items-start md:items-center justify-between"
+                className="career-sec-card-body bg-[#0d0d0d] border border-white/5 rounded-2xl md:rounded-[24px] overflow-hidden transition-all hover:border-white/20 hover:bg-[#111] flex flex-col md:flex-row items-start md:items-center justify-between"
                 style={{ padding: '32px 40px' }}
               >
                 {/* Job Title & Department */}
@@ -104,7 +104,7 @@ export default function CareerSection() {
                       letterSpacing: '-0.02em',
                       transition: 'color 0.3s ease'
                     }}
-                    className="group-hover:text-white"
+                    className="career-sec-card-title group-hover:text-white"
                   >
                     {job.title}
                   </h3>

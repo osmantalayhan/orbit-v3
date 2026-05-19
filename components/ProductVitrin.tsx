@@ -64,7 +64,7 @@ export default function ProductVitrin() {
     >
       {/* Header Container */}
       <div 
-        className="max-w-[1304px] px-6 flex flex-col items-start mb-10"
+        className="vitrin-header-wrapper max-w-[1304px] px-6 flex flex-col items-start mb-10"
         style={{ width: 'calc(100% - 96px)' }}
       >
         <header className="w-full relative flex flex-col md:flex-row items-start md:items-end justify-start md:justify-between" style={{ marginBottom: '40px' }}>
@@ -97,7 +97,7 @@ export default function ProductVitrin() {
       </div>
  
       {/* Carousel Area */}
-      <div className="w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
+      <div className="vitrin-carousel-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="w-full overflow-hidden" ref={emblaRef}>
           <div className="flex gap-8">
             {products.map((product, index) => (
@@ -122,7 +122,7 @@ export default function ProductVitrin() {
                   >
                     {/* Card Header */}
                     <div style={{ marginBottom: '32px' }}>
-                      <div className="w-24 h-24 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
+                      <div className="product-vitrin-logo-box w-24 h-24 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
                          <Image 
                            src={product.image} 
                            alt="icon" 
@@ -133,7 +133,7 @@ export default function ProductVitrin() {
                     </div>
 
                     {/* Title & Info */}
-                    <div className="flex flex-col">
+                    <div className="product-vitrin-text-container flex flex-col">
                       <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '20px' }}>
                         {product.name}
                       </h3>

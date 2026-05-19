@@ -48,8 +48,8 @@ export default function SalesSlider() {
       >
 
         {/* Side Masks for cinematic fading */}
-        <div className="absolute inset-y-0 left-0 z-10 w-[120px] bg-gradient-to-r from-black to-transparent" />
-        <div className="absolute inset-y-0 right-0 z-10 w-[120px] bg-gradient-to-l from-black to-transparent" />
+        <div className="sales-slider-mask-left absolute inset-y-0 left-0 z-10 w-[120px] bg-gradient-to-r from-black to-transparent" />
+        <div className="sales-slider-mask-right absolute inset-y-0 right-0 z-10 w-[120px] bg-gradient-to-l from-black to-transparent" />
 
         <motion.div
           ref={scrollRef}

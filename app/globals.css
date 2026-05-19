@@ -33,7 +33,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   background: var(--bg);
 }
 
@@ -77,6 +76,15 @@ body {
     0 10px 40px rgba(0, 0, 0, 0.3),
     inset 0 1px 1px rgba(255, 255, 255, 0.15);
   position: fixed;
+}
+
+.page-container {
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 96px);
+  max-width: 1304px;
+  padding: 0;
 }
 
 /* Subtle Noise Texture Overlay */
@@ -367,4 +375,127 @@ img {
   -moz-user-select: none;
   -ms-user-select: none;
   pointer-events: none;
+}
+
+/* ── LANDING PAGE RESPONSIVE OVERRIDES (Premium High-End Adjustments) ── */
+@media (max-width: 1024px) {
+  .hero-content-wrapper,
+  .vitrin-header-wrapper,
+  .vitrin-carousel-wrapper,
+  .blog-sec-header-wrapper,
+  .blog-sec-grid-wrapper,
+  .career-sec-header-wrapper,
+  .career-sec-grid-wrapper {
+    width: calc(100% - 48px) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Hero Section Mobile Enhancements */
+  .hero-content-wrapper {
+    width: calc(100% - 32px) !important;
+    bottom: 32px !important;
+  }
+  .hero-content-wrapper > div {
+    align-items: center !important;
+    text-align: center !important;
+    gap: 24px !important;
+  }
+  .hero-heading {
+    font-size: 34px !important;
+    line-height: 38px !important;
+    margin-bottom: 0 !important;
+    text-align: center !important;
+  }
+  .hero-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    padding-bottom: 0 !important;
+    justify-content: center !important;
+  }
+  .hero-actions a {
+    width: 100% !important;
+  }
+  
+  /* Ecosystem & Sales Slider Side Masks */
+  .eco-slider-mask-left,
+  .sales-slider-mask-left {
+    width: 40px !important;
+  }
+  .eco-slider-mask-right,
+  .sales-slider-mask-right {
+    width: 40px !important;
+  }
+
+  /* About Scroll Cards Flow */
+  .about-scroll-left {
+    display: none !important;
+  }
+  .about-scroll-right {
+    gap: 20px !important;
+  }
+  .scroll-item-card {
+    opacity: 1 !important;
+    transform: none !important;
+    border-radius: 24px !important;
+    height: 450px !important;
+  }
+
+  /* Product Vitrin Carousel & Inner Layouts */
+  .vitrin-header-wrapper,
+  .vitrin-carousel-wrapper {
+    width: calc(100% - 32px) !important;
+  }
+  .product-vitrin-logo-box {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .product-vitrin-text-container {
+    text-align: center !important;
+  }
+  .product-vitrin-text-container h3 {
+    font-size: 26px !important;
+    margin-bottom: 12px !important;
+  }
+  .product-vitrin-text-container > div {
+    margin-bottom: 32px !important;
+  }
+  .product-vitrin-text-container p {
+    font-size: 14px !important;
+  }
+
+  /* Blog Section Responsive Card Spacing */
+  .blog-sec-header-wrapper,
+  .blog-sec-grid-wrapper {
+    width: calc(100% - 32px) !important;
+  }
+  .blog-sec-card-body {
+    padding: 24px !important;
+  }
+  .blog-sec-card-title {
+    font-size: 22px !important;
+    margin-bottom: 12px !important;
+    line-height: 1.3 !important;
+  }
+  .blog-sec-card-body p {
+    font-size: 14px !important;
+    margin-bottom: 18px !important;
+  }
+
+  /* Career Section Layout Adjustments */
+  .career-sec-header-wrapper,
+  .career-sec-grid-wrapper {
+    width: calc(100% - 32px) !important;
+  }
+  .career-sec-card-body {
+    padding: 24px 20px !important;
+    text-align: left !important;
+  }
+  .career-sec-card-title {
+    font-size: 20px !important;
+  }
+  .career-sec-card-body span {
+    font-size: 13px !important;
+  }
 }

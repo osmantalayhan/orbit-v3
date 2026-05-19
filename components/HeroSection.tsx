@@ -94,7 +94,7 @@ export default function HeroSection() {
       {/* Foreground Liquid Effect with Transparent Hill */}
       <LiquidShowcase imageSrc="/img/hero-transparent.png" />
 
-      <div className="absolute bottom-[50px] left-1/2 -translate-x-1/2 w-[calc(100%-96px)] max-w-[1304px] z-20 pointer-events-none">
+      <div className="hero-content-wrapper absolute bottom-[50px] left-1/2 -translate-x-1/2 w-[calc(100%-96px)] max-w-[1304px] z-20 pointer-events-none">
         <div className="flex flex-col md:flex-row justify-between items-end gap-10 pointer-events-auto">
           <AnimatePresence mode="wait">
             <div className="max-w-4xl" key="hero-text-content">

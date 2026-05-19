@@ -50,6 +50,25 @@ export default function LiquidShowcase({ imageSrc }: { imageSrc: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: 0.5, y: 0.5, active: false });
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const isVisibleRef = useRef(true); // Görünürlük durumunu tutan referans
+
+  // Ekran görünürlüğünü takip eden IntersectionObserver entegrasyonu
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisibleRef.current = entry.isIntersecting;
+      },
+      { threshold: 0.05 } // Görselin %5'i bile ekranda olsa çalışır, tamamen kaybolunca uyur
+    );
+
+    if (canvasRef.current) {
+      observer.observe(canvasRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -121,6 +140,12 @@ export default function LiquidShowcase({ imageSrc }: { imageSrc: string }) {
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
     const render = () => {
+      // Eğer kahraman görselimiz (Hero) ekranda değilse WebGL çizim döngüsünü tamamen uykuya alıp ekran kartını %0 yüke düşürüyoruz
+      if (!isVisibleRef.current) {
+        animId = requestAnimationFrame(render);
+        return;
+      }
+
       if (!texture) {
         animId = requestAnimationFrame(render);
         return;
