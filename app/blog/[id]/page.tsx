@@ -4,105 +4,58 @@ import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
-// Detaylı makale içerikleri
-const blogDetails: Record<string, {
-  title: string;
-  category: string;
-  date: string;
-  readTime: string;
-  image: string;
-  leadParagraph: string;
-  bodyParagraphs: Array<{ type: "text" | "subtitle" | "quote" | "spec-table"; content: any }>;
-  author: { name: string; role: string; avatar: string };
-}> = {
-  "1": {
-    title: "İnsansız Hava Araçlarında Yeni Nesil Kontrolcüler",
-    category: "Donanım / Ar-Ge",
-    date: "24 nisan 2024",
-    readTime: "5 dk okuma",
-    image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=1200",
-    leadParagraph: "Uçuş stabilitesini %40 artıran çift IMU teknolojisi, yerli ve milli İHA sistemlerimizin rüzgar mukavemeti ve görev kararlılığında yeni bir çağ başlatıyor.",
-    author: {
-      name: "Osman Talayhan",
-      role: "Donanım Ar-Ge Mühendisi",
-      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
-    },
-    bodyParagraphs: [
-      { type: "text", content: "Endüstriyel ve askeri sınıf otonom İHA görevlerinde karşılaşılan en büyük zorluklardan biri, rüzgar darbeleri ve motor titreşimlerinin uçuş kontrol sensörleri üzerinde yarattığı kararsızlıktır. Geleneksel tek IMU (Inertial Measurement Unit) sistemleri, bu gürültü sinyallerini süzmekte yetersiz kalabilmekte ve uçuş güvenliğini riske atmaktadır." },
-      { type: "subtitle", content: "Çift IMU ve Akıllı Gürültü Filtreleme" },
-      { type: "text", content: "Orbit F435 Uçuş Kontrol Kartı, birbirine 90 derece açıyla yerleştirilmiş çift yedekli askeri sınıf IMU sensör mimarisinden beslenir. Gerçek zamanlı çalışan Kalman Filtresi algoritmalarımız, her iki sensörden gelen verileri milisaniyeler içinde işler. Bir sensördeki gürültü veya sapma toleransı aşarsa, diğeri anında devreye girerek uçağın havada milimetrik olarak asılı kalmasını sağlar." },
-      { type: "quote", content: "Yaptığımız rüzgar tüneli testlerinde, 45 knot hıza kadar olan ani rüzgar darbe testlerinde stabilite kaybının tamamen sıfıra indirildiğini raporladık." },
-      { type: "subtitle", content: "Teknik Donanım Özellikleri" },
-      { type: "text", content: "Yeni F435 serisi, sadece sensör düzeyinde değil, güç katmanlarında da tamamen izole edilmiş bir koruma sunar. Aşağıdaki tablodan donanım bileşenlerinin detaylı parametrelerine erişebilirsiniz." },
-      { type: "spec-table", content: [
-        { label: "İşlemci", value: "STM32F405 ARM Cortex-M4 @ 168MHz" },
-        { label: "IMU Sensörleri", value: "Dual ICM-42688-P (Yedekli ve İzole)" },
-        { label: "Barometre", value: "SPL06-001 Yüksek Hassasiyetli" },
-        { label: "Giriş Voltajı", value: "2S - 8S LiPo Giriş Desteği" },
-        { label: "Kara Kutu Bellek", value: "16MB Onboard Flash Bellek" }
-      ]}
-    ]
-  },
-  "2": {
-    title: "Otonom Uçuş Yazılımlarının Geleceği",
-    category: "Yazılım / Yapay Zeka",
-    date: "18 nisan 2024",
-    readTime: "7 dk okuma",
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200",
-    leadParagraph: "Yapay zeka ve makine öğrenimi tabanlı yeni otonom yazılım ekosistemimiz, İHA'ların zorlu rüzgarları ve dinamik engelleri gerçek zamanlı tahmin ederek görev planlamasını optimize etmesini sağlıyor.",
-    author: {
-      name: "Cem Karayel",
-      role: "Yazılım Ekip Lideri",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150"
-    },
-    bodyParagraphs: [
-      { type: "text", content: "Otonom uçuş, yalnızca önceden belirlenmiş GPS noktalarını (waypoint) takip etmekten ibaret değildir. Operasyon anında karşınıza çıkabilecek engeller, anlık hava akımları veya radar sinyal bozulmaları, İHA'ların gerçek zamanlı karar verme yeteneğine sahip olmasını zorunlu kılar." },
-      { type: "subtitle", content: "Derin Öğrenme ile Dinamik Rota Planlama" },
-      { type: "text", content: "Geliştirdiğimiz Orbit AI yazılım motoru, donanım kartımızda gömülü olarak çalışan hafifletilmiş yapay zeka modelleri kullanır. İHA üzerindeki sensörler ve kameralar aracılığıyla toplanan anlık çevresel veriler, en verimli rotanın saniyede 30 kare hızla yeniden çizilmesini sağlar." },
-      { type: "quote", content: "Akıllı batarya yönetim algoritmalarıyla birleştiğinde, rota optimizasyonu uçuş süresini ortalama %18 oranında uzatıyor." },
-      { type: "subtitle", content: "Sistem Modülleri ve Yazılım Katmanları" },
-      { type: "spec-table", content: [
-        { label: "İşletim Sistemi", value: "Orbit Real-Time RTOS (Gecikmesiz)" },
-        { label: "Yapay Zeka Motoru", value: "TensorFlow Lite Gömülü Entegrasyon" },
-        { label: "Engel Algılama", value: "3D Lidar ve Stereoskopik Görüş Desteği" },
-        { label: "Sürü İHA İletişimi", value: "Ad-Hoc Protokolü ile Peer-to-Peer" }
-      ]}
-    ]
-  },
-  "3": {
-    title: "Yerli Üretim ve Küresel Standartlar",
-    category: "Üretim / Kalite",
-    date: "12 nisan 2024",
-    readTime: "6 dk okuma",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=1200",
-    leadParagraph: "Türkiye'nin teknolojik bağımsızlığı yolunda, askeri standartlarda (MIL-STD-810G) ürettiğimiz ESC ve uçuş kontrolörlerinin üretim süreçleri ve zorlu test laboratuvarları.",
-    author: {
-      name: "Elif Demir",
-      role: "Üretim ve Kalite Direktörü",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150"
-    },
-    bodyParagraphs: [
-      { type: "text", content: "Savunma sanayi donanımları, tüketici elektroniğinden tamamen farklı koşullarda çalışmak üzere tasarlanmalıdır. Nemli tuzlu havalar, -40 dereceden +85 dereceye uzanan sıcaklık şokları ve yüksek titreşim altında tek bir lehim noktasının dahi kopmaması hayati öneme sahiptir." },
-      { type: "subtitle", content: "Yüksek Teknoloji SMT Üretim Hattı" },
-      { type: "text", content: "Ankara tesislerimizde kurduğumuz tam otonom SMT montaj hattımızda, her lehim noktası otomatik X-ray (AXI) cihazlarıyla mikron düzeyinde taranır. Kartların yüzeyleri neme ve toza karşı özel askeri sınıf Conformal Coating kaplama kimyasallarıyla korunur." },
-      { type: "quote", content: "Üretilen her bir ESC kartı, montaj öncesinde 48 saatlik yüksek sıcaklık yaşlandırma (burn-in) testine tabi tutularak erken arıza riskleri sıfırlanmaktadır." },
-      { type: "spec-table", content: [
-        { label: "Sertifikasyon", value: "MIL-STD-810G / IPC-A-610 Class 3" },
-        { label: "Çalışma Sıcaklığı", value: "-40°C ila +85°C Endüstriyel Sınır" },
-        { label: "Kaplama Tipi", value: "Askeri Silikon Bazlı Conformal Coating" },
-        { label: "Lehimleme Tipi", value: "Yüksek Mukavemetli Kurşunsuz Alaşım" }
-      ]}
-    ]
-  }
-};
+// Mock data removed at user request
 
 export default function BlogDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = (params?.id as string) || "1";
 
-  // Eğer dinamik id bulunamazsa, kullanıcıya varsayılan olarak 1. makaleyi gösteriyoruz
-  const currentBlog = blogDetails[id] || blogDetails["1"];
+  const [currentBlog, setCurrentBlog] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    fetch(`http://127.0.0.1:8080/api/v1/blog/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Blog not found");
+        return res.json();
+      })
+      .then(data => {
+        if (data) {
+          let bodyBlocks = [];
+          if (data.body_content) {
+            if (Array.isArray(data.body_content)) {
+              bodyBlocks = data.body_content;
+            } else if (data.body_content.blocks) {
+              bodyBlocks = data.body_content.blocks;
+            }
+          }
+
+          setCurrentBlog({
+            title: data.title,
+            category: data.category,
+            date: data.date_published,
+            readTime: data.read_time,
+            image: data.cover_image || "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=1200",
+            leadParagraph: data.lead_paragraph,
+            author: {
+              name: data.author_name,
+              role: data.author_role,
+              avatar: data.author_avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+            },
+            bodyParagraphs: bodyBlocks
+          });
+        }
+      })
+      .catch(err => console.error("Error loading blog details:", err));
+  }, [id]);
+
+  if (!currentBlog) {
+    return (
+      <main style={{ minHeight: '100vh', backgroundColor: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px' }}>Makale yükleniyor...</div>
+      </main>
+    );
+  }
 
   return (
     <main style={{ minHeight: '100vh', backgroundColor: '#000', color: '#fff', position: 'relative', overflow: 'hidden' }}>

@@ -107,7 +107,25 @@ const MapComponent = ({ center, city, address, name }: { center: [number, number
   );
 };
 
-export default function MapSection() {
+export default function MapSection({ offices }: { offices?: Array<{ name: string, city: string, address: string, latitude: number, longitude: number }> }) {
+  // API'den veri yüklenene kadar veya boşsa varsayılan statik ofis koordinatlarını (mock) kullanır
+  const displayOffices = offices && offices.length > 0 ? offices : [
+    {
+      name: "Orbit İstanbul, Ofis",
+      city: "İstanbul",
+      address: "Akşemsettin Mah. Akdeniz Cad. No:30 Kat:3 Fatih",
+      latitude: 41.019087,
+      longitude: 28.946238
+    },
+    {
+      name: "Orbit Ankara, Merkez",
+      city: "Ankara",
+      address: "Anadolu Blv Corner 2 Plaza No:151/6 Yenimahalle",
+      latitude: 40.00089,
+      longitude: 32.77203
+    }
+  ];
+
   return (
     <div style={{
       display: 'grid',
@@ -117,18 +135,16 @@ export default function MapSection() {
       width: '100%',
       marginBottom: '60px'
     }}>
-      <MapComponent
-        center={[41.019087, 28.946238]}
-        city="İstanbul"
-        name="Orbit İstanbul, Ofis"
-        address="Akşemsettin Mah. Akdeniz Cad. No:30 Kat:3 Fatih"
-      />
-      <MapComponent
-        center={[40.00089, 32.77203]}
-        city="Ankara"
-        name="Orbit Ankara, Merkez"
-        address="Anadolu Blv Corner 2 Plaza No:151/6 Yenimahalle"
-      />
+      {displayOffices.map((office, idx) => (
+        <MapComponent
+          key={idx}
+          center={[office.latitude, office.longitude]}
+          city={office.city}
+          name={office.name}
+          address={office.address}
+        />
+      ))}
     </div>
   );
 }
+

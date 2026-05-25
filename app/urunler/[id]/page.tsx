@@ -6,14 +6,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
 // Ürün Veritabanı
-const productData: Record<string, {
+const STATIC_PRODUCT_DATA: Record<string, {
   name: string;
   role: string;
   tagline: string;
   description: string;
   images: string[];
   specs: { label: string; value: string }[];
-  channels: { name: string; logo: string; url: string }[];
+  channels: { name: string; logo?: string; url: string }[];
+  pinout_images?: string[];
+  downloads?: any[];
 }> = {
   "f435": {
     name: "Orbit F435",
@@ -66,13 +68,40 @@ const productData: Record<string, {
   },
 };
 
-const fallbackProduct = productData["f435"];
+const fallbackProduct = STATIC_PRODUCT_DATA["f435"];
 
 export default function UrunDetayPage() {
   const params = useParams();
   const router = useRouter();
   const id = (params?.id as string) || "f435";
-  const product = productData[id] || fallbackProduct;
+  
+  const [product, setProduct] = useState<any>(STATIC_PRODUCT_DATA[id] || fallbackProduct);
+
+  React.useEffect(() => {
+    fetch(`http://127.0.0.1:8080/api/v1/products/${id}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to fetch product");
+        return res.json();
+      })
+      .then(data => {
+        if (data) {
+          const mappedProduct = {
+            name: data.name,
+            role: data.role,
+            tagline: data.tagline,
+            description: data.description,
+            images: data.images && data.images.length > 0 ? data.images : ["/img/flight-control.png"],
+            specs: data.specs ? Object.entries(data.specs).map(([label, value]) => ({ label, value: String(value) })) : [],
+            channels: data.channels ? Object.entries(data.channels).map(([name, url]) => ({ name, url: String(url) })) : [],
+            pinout_images: data.pinout_images || [],
+            downloads: data.downloads || []
+          };
+          setProduct(mappedProduct);
+        }
+      })
+      .catch(err => console.error("Error loading product:", err));
+  }, [id]);
+
   const [activeImage, setActiveImage] = useState(0);
   const [showPromo, setShowPromo] = useState(true);
   const [activeTab, setActiveTab] = useState("specs");
@@ -82,7 +111,7 @@ export default function UrunDetayPage() {
     salesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const recommendations = [
+  const [recommendations, setRecommendations] = useState<any[]>([
     {
       id: "f435",
       name: "Orbit F435",
@@ -111,7 +140,30 @@ export default function UrunDetayPage() {
       desc: "Ublox M10 & Dual Kompas",
       image: "/img/gps.png",
     }
-  ].filter(p => p.id !== id).slice(0, 3);
+  ].filter(p => p.id !== id).slice(0, 3));
+
+  React.useEffect(() => {
+    fetch(`http://127.0.0.1:8080/api/v1/products`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          const recs = data
+            .filter((p: any) => p.id !== id)
+            .map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              role: p.role,
+              desc: p.tagline || p.description,
+              image: p.images && p.images.length > 0 ? p.images[0] : "/img/flight-control.png"
+            }))
+            .slice(0, 3);
+          if (recs.length > 0) {
+            setRecommendations(recs);
+          }
+        }
+      })
+      .catch(err => console.error("Error loading recommendations:", err));
+  }, [id]);
 
   return (
     <main style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", overflow: "hidden" }}>
@@ -527,7 +579,7 @@ export default function UrunDetayPage() {
                       {/* Image Layer */}
                       <div className="absolute inset-0 p-8 flex items-center justify-center">
                         <Image 
-                          src={`/img/diagrams/${id}-front.png`} 
+                          src={product.pinout_images && product.pinout_images.length > 0 ? product.pinout_images[0] : `/img/diagrams/${id}-front.png`} 
                           alt={`${product.name} Ön Yüz Bağlantı Şeması`}
                           fill
                           className="object-contain opacity-90 transition-opacity duration-300"
@@ -596,7 +648,7 @@ export default function UrunDetayPage() {
                       {/* Image Layer */}
                       <div className="absolute inset-0 p-8 flex items-center justify-center">
                         <Image 
-                          src={`/img/diagrams/${id}-back.png`} 
+                          src={product.pinout_images && product.pinout_images.length > 1 ? product.pinout_images[1] : `/img/diagrams/${id}-back.png`} 
                           alt={`${product.name} Arka Yüz Pinout Şeması`}
                           fill
                           className="object-contain opacity-90 transition-opacity duration-300"
@@ -656,11 +708,11 @@ export default function UrunDetayPage() {
                   gap: "16px",
                   padding: "10px 0"
                 }}>
-                  {[
-                    { name: "Kullanım Kılavuzu & Kurulum Rehberi", type: "PDF", size: "2.4 MB", desc: "Ayrıntılı montaj ve kalibrasyon talimatları." },
-                    { name: "Teknik Çizim ve 3D STEP Modeli", type: "ZIP / CAD", size: "8.1 MB", desc: "Şasi entegrasyonu için endüstriyel 3D CAD dosyası." },
-                    { name: "Orbit RTOS Firmware Güncellemesi (v1.4.2)", type: "HEX / BIN", size: "512 KB", desc: "En son kararlılık güncellemeleri ve hata düzeltmeleri." }
-                  ].map((doc, i) => (
+                  {(product.downloads && product.downloads.length > 0 ? product.downloads : [
+                    { title: "Kullanım Kılavuzu & Kurulum Rehberi", type: "PDF", size: "2.4 MB", desc: "Ayrıntılı montaj ve kalibrasyon talimatları." },
+                    { title: "Teknik Çizim ve 3D STEP Modeli", type: "ZIP / CAD", size: "8.1 MB", desc: "Şasi entegrasyonu için endüstriyel 3D CAD dosyası." },
+                    { title: "Orbit RTOS Firmware Güncellemesi (v1.4.2)", type: "HEX / BIN", size: "512 KB", desc: "En son kararlılık güncellemeleri ve hata düzeltmeleri." }
+                  ]).map((doc: any, i: number) => (
                     <div
                       key={i}
                       style={{
@@ -682,7 +734,7 @@ export default function UrunDetayPage() {
                             fontWeight: "600",
                             color: "#fff"
                           }}>
-                            {doc.name}
+                            {doc.title || doc.name}
                           </span>
                           <span style={{
                             background: "rgba(255,255,255,0.08)",

@@ -4,31 +4,29 @@ import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-const blogs = [
-  {
-    id: 1,
-    title: "İnsansız Hava Araçlarında Yeni Nesil Kontrolcüler",
-    excerpt: "Orbit F435 ile uçuş stabilitesini nasıl %40 artırdık? Teknik bir derin dalış.",
-    date: "24 Nisan 2024",
-    image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 2,
-    title: "Otonom Uçuş Yazılımlarının Geleceği",
-    excerpt: "Yapay zeka destekli otonom görev planlama sistemlerinde Orbit'in vizyonu.",
-    date: "18 Nisan 2024",
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 3,
-    title: "Yerli Üretim ve Küresel Standartlar",
-    excerpt: "Türkiye'den dünyaya ihraç edilen yüksek teknolojili ESC sistemlerinin üretim hikayesi.",
-    date: "12 Nisan 2024",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800",
-  },
-];
+// Mock data removed at user request
 
 export default function BlogSection() {
+  const [blogs, setBlogs] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch('http://127.0.0.1:8080/api/v1/blog')
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          const mapped = data.slice(0, 3).map((b: any) => ({
+            id: b.id,
+            title: b.title,
+            excerpt: b.lead_paragraph || b.category,
+            date: b.date_published,
+            image: b.cover_image || "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800"
+          }));
+          setBlogs(mapped);
+        }
+      })
+      .catch(err => console.error("Error loading blog section:", err));
+  }, []);
+
   return (
     <section 
       className="pb-40 w-full bg-black relative overflow-hidden flex flex-col items-center"

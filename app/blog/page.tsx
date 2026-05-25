@@ -5,92 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 
-const initialBlogs = [
-  {
-    id: 1,
-    title: "İnsansız Hava Araçlarında Yeni Nesil Kontrolcüler",
-    excerpt: "Orbit F435 ile uçuş stabilitesini nasıl %40 artırdık? Teknik bir derin dalış.",
-    date: "24 Nisan 2024",
-    image: "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 2,
-    title: "Otonom Uçuş Yazılımlarının Geleceği",
-    excerpt: "Yapay zeka destekli otonom görev planlama sistemlerinde Orbit'in vizyonu.",
-    date: "18 Nisan 2024",
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 3,
-    title: "Yerli Üretim ve Küresel Standartlar",
-    excerpt: "Türkiye'den dünyaya ihraç edilen yüksek teknolojili ESC sistemlerinin üretim hikayesi.",
-    date: "12 Nisan 2024",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 4,
-    title: "Uzun Menzilli LRS Haberleşmede Frekans Atlama Teknolojisi",
-    excerpt: "30km+ askeri sınıf menzillerde parazitleri sıfırlayan FHSS algoritması ve RF detayları.",
-    date: "05 Nisan 2024",
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 5,
-    title: "T700 Karbon Fiber Gövdelerde Mukavemet Simülasyonu",
-    excerpt: "Hafiflik ile yüksek esnemezliği bir arada sunan özel karbon gövde tasarım sonuçlarımız.",
-    date: "28 Mart 2024",
-    image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 6,
-    title: "M10 Çift Pusula Teknolojisi ile Kararlı Konum Sabitleme",
-    excerpt: "Elektromanyetik gürültünün yüksek olduğu operasyon alanlarında üstün konum doğrulama.",
-    date: "20 Mart 2024",
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 7,
-    title: "Yüksek Akım Güç Dağıtım Kartlarında Bakır Kalınlığı Analizi",
-    excerpt: "Ağır yük altında çalışan İHA donanımlarında sıcaklık kontrolü sağlayan çok katmanlı bakır mimarimiz.",
-    date: "14 Mart 2024",
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 8,
-    title: "Otonom İHA'larda Engel Tespit ve Kaçınma Radar Sistemleri",
-    excerpt: "Düşük görüş şartlarında dahi kusursuz otonom uçuş sağlayan entegre milimetrik dalga radar testleri.",
-    date: "05 Mart 2024",
-    image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 9,
-    title: "Sürü İHA Teknolojilerinde Gecikmesiz Ad-Hoc Ağ Haberleşmesi",
-    excerpt: "Merkezi kontrol ünitesi olmadan, İHA'ların kendi aralarında kurduğu otonom kablosuz veri ağı mimarisi.",
-    date: "26 Şubat 2024",
-    image: "https://images.unsplash.com/photo-1527474305487-b87b222841cc?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 10,
-    title: "Fırçasız Motor Sürücülerinde Alan Yönelimli Kontrol (FOC) Algoritması",
-    excerpt: "ESC donanımlarımızda uyguladığımız FOC motor kontrol algoritmasının tork ve sessizlik avantajları.",
-    date: "15 Şubat 2024",
-    image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 11,
-    title: "Askeri Standartlarda Çevresel Testler ve MIL-STD-810G",
-    excerpt: "Donanımlarımızın toz, nem, yüksek sıcaklık ve darbe direncinin laboratuvar onay süreçleri.",
-    date: "02 Şubat 2024",
-    image: "https://images.unsplash.com/photo-1581092162384-8987c1d64718?auto=format&fit=crop&q=80&w=800",
-  },
-  {
-    id: 12,
-    title: "Gimbal Stabilizasyon Sistemlerinde Fırçasız Sürücü Kalibrasyonu",
-    excerpt: "Hassas keşif kameralarının rüzgar direnci altında milimetrik stabilizasyon yeteneklerinin analizi.",
-    date: "22 Ocak 2024",
-    image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&q=80&w=800",
-  }
-];
+// Mock data removed at user request
 
 const CARDS_PER_PAGE = 6;
 
@@ -98,12 +13,31 @@ const CARDS_PER_PAGE = 6;
 // BLOG ARAMA, GRID LİSTELEME VE SAYFALAMA BÖLÜMÜ
 // ==========================================================
 function BlogListSection() {
+  const [blogs, setBlogs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const sectionRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    fetch('http://127.0.0.1:8080/api/v1/blog')
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data) && data.length > 0) {
+          const mapped = data.map((b: any) => ({
+            id: b.id,
+            title: b.title,
+            excerpt: b.lead_paragraph || b.category,
+            date: b.date_published,
+            image: b.cover_image || "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800"
+          }));
+          setBlogs(mapped);
+        }
+      })
+      .catch(err => console.error("Error fetching blogs for list:", err));
+  }, []);
+
   // Arama filtresi uyguluyoruz
-  const filteredBlogs = initialBlogs.filter((blog) =>
+  const filteredBlogs = blogs.filter((blog) =>
     blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     blog.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
   );

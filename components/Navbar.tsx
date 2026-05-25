@@ -37,6 +37,49 @@ export default function Navbar() {
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  const [searchData, setSearchData] = useState({
+    products: SEARCH_DATABASE.products,
+    blog: SEARCH_DATABASE.blog,
+    careers: SEARCH_DATABASE.careers
+  });
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8080/api/v1/settings")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setSettings(data))
+      .catch((err) => console.error("Navbar settings fetch error:", err));
+  }, []);
+
+  useEffect(() => {
+    Promise.all([
+      fetch('http://127.0.0.1:8080/api/v1/products').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('http://127.0.0.1:8080/api/v1/blog').then(r => r.ok ? r.json() : null).catch(() => null),
+      fetch('http://127.0.0.1:8080/api/v1/careers').then(r => r.ok ? r.json() : null).catch(() => null)
+    ]).then(([productsData, blogsData, careersData]) => {
+      setSearchData(prev => ({
+        products: productsData && Array.isArray(productsData) && productsData.length > 0 ? productsData.map(p => ({
+          id: p.id,
+          name: p.name,
+          desc: p.tagline || p.description || p.role,
+          url: `/urunler/${p.id}`
+        })) : prev.products,
+        blog: blogsData && Array.isArray(blogsData) && blogsData.length > 0 ? blogsData.map(b => ({
+          id: b.id,
+          title: b.title,
+          desc: b.lead_paragraph || b.category,
+          url: `/blog/${b.id}`
+        })) : prev.blog,
+        careers: careersData && Array.isArray(careersData) && careersData.length > 0 ? careersData.map(c => ({
+          id: c.id,
+          title: c.title,
+          desc: `${c.department} (${c.location})`,
+          url: `/kariyer`
+        })) : prev.careers
+      }));
+    });
+  }, []);
+
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -77,13 +120,13 @@ export default function Navbar() {
   };
 
   const query = searchQuery.trim().toLowerCase();
-  const filteredProducts = query ? SEARCH_DATABASE.products.filter(item => 
+  const filteredProducts = query ? searchData.products.filter(item => 
     item.name.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)
   ) : [];
-  const filteredBlog = query ? SEARCH_DATABASE.blog.filter(item => 
+  const filteredBlog = query ? searchData.blog.filter(item => 
     item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)
   ) : [];
-  const filteredCareers = query ? SEARCH_DATABASE.careers.filter(item => 
+  const filteredCareers = query ? searchData.careers.filter(item => 
     item.title.toLowerCase().includes(query) || item.desc.toLowerCase().includes(query)
   ) : [];
 
@@ -146,7 +189,7 @@ export default function Navbar() {
         <div className="navbar-left">
           <Link href="/" className="navbar-logo">
             <Image
-              src="/img/logo.png"
+              src={settings?.logo_url || "/img/logo.png"}
               alt="Orbit Teknoloji"
               width={90}
               height={27}

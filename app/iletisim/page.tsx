@@ -1,10 +1,12 @@
 "use client";
  
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import MapSection from "@/components/MapSection";
+import Toast, { ToastType } from "@/components/Toast";
  
 export default function IletisimPage() {
+  const [settings, setSettings] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,6 +15,24 @@ export default function IletisimPage() {
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Toast State
+  const [toastConfig, setToastConfig] = useState<{ isVisible: boolean; message: string; type: ToastType }>({
+    isVisible: false,
+    message: "",
+    type: null
+  });
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8080/api/v1/settings")
+      .then((res) => {
+        if (!res.ok) throw new Error("Settings fetch failed");
+        return res.json();
+      })
+      .then((data) => setSettings(data))
+      .catch((err) => console.error("Error loading site settings:", err));
+  }, []);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -52,16 +72,41 @@ export default function IletisimPage() {
     return Object.keys(tempErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
     setStatus("loading");
     
-    // API entegrasyonu için hazır mock tetikleme
-    setTimeout(() => {
-      setStatus("success");
-    }, 1500);
+    try {
+      const response = await fetch("http://127.0.0.1:8080/api/v1/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Sunucu bir hata döndürdü");
+      }
+
+      setStatus("idle"); // Formu aktif bırak
+      setToastConfig({ isVisible: true, message: "Talebiniz alınmıştır, ekibimiz en kısa sürede dönüş yapacaktır.", type: "success" });
+      
+      // Formu temizle
+      setFormData({ name: "", email: "", subject: "Select...", message: "" });
+      
+    } catch (error) {
+      console.error("Submit error:", error);
+      setStatus("idle");
+      setToastConfig({ isVisible: true, message: "Mesajınız teknik bir sorun nedeniyle iletilemedi. Lütfen bağlantınızı kontrol edin.", type: "error" });
+    }
   };
 
   return (
@@ -141,10 +186,17 @@ export default function IletisimPage() {
             </p>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', alignItems: 'center' }}>
-              {["LinkedIn", "Instagram", "X", "YouTube"].map((social) => (
+              {[
+                { name: "LinkedIn", url: settings?.social_linkedin || "https://linkedin.com/company/orbitteknoloji" },
+                { name: "X", url: settings?.social_x || "https://x.com/orbitteknoloji" },
+                { name: "YouTube", url: settings?.social_youtube || "https://youtube.com/c/orbitteknoloji" },
+                { name: "GitHub", url: settings?.social_github || "https://github.com/orbitteknoloji" }
+              ].map((social) => (
                 <a 
-                  key={social} 
-                  href="#" 
+                  key={social.name} 
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
@@ -158,84 +210,22 @@ export default function IletisimPage() {
                   onMouseOver={(e) => (e.currentTarget.style.opacity = '0.6')}
                   onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
                 >
-                  {social}
+                  {social.name}
                   <svg style={{ width: '14px', height: '14px', opacity: '0.4' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
                   </svg>
                 </a>
               ))}
             </div>
+
           </motion.div>
  
-          {/* Right Side: Form / Success Card */}
+          {/* Right Side: Form */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           >
-            <AnimatePresence mode="wait">
-              {status === "success" ? (
-                <motion.div
-                  key="success-card"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  style={{
-                    padding: "48px 40px",
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.06)",
-                    borderRadius: "24px",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    textAlign: "center",
-                    gap: "20px"
-                  }}
-                >
-                  <div style={{
-                    width: "56px",
-                    height: "56px",
-                    borderRadius: "50%",
-                    background: "rgba(64, 96, 255, 0.1)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#4060ff"
-                  }}>
-                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 style={{ fontSize: "20px", fontWeight: "700", color: "#fff", margin: 0, letterSpacing: "-0.01em" }}>Mesajınız İletildi</h3>
-                  <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.45)", margin: 0, maxWidth: "310px", lineHeight: "1.6" }}>
-                    Bizimle iletişime geçtiğiniz için teşekkür ederiz. Talebiniz alınmıştır, ekibimiz en kısa sürede e-posta adresiniz üzerinden dönüş yapacaktır.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setFormData({ name: "", email: "", subject: "Select...", message: "" });
-                      setStatus("idle");
-                    }}
-                    style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: "none",
-                      color: "#fff",
-                      fontSize: "13px",
-                      fontWeight: "600",
-                      padding: "8px 20px",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      marginTop: "8px",
-                      transition: "all 0.2s ease"
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)')}
-                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)')}
-                  >
-                    Yeni Mesaj Gönder
-                  </button>
-                </motion.div>
-              ) : (
                 <form 
                   key="contact-form"
                   onSubmit={handleSubmit} 
@@ -382,14 +372,20 @@ export default function IletisimPage() {
                     {status === "loading" ? "Gönderiliyor..." : "Mesajı Gönder"}
                   </button>
                 </form>
-              )}
-            </AnimatePresence>
           </motion.div>
 
         </div>
 
         {/* Maps Section - Side by Side Squares */}
-        <MapSection />
+        <MapSection offices={settings?.offices} />
+
+        {/* Toast Bildirimi */}
+        <Toast 
+          isVisible={toastConfig.isVisible}
+          message={toastConfig.message}
+          type={toastConfig.type}
+          onClose={() => setToastConfig(prev => ({ ...prev, isVisible: false }))}
+        />
 
       </div>
     </main>

@@ -1,33 +1,35 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-const jobs = [
-  {
-    id: 1,
-    title: "Software Engineer (New Grand)",
-    department: "Ar-Ge / Yazılım",
-    location: "İstanbul (Hybrid)",
-    type: "Tam Zamanlı",
-  },
-  {
-    id: 2,
-    title: "PCB Designer (New Grand)",
-    department: "Donanım / Üretim",
-    location: "İstanbul (Yerinde)",
-    type: "Tam Zamanlı",
-  },
-  {
-    id: 3,
-    title: "Software Engineer (Python)",
-    department: "Ar-Ge / Yapay Zeka",
-    location: "Ankara (Hybrid)",
-    type: "Tam Zamanlı",
-  },
-];
+type JobPosition = {
+  id: number;
+  title: string;
+  department: string;
+  location: string;
+  job_type: string;
+  linkedin_url: string;
+};
 
 export default function CareerSection() {
+  const [jobs, setJobs] = useState<JobPosition[]>([]);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8080/api/v1/careers")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch careers");
+        return res.json();
+      })
+      .then((data) => {
+        // En güncel 3 ilanı al (API zaten DESC gönderiyor)
+        if (Array.isArray(data)) {
+          setJobs(data.slice(0, 3));
+        }
+      })
+      .catch((err) => console.error("Career fetch error:", err));
+  }, []);
+
   return (
     <section
       className="pb-40 w-full bg-black relative overflow-hidden flex flex-col items-center"
@@ -89,6 +91,11 @@ export default function CareerSection() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
               className="group cursor-pointer"
+              onClick={() => {
+                if (job.linkedin_url) {
+                  window.open(job.linkedin_url, "_blank");
+                }
+              }}
             >
               <div
                 className="career-sec-card-body bg-[#0d0d0d] border border-white/5 rounded-2xl md:rounded-[24px] overflow-hidden transition-all hover:border-white/20 hover:bg-[#111] flex flex-col md:flex-row items-start md:items-center justify-between"
@@ -114,7 +121,7 @@ export default function CareerSection() {
                     </span>
                     <span className="w-1 h-1 rounded-full bg-white/20" />
                     <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', fontWeight: '500' }}>
-                      {job.type}
+                      {job.job_type}
                     </span>
                   </div>
                 </div>

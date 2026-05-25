@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 
-const products = [
+const STATIC_PRODUCTS = [
   {
     id: "f435",
     name: "Orbit F435",
@@ -51,6 +51,31 @@ const products = [
 ];
 
 export default function ProductVitrin() {
+  const [productsList, setProductsList] = React.useState(STATIC_PRODUCTS);
+
+  React.useEffect(() => {
+    // Fetch products from the backend API
+    fetch("http://127.0.0.1:8080/api/v1/products")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch products");
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.length > 0) {
+          // Map backend response fields to the frontend structure
+          const mapped = data.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            role: item.role,
+            desc: item.tagline,
+            image: item.images && item.images.length > 0 ? item.images[0] : "/img/ucuskontrol.png",
+          }));
+          setProductsList(mapped);
+        }
+      })
+      .catch((err) => console.error("Error loading products:", err));
+  }, []);
+
   const [emblaRef] = useEmblaCarousel({ 
     align: "start",
     containScroll: "trimSnaps",
@@ -100,7 +125,7 @@ export default function ProductVitrin() {
       <div className="vitrin-carousel-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="w-full overflow-hidden" ref={emblaRef}>
           <div className="flex gap-8">
-            {products.map((product, index) => (
+            {productsList.map((product, index) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 40 }}

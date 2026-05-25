@@ -1,31 +1,17 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import Toast, { ToastType } from "@/components/Toast";
 
-const initialJobs = [
-  {
-    id: 1,
-    title: "Software Engineer (New Grand)",
-    department: "Ar-Ge / Yazılım",
-    location: "İstanbul (Hybrid)",
-    type: "Tam Zamanlı",
-  },
-  {
-    id: 2,
-    title: "PCB Designer (New Grand)",
-    department: "Donanım / Üretim",
-    location: "İstanbul (Yerinde)",
-    type: "Tam Zamanlı",
-  },
-  {
-    id: 3,
-    title: "Software Engineer (Python)",
-    department: "Ar-Ge / Yapay Zeka",
-    location: "Ankara (Hybrid)",
-    type: "Tam Zamanlı",
-  },
-];
+type JobPosition = {
+  id: number;
+  title: string;
+  department: string;
+  location: string;
+  job_type: string;
+  linkedin_url: string;
+};
 
 // ==========================================
 // 1. ARAMA VE LİSTELEME BÖLÜMÜ (Ayrı Bileşen)
@@ -33,8 +19,23 @@ const initialJobs = [
 // ==========================================
 function JobListSection() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [jobs, setJobs] = useState<JobPosition[]>([]);
 
-  const filteredJobs = initialJobs.filter((job) =>
+  useEffect(() => {
+    fetch("http://127.0.0.1:8080/api/v1/careers")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch careers");
+        return res.json();
+      })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setJobs(data);
+        }
+      })
+      .catch((err) => console.error("Career fetch error:", err));
+  }, []);
+
+  const filteredJobs = jobs.filter((job) =>
     job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
     job.location.toLowerCase().includes(searchQuery.toLowerCase())
@@ -156,6 +157,11 @@ function JobListSection() {
                 e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)';
                 e.currentTarget.style.backgroundColor = '#0d0d0d';
               }}
+              onClick={() => {
+                if (job.linkedin_url) {
+                  window.open(job.linkedin_url, "_blank");
+                }
+              }}
             >
               {/* Sol Taraf: İlan Başlığı ve Departmanı */}
               <div className="job-card-left" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -174,7 +180,7 @@ function JobListSection() {
                   </span>
                   <span style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.2)' }} />
                   <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px', fontWeight: '500' }}>
-                    {job.type}
+                    {job.job_type}
                   </span>
                 </div>
               </div>
@@ -217,8 +223,27 @@ function JobListSection() {
 // ==========================================
 function GeneralApplicationSection() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isSubmitted, setIsSubmitted] = useState(false); // Gönderim durumu eklendi
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Toast state
+  const [toastConfig, setToastConfig] = useState<{ isVisible: boolean; message: string; type: ToastType }>({
+    isVisible: false,
+    message: "",
+    type: null
+  });
+
+  const [formData, setFormData] = useState({
+    name: "",
+    profession: "",
+    employmentType: "Select...",
+    linkedinUrl: ""
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -230,9 +255,56 @@ function GeneralApplicationSection() {
     fileInputRef.current?.click();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitted(true); // Gönderim durumunu aktif ediyoruz
+
+    if (!formData.name || !formData.profession || formData.employmentType === "Select...") {
+      setToastConfig({ isVisible: true, message: "Lütfen isim, meslek ve çalışma şeklini doldurun.", type: "error" });
+      return;
+    }
+    if (!selectedFile) {
+      setToastConfig({ isVisible: true, message: "Lütfen CV dosyanızı yükleyin.", type: "error" });
+      return;
+    }
+
+    setIsLoading(true);
+
+    const submitData = new FormData();
+    submitData.append("name", formData.name);
+    submitData.append("profession", formData.profession);
+    submitData.append("employmentType", formData.employmentType);
+    submitData.append("linkedinUrl", formData.linkedinUrl);
+    submitData.append("cv_file", selectedFile);
+
+    try {
+      const res = await fetch("http://127.0.0.1:8080/api/v1/applications", {
+        method: "POST",
+        body: submitData
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Başvuru gönderilirken bir hata oluştu.");
+      }
+
+      setToastConfig({ isVisible: true, message: "Özgeçmişiniz ve bilgileriniz ekibimize ulaştı. En kısa sürede dönüş sağlayacağız.", type: "success" });
+      
+      // Formu temizle
+      setFormData({
+        name: "",
+        profession: "",
+        employmentType: "Select...",
+        linkedinUrl: ""
+      });
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      
+    } catch (err: any) {
+      console.error(err);
+      setToastConfig({ isVisible: true, message: err.message || "Başvuru gönderilemedi. Lütfen tekrar deneyin.", type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -274,71 +346,14 @@ function GeneralApplicationSection() {
         </p>
       </motion.div>
 
-      {/* Sağ Sütun: Form veya Başarı Bildirimi */}
+      {/* Sağ Sütun: Form */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ delay: 0.1 }}
       >
-        {isSubmitted ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              backgroundColor: 'rgba(255,255,255,0.02)',
-              border: '1px solid rgba(255,255,255,0.05)',
-              borderRadius: '24px',
-              padding: '60px 40px',
-              textAlign: 'center',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '20px',
-              minHeight: '400px'
-            }}
-          >
-            {/* Orbit Mavisinde Parlayan Check İkonu */}
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '50%',
-              backgroundColor: 'rgba(64, 96, 255, 0.1)',
-              border: '1px solid rgba(64, 96, 255, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#4060ff',
-              boxShadow: '0 0 30px rgba(64, 96, 255, 0.2)'
-            }}>
-              <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 style={{
-              fontSize: '24px',
-              fontWeight: '700',
-              color: '#fff',
-              letterSpacing: '-0.02em',
-              margin: 0,
-              textTransform: 'lowercase'
-            }}>
-              başvurunuz alındı.
-            </h3>
-            <p style={{
-              fontSize: '15px',
-              color: 'rgba(255,255,255,0.4)',
-              lineHeight: '1.6',
-              maxWidth: '320px',
-              margin: 0
-            }}>
-              özgeçmişiniz ve bilgileriniz ekibimize ulaştı. en kısa sürede dönüş sağlayacağız.
-            </p>
-          </motion.div>
-        ) : (
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
             {/* Satır 1: İsim Soyisim & Meslek */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
@@ -346,6 +361,10 @@ function GeneralApplicationSection() {
                 <label style={{ fontSize: '12px', fontWeight: '500', color: 'rgba(255,255,255,0.4)' }}>İsim Soyisim</label>
                 <input
                   type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
                   placeholder="Jane Smith"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
@@ -363,6 +382,10 @@ function GeneralApplicationSection() {
                 <label style={{ fontSize: '12px', fontWeight: '500', color: 'rgba(255,255,255,0.4)' }}>Meslek</label>
                 <input
                   type="text"
+                  name="profession"
+                  value={formData.profession}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
                   placeholder="Software Developer"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
@@ -383,14 +406,19 @@ function GeneralApplicationSection() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '12px', fontWeight: '500', color: 'rgba(255,255,255,0.4)' }}>Employment Type</label>
                 <div style={{ position: 'relative' }}>
-                  <select style={{
+                  <select 
+                    name="employmentType"
+                    value={formData.employmentType}
+                    onChange={handleInputChange}
+                    disabled={isLoading}
+                    style={{
                     width: '100%',
                     backgroundColor: 'rgba(255,255,255,0.05)',
                     border: '1px solid rgba(255,255,255,0.05)',
                     borderRadius: '14px',
                     height: '52px',
                     padding: '0 18px',
-                    color: 'rgba(255,255,255,0.4)',
+                    color: formData.employmentType === 'Select...' ? 'rgba(255,255,255,0.4)' : '#fff',
                     outline: 'none',
                     fontSize: '15px',
                     cursor: 'pointer',
@@ -413,6 +441,10 @@ function GeneralApplicationSection() {
                 <label style={{ fontSize: '12px', fontWeight: '500', color: 'rgba(255,255,255,0.4)' }}>LinkedIn URL</label>
                 <input
                   type="url"
+                  name="linkedinUrl"
+                  value={formData.linkedinUrl}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
                   placeholder="https://linkedin.com/in/username"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
@@ -436,6 +468,7 @@ function GeneralApplicationSection() {
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
+                disabled={isLoading}
                 accept=".pdf,.doc,.docx"
                 style={{ display: 'none' }}
               />
@@ -478,31 +511,41 @@ function GeneralApplicationSection() {
             </div>
 
             {/* Gönder Butonu */}
-            <button className="genel-basvuru-btn" style={{
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="genel-basvuru-btn" 
+              style={{
               height: '48px',
               width: '180px',
               alignSelf: 'flex-end',
-              backgroundColor: '#4060ff',
-              color: '#fff',
+              backgroundColor: isLoading ? 'rgba(255,255,255,0.1)' : '#4060ff',
+              color: isLoading ? 'rgba(255,255,255,0.4)' : '#fff',
               fontWeight: '700',
               borderRadius: '12px',
               border: 'none',
               fontSize: '15px',
-              cursor: 'pointer',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
               marginTop: '10px',
-              boxShadow: '0 10px 20px rgba(64, 96, 255, 0.15)'
+              boxShadow: isLoading ? 'none' : '0 10px 20px rgba(64, 96, 255, 0.15)'
             }}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#3852de')}
-              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#4060ff')}
+              onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#3852de'; }}
+              onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4060ff'; }}
             >
-              Başvuruyu Gönder
+              {isLoading ? "Gönderiliyor..." : "Başvuruyu Gönder"}
             </button>
 
           </form>
-        )}
       </motion.div>
 
+      {/* Toast Bildirimi */}
+      <Toast 
+        isVisible={toastConfig.isVisible}
+        message={toastConfig.message}
+        type={toastConfig.type}
+        onClose={() => setToastConfig(prev => ({ ...prev, isVisible: false }))}
+      />
     </div>
   );
 }

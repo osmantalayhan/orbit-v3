@@ -11,8 +11,22 @@ const productMap: Record<string, { name: string; tagline: string }> = {
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const id = params.id;
-  const product = productMap[id] || { name: "İHA Elektroniği Ürünü", tagline: "Yerli Ar-Ge'den doğan üstün performanslı İHA donanımı." };
+  
+  try {
+    const res = await fetch(`http://127.0.0.1:8080/api/v1/products/${id}`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const product = await res.json();
+      return {
+        title: product.name,
+        description: `${product.name} - ${product.tagline} Yerli Ar-Ge'den doğan askeri ve endüstriyel sınıf İHA elektroniği.`,
+      };
+    }
+  } catch (error) {
+    // API'ye erisilemezse hata basmadan (sessizce) fallback'e dussun
+  }
 
+  // Fallback (Yedek)
+  const product = productMap[id] || { name: "İHA Elektroniği Ürünü", tagline: "Yerli Ar-Ge'den doğan üstün performanslı İHA donanımı." };
   return {
     title: product.name,
     description: `${product.name} - ${product.tagline} Yerli Ar-Ge'den doğan askeri ve endüstriyel sınıf İHA elektroniği.`,

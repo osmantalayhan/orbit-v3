@@ -30,19 +30,44 @@ const PRODUCTS = [
 ];
 
 export default function HeroSection() {
+  const [products, setProducts] = useState(PRODUCTS);
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8080/api/v1/slider")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch slider items");
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.length > 0) {
+          const mapped = data.map((item: any) => ({
+            id: item.product_id || String(item.id),
+            model: item.model_code,
+            title: item.slide_title,
+            desc: item.slide_desc,
+            image: item.image_url
+          }));
+          setProducts(mapped);
+        }
+      })
+      .catch((err) => console.error("Error loading slider items:", err));
+  }, []);
 
   useEffect(() => {
     // Otomatik geçiş şimdilik deneme için kapatıldı
     /*
     const timer = setInterval(() => {
-      setIndex((prev) => (prev + 1) % PRODUCTS.length);
+      setIndex((prev) => (prev + 1) % products.length);
     }, 10000); // Süre 10 saniyeye uzatılacak
     return () => clearInterval(timer);
     */
-  }, []);
+  }, [products]);
 
-  const current = PRODUCTS[index];
+  // Hata Toleranslı Koruma: Dizi eleman sayısı azaldığında index taşmasını önler
+  const currentIndex = index >= products.length ? 0 : index;
+  const current = products[currentIndex];
+
 
   return (
     <section className="hero">

@@ -5,9 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 
-const categories = ["tümü", "uçuş kontrol", "esc", "gps", "lrs", "video", "frame"];
-
-const products = [
+const STATIC_PRODUCTS = [
   {
     id: "f435",
     name: "Orbit F435",
@@ -71,10 +69,39 @@ const products = [
 ];
 
 export default function UrunlerPage() {
+  const [productsList, setProductsList] = useState(STATIC_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState("tümü");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filtered = products.filter((p) => {
+  React.useEffect(() => {
+    // Fetch products from backend API
+    fetch("http://127.0.0.1:8080/api/v1/products")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch products");
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.length > 0) {
+          const mapped = data.map((item: any, idx: number) => ({
+            id: item.id,
+            name: item.name,
+            role: item.role,
+            desc: item.tagline,
+            category: item.category.toLowerCase(),
+            image: item.images && item.images.length > 0 ? item.images[0] : "/img/flight-control.png",
+            badge: item.badge || null,
+            index: String(idx + 1).padStart(2, "0"),
+          }));
+          setProductsList(mapped);
+        }
+      })
+      .catch((err) => console.error("Error loading products:", err));
+  }, []);
+
+  // Dynamically extract categories from the current product list
+  const categories = ["tümü", ...Array.from(new Set(productsList.map((p) => p.category)))];
+
+  const filtered = productsList.filter((p) => {
     const matchesCategory = activeCategory === "tümü" || p.category === activeCategory;
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.role.toLowerCase().includes(searchQuery.toLowerCase());

@@ -5,6 +5,17 @@ import { motion } from "framer-motion";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [settings, setSettings] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    fetch("http://127.0.0.1:8080/api/v1/settings")
+      .then((res) => {
+        if (!res.ok) throw new Error("Settings fetch failed");
+        return res.json();
+      })
+      .then((data) => setSettings(data))
+      .catch((err) => console.error("Error loading settings in footer:", err));
+  }, []);
 
   return (
     <footer
@@ -91,13 +102,13 @@ export default function Footer() {
 
           <div className="flex flex-col items-start md:items-end gap-4">
             <a
-              href="mailto:info@orbit.com"
+              href={`mailto:${settings?.contact_email || "info@orbitteknoloji.com"}`}
               className="text-white text-2xl md:text-3xl font-bold border-b border-white/10 pb-1 hover:border-white transition-all no-underline tracking-tight"
             >
-              info@orbit.com.tr
+              {settings?.contact_email || "info@orbitteknoloji.com"}
             </a>
             <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '15px', fontWeight: '500' }}>
-              +90 (212) 000 00 00
+              {settings?.contact_phone || "+90 212 000 00 00"}
             </span>
           </div>
         </div>
@@ -152,17 +163,24 @@ export default function Footer() {
               Sosyal
             </h4>
             <div className="flex flex-col gap-3">
-              {["LinkedIn", "Instagram", "X / Twitter", "YouTube"].map(item => (
+              {[
+                { name: "LinkedIn", url: settings?.social_linkedin || "https://linkedin.com/company/orbitteknoloji" },
+                { name: "X / Twitter", url: settings?.social_x || "https://x.com/orbitteknoloji" },
+                { name: "YouTube", url: settings?.social_youtube || "https://youtube.com/c/orbitteknoloji" },
+                { name: "GitHub", url: settings?.social_github || "https://github.com/orbitteknoloji" }
+              ].map(item => (
                 <a 
-                  key={item} 
-                  href="#" 
+                  key={item.name} 
+                  href={item.url} 
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-white/40 hover:text-white transition-colors no-underline font-medium flex items-center group/social"
                   style={{ fontSize: "15px" }}
                 >
-                  {item}
+                  {item.name}
                   <svg 
                     className="opacity-40 group-hover/social:opacity-100 transition-opacity" 
-                    style={{ width: '13px', height: '13px' }} 
+                    style={{ width: '13px', height: '13px', marginLeft: '4px' }} 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     stroke="currentColor" 
@@ -183,7 +201,7 @@ export default function Footer() {
         >
           <div className="flex items-center gap-3">
             <img 
-              src="/img/logo.png" 
+              src={settings?.logo_url || "/img/logo.png"} 
               alt="Orbit Logo" 
               className="h-4 w-auto brightness-0 invert opacity-30"
               style={{ userSelect: 'none', pointerEvents: 'none' }}

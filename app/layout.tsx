@@ -8,13 +8,40 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta-sans",
 });
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   title: {
     default: "Orbit Teknoloji — Yerli İHA Elektroniği",
     template: "%s | Orbit Teknoloji"
   },
-  description: "Yerli Ar-Ge'den doğan İHA elektroniği. ESC'den GPS'e, tamamen Türk mühendisliğinin ürünü.",
+  description: "Yerli Ar-Ge'den doğan İHA elektroniği.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const res = await fetch("http://127.0.0.1:8080/api/v1/settings", { 
+      next: { revalidate: 60 } // SEO verilerini 60 saniyede bir yeniler (Performans için)
+    });
+    
+    if (!res.ok) return defaultMetadata;
+    const settings = await res.json();
+    
+    return {
+      title: {
+        default: settings.site_title || "Orbit Teknoloji",
+        template: `%s | ${settings.site_title || "Orbit Teknoloji"}`
+      },
+      description: settings.site_description || defaultMetadata.description,
+      keywords: settings.site_keywords || "",
+      icons: {
+        icon: settings.favicon_url || "/favicon.ico",
+        shortcut: settings.favicon_url || "/favicon.ico",
+        apple: settings.favicon_url || "/favicon.ico",
+      }
+    };
+  } catch (err) {
+    return defaultMetadata;
+  }
+}
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
