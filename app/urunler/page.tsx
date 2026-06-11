@@ -69,13 +69,13 @@ const STATIC_PRODUCTS = [
 ];
 
 export default function UrunlerPage() {
-  const [productsList, setProductsList] = useState(STATIC_PRODUCTS);
+  const [productsList, setProductsList] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState("tümü");
   const [searchQuery, setSearchQuery] = useState("");
 
   React.useEffect(() => {
     // Fetch products from backend API
-    fetch("http://127.0.0.1:8080/api/v1/products")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch products");
         return res.json();

@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type BlogPost struct {
 	ID            int                    `json:"id"`
@@ -10,7 +13,7 @@ type BlogPost struct {
 	ReadTime      string                 `json:"read_time"`
 	CoverImage    string                 `json:"cover_image"`
 	LeadParagraph string                 `json:"lead_paragraph"`
-	BodyContent   interface{}            `json:"body_content"` // Postgres JSONB alanı ile tam uyumlu (Dizi veya obje olabilir)
+	BodyContent   json.RawMessage        `json:"body_content"` // Postgres JSONB alanı
 	AuthorName    string                 `json:"author_name"`
 	AuthorRole    string                 `json:"author_role"`
 	AuthorAvatar  string                 `json:"author_avatar"`

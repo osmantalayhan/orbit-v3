@@ -22,7 +22,7 @@ function JobListSection() {
   const [jobs, setJobs] = useState<JobPosition[]>([]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8080/api/v1/careers")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/careers`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch careers");
         return res.json();
@@ -267,6 +267,19 @@ function GeneralApplicationSection() {
       return;
     }
 
+    // Dosya boyutu kontrolü (10 MB = 10 * 1024 * 1024 bytes)
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setToastConfig({ isVisible: true, message: "Dosya boyutu çok büyük. Lütfen maksimum 10MB boyutunda bir dosya yükleyin.", type: "error" });
+      return;
+    }
+
+    // Dosya tipi kontrolü
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(selectedFile.type)) {
+      setToastConfig({ isVisible: true, message: "Geçersiz dosya formatı. Lütfen sadece PDF veya Word belgesi yükleyin.", type: "error" });
+      return;
+    }
+
     setIsLoading(true);
 
     const submitData = new FormData();
@@ -277,7 +290,7 @@ function GeneralApplicationSection() {
     submitData.append("cv_file", selectedFile);
 
     try {
-      const res = await fetch("http://127.0.0.1:8080/api/v1/applications", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications`, {
         method: "POST",
         body: submitData
       });
@@ -574,36 +587,37 @@ export default function KariyerPage() {
         }
         @media (max-width: 768px) {
           .page-container {
-            padding-top: 120px !important;
+            padding-top: 100px !important;
             padding-bottom: 60px !important;
           }
           .kariyer-hero-row {
             flex-direction: column !important;
             align-items: flex-start !important;
             min-height: auto !important;
-            margin-bottom: 60px !important;
-            gap: 40px !important;
+            margin-bottom: 30px !important;
+            gap: 20px !important;
           }
           .kariyer-hero-left {
             width: 100% !important;
           }
           .kariyer-hero-title {
-            font-size: 42px !important;
+            font-size: 40px !important;
+            line-height: 1.1 !important;
           }
           .kariyer-uav-container {
             position: relative !important;
             left: 0 !important;
             right: 0 !important;
             width: 100% !important;
-            margin-top: 20px !important;
+            margin-top: 0 !important;
             transform: none !important;
           }
           .kariyer-uav-container > div {
             width: 100% !important;
           }
           .job-list-section {
-            margin-top: 40px !important;
-            margin-bottom: 60px !important;
+            margin-top: 20px !important;
+            margin-bottom: 40px !important;
           }
           .job-search-row {
             flex-direction: column !important;
@@ -649,7 +663,7 @@ export default function KariyerPage() {
       {/* page-container: Navbar ile tam hizada olan standart sayfa taşıyıcımız */}
       <div className="page-container" style={{
         paddingTop: '180px',
-        paddingBottom: '120px',
+        paddingBottom: '20px',
         zIndex: 10
       }}>
 
@@ -661,8 +675,8 @@ export default function KariyerPage() {
           justifyContent: 'space-between',
           position: 'relative',
           width: '100%',
-          minHeight: '500px',
-          marginBottom: '120px'
+          minHeight: '460px',
+          marginBottom: '80px'
         }}>
 
           {/* Sol Taraf: Marka Sloganımız */}

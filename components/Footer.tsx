@@ -2,20 +2,22 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
+
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error("Settings fetch failed");
+  return res.json();
+});
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const [settings, setSettings] = React.useState<any>(null);
-
-  React.useEffect(() => {
-    fetch("http://127.0.0.1:8080/api/v1/settings")
-      .then((res) => {
-        if (!res.ok) throw new Error("Settings fetch failed");
-        return res.json();
-      })
-      .then((data) => setSettings(data))
-      .catch((err) => console.error("Error loading settings in footer:", err));
-  }, []);
+  
+  const { data: settings } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
 
   return (
     <footer
@@ -134,15 +136,19 @@ export default function Footer() {
               Kurumsal
             </h4>
             <div className="flex flex-col gap-3">
-              {["Hakkımızda", "Kariyer", "Blog", "Basın Kiti", "İletişim"].map(item => (
-                <a 
-                  key={item} 
-                  href={item === "İletişim" ? "/iletisim" : "#"} 
+              {[
+                { name: "Kariyer", href: "/kariyer" },
+                { name: "Blog", href: "/blog" },
+                { name: "İletişim", href: "/iletisim" }
+              ].map(item => (
+                <Link 
+                  key={item.name} 
+                  href={item.href} 
                   className="text-white/40 hover:text-white transition-colors no-underline font-medium"
                   style={{ fontSize: "15px" }}
                 >
-                  {item}
-                </a>
+                  {item.name}
+                </Link>
               ))}
             </div>
           </div>
@@ -152,8 +158,19 @@ export default function Footer() {
               Destek
             </h4>
             <div className="flex flex-col gap-3">
-              {["Dökümantasyon", "Satış Kanalları", "Garanti Koşulları", "SSS"].map(item => (
-                <a key={item} href="#" className="text-white/40 hover:text-white transition-colors no-underline font-medium" style={{ fontSize: "15px" }}>{item}</a>
+              {[
+                { name: "Bize Ulaşın", href: "/iletisim" },
+                { name: settings?.contact_email || "info@orbitteknoloji.com", href: `mailto:${settings?.contact_email || "info@orbitteknoloji.com"}` },
+                { name: settings?.contact_phone || "+90 212 000 00 00", href: `tel:${(settings?.contact_phone || "+90 212 000 00 00").replace(/\\s+/g, '')}` }
+              ].map(item => (
+                <a 
+                  key={item.name} 
+                  href={item.href} 
+                  className="text-white/40 hover:text-white transition-colors no-underline font-medium" 
+                  style={{ fontSize: "15px" }}
+                >
+                  {item.name}
+                </a>
               ))}
             </div>
           </div>
@@ -167,8 +184,17 @@ export default function Footer() {
                 { name: "LinkedIn", url: settings?.social_linkedin || "https://linkedin.com/company/orbitteknoloji" },
                 { name: "X / Twitter", url: settings?.social_x || "https://x.com/orbitteknoloji" },
                 { name: "YouTube", url: settings?.social_youtube || "https://youtube.com/c/orbitteknoloji" },
-                { name: "GitHub", url: settings?.social_github || "https://github.com/orbitteknoloji" }
-              ].map(item => (
+                { name: "GitHub", url: settings?.social_github || "https://github.com/orbitteknoloji" },
+                ...(settings?.social_links_json && settings?.social_links_json !== "[]" 
+                  ? (() => {
+                      try {
+                        return JSON.parse(settings.social_links_json);
+                      } catch (e) {
+                        return [];
+                      }
+                    })()
+                  : [])
+              ].filter(item => item.url && item.url.trim() !== "").map((item: any) => (
                 <a 
                   key={item.name} 
                   href={item.url} 
@@ -211,17 +237,6 @@ export default function Footer() {
             </span>
           </div>
 
-          <div className="flex gap-8">
-            {["Gizlilik", "Çerezler", "KVKK"].map(item => (
-              <a
-                key={item}
-                href="#"
-                className="text-white/20 hover:text-white/40 transition-colors no-underline text-sm font-medium"
-              >
-                {item}
-              </a>
-            ))}
-          </div>
         </div>
 
       </div>

@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Geist } from "next/font/google";
 import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-plus-jakarta-sans",
+  variable: "--font-sans",
 });
 
 const defaultMetadata: Metadata = {
@@ -18,12 +18,19 @@ const defaultMetadata: Metadata = {
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const res = await fetch("http://127.0.0.1:8080/api/v1/settings", { 
-      next: { revalidate: 60 } // SEO verilerini 60 saniyede bir yeniler (Performans için)
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, { 
+      cache: "no-store",
+      next: { revalidate: 0 } // Her request'te taze veri al
     });
     
     if (!res.ok) return defaultMetadata;
-    const settings = await res.json();
+    const json = await res.json();
+    const settings = json.SiteSettings || json;
+    
+    // Cache-busting: favicon URL'e timestamp ekle
+    const faviconUrl = settings.favicon_url
+      ? `${settings.favicon_url}?v=${Date.now()}`
+      : "/favicon.ico";
     
     return {
       title: {
@@ -33,9 +40,9 @@ export async function generateMetadata(): Promise<Metadata> {
       description: settings.site_description || defaultMetadata.description,
       keywords: settings.site_keywords || "",
       icons: {
-        icon: settings.favicon_url || "/favicon.ico",
-        shortcut: settings.favicon_url || "/favicon.ico",
-        apple: settings.favicon_url || "/favicon.ico",
+        icon: faviconUrl,
+        shortcut: faviconUrl,
+        apple: faviconUrl,
       }
     };
   } catch (err) {
@@ -43,9 +50,10 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import SmoothScroll from "@/components/SmoothScroll"; // Lenis pürüzsüz kaydırma entegrasyonu
+import ClientLayoutManager from "@/components/ClientLayoutManager";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 export default function RootLayout({
   children,
@@ -55,14 +63,15 @@ export default function RootLayout({
   return (
     <html
       lang="tr"
-      className={`${plusJakartaSans.variable}`}
+      className={`${plusJakartaSans.variable} font-sans`} // Sitenizin orijinal fontu
     >
       <body className="bg-black">
         <SmoothScroll /> {/* Tamamen görünmez pürüzsüz kaydırma yöneticimiz */}
-        <Navbar />
-        {children}
-        <Footer />
-        <CookieBanner />
+        <TooltipProvider>
+          <ClientLayoutManager>
+            {children}
+          </ClientLayoutManager>
+        </TooltipProvider>
       </body>
     </html>
   );

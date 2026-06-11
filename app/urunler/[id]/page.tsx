@@ -78,7 +78,7 @@ export default function UrunDetayPage() {
   const [product, setProduct] = useState<any>(STATIC_PRODUCT_DATA[id] || fallbackProduct);
 
   React.useEffect(() => {
-    fetch(`http://127.0.0.1:8080/api/v1/products/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${id}`)
       .then(res => {
         if (!res.ok) throw new Error("Failed to fetch product");
         return res.json();
@@ -91,19 +91,26 @@ export default function UrunDetayPage() {
             tagline: data.tagline,
             description: data.description,
             images: data.images && data.images.length > 0 ? data.images : ["/img/flight-control.png"],
-            specs: data.specs ? Object.entries(data.specs).map(([label, value]) => ({ label, value: String(value) })) : [],
-            channels: data.channels ? Object.entries(data.channels).map(([name, url]) => ({ name, url: String(url) })) : [],
+            specs: Array.isArray(data.specs) ? data.specs : (data.specs ? Object.entries(data.specs).map(([label, value]) => ({ label, value: String(value) })) : []),
+            channels: Array.isArray(data.channels) ? data.channels : (data.channels ? Object.entries(data.channels).map(([name, url]) => ({ name, url: String(url) })) : []),
             pinout_images: data.pinout_images || [],
-            downloads: data.downloads || []
+            downloads: data.downloads || [],
+            is_teknofest_active: data.is_teknofest_active || false,
+            teknofest_discount: data.teknofest_discount || "15"
           };
           setProduct(mappedProduct);
+          if (data.is_teknofest_active) {
+            setShowPromo(true);
+          } else {
+            setShowPromo(false);
+          }
         }
       })
       .catch(err => console.error("Error loading product:", err));
   }, [id]);
 
   const [activeImage, setActiveImage] = useState(0);
-  const [showPromo, setShowPromo] = useState(true);
+  const [showPromo, setShowPromo] = useState(false);
   const [activeTab, setActiveTab] = useState("specs");
   const salesRef = useRef<HTMLDivElement>(null);
 
@@ -143,7 +150,7 @@ export default function UrunDetayPage() {
   ].filter(p => p.id !== id).slice(0, 3));
 
   React.useEffect(() => {
-    fetch(`http://127.0.0.1:8080/api/v1/products`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`)
       .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data)) {
@@ -968,15 +975,12 @@ export default function UrunDetayPage() {
               lineHeight: "1.6",
               margin: "0 0 20px 0",
             }}>
-              Teknofest dönemine özel, <strong>{product.name}</strong> ve tüm uçuş donanımlarımızda sepette <strong style={{ color: "#fff", fontWeight: "800" }}>%15 indirim</strong> fırsatını kaçırmayın!
+              Teknofest dönemine özel, <strong>{product.name}</strong> ve tüm uçuş donanımlarımızda sepette <strong style={{ color: "#fff", fontWeight: "800" }}>%{product.teknofest_discount || "15"} indirim</strong> fırsatını kaçırmayın!
             </p>
 
             {/* Mini Buton */}
             <button
-              onClick={() => {
-                setShowPromo(false);
-                scrollToSales();
-              }}
+              onClick={() => setShowPromo(false)}
               style={{
                 width: "100%",
                 height: "44px",
@@ -999,7 +1003,7 @@ export default function UrunDetayPage() {
                 e.currentTarget.style.boxShadow = "0 4px 15px rgba(64,96,255,0.3)";
               }}
             >
-              Kampanyadan Faydalan
+              Kapat
             </button>
           </motion.div>
         )}

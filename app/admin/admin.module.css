@@ -1,0 +1,950 @@
+/* === ADMIN PANELI - HAM CSS (CSS MODULES) === */
+/* Bu dosya sadece admin paneli içinde çalışır, ana web sitesini kesinlikle bozmaz. */
+
+/* --- TEMEL DÜZEN (LAYOUT) --- */
+.layoutContainer {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #0a0a0a; /* Saf siyah yerine çok çok koyu gri */
+  color: #ffffff;
+  /* Next.js layout'taki --font-sans değişkenini zorunlu tutuyoruz. Eğer yoksa modern sistem fontlarına düşer. */
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* --- YAN MENÜ (SIDEBAR) --- */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: #0a0a0a; /* Çok koyu gri arka plan */
+  border-right: 1px solid #27272a; 
+  transition: all 0.3s ease;
+}
+
+.logoArea {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  padding: 0 24px;
+  text-decoration: none;
+  gap: 12px;
+}
+
+.logoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  width: 28px;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.logoText {
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+}
+
+.sidebarMenu {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.menuLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a1a1aa; /* DAHA OKUNAKLI GRİ */
+  margin-bottom: 12px;
+  padding: 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #d4d4d8; /* AKTİF OLMAYAN YAZILAR İÇİN AÇIK GRİ */
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.menuItem:hover {
+  background-color: #1a1a1a; /* Hover durumu */
+  color: #ffffff;
+}
+
+.menuItemActive {
+  background-color: #222222; /* Aktif durum */
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.sidebarFooter {
+  padding: 16px;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f87171; 
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logoutBtn:hover {
+  background-color: rgba(69, 10, 10, 0.5); 
+  color: #fca5a5; 
+}
+
+/* --- ANA İÇERİK (MAIN) --- */
+.mainArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background-color: #0a0a0a; /* Çok koyu gri */
+}
+
+.topHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  padding: 0 32px;
+  border-bottom: 1px solid #27272a;
+  background-color: #0a0a0a;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+}
+
+.breadcrumbText { color: #a1a1aa; font-weight: 500; }
+.breadcrumbDivider { color: #52525b; }
+.breadcrumbCurrent { color: #ffffff; font-weight: 600; }
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid #3f3f46; 
+  background-color: #151515; /* Kartlarla uyumlu zemin */
+  color: #ffffff;
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #ffffff; 
+  width: 120px;
+}
+.searchInput::placeholder {
+  color: #a1a1aa;
+}
+
+.headerDivider {
+  height: 20px;
+  width: 1px;
+  background-color: #3f3f46;
+}
+
+.userProfile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.userEmail { font-size: 14px; font-weight: 600; color: #ffffff; }
+.userRole { font-size: 12px; color: #a1a1aa; font-weight: 500; }
+
+.userAvatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  background-color: #1a1a1a;
+  border: 1px solid #3f3f46;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.pageContent {
+  flex: 1;
+  min-height: 0; /* Flex item'ın kendi içeriğinden küçük olabilmesini sağlar, scroll'u aktif eder! */
+  height: 100%;
+  overflow-y: auto; 
+  overflow-x: hidden;
+  padding: 32px 40px;
+  overscroll-behavior-y: contain; /* Parent'a scroll sıçramasını engeller */
+}
+
+/* Şık ve transparan Scrollbar Tasarımı */
+.pageContent::-webkit-scrollbar {
+  width: 6px;
+}
+.pageContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pageContent::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+.pageContent::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.contentWrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* --- DASHBOARD SAYFASI (PAGE) --- */
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding-bottom: 48px;
+}
+
+.dashboardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  margin: 0 0 8px 0;
+}
+
+.pageDesc {
+  font-size: 15px;
+  color: #a1a1aa; 
+  margin: 0;
+  font-weight: 500;
+}
+
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.downloadBtn:hover {
+  background-color: #e4e4e7;
+}
+
+/* --- KARTLAR (CARDS) --- */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.metricCard {
+  display: flex;
+  flex-direction: column;
+  background-color: #121212; /* Kartlar zemin ile ayrışsın diye 1 tık açık */
+  border: 1px solid #27272a; 
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s ease;
+}
+
+.metricCard:hover {
+  background-color: #1a1a1a;
+  border-color: #3f3f46;
+}
+
+.metricHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.metricTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #d4d4d8; 
+  margin: 0;
+}
+
+.metricIconBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
+  border-radius: 8px;
+  background-color: #1a1a1a; /* Karttan çok az daha belirgin */
+  border: 1px solid #27272a;
+  color: #ffffff; 
+}
+
+.metricValue {
+  font-size: 32px;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.metricTrend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.trendUp { color: #10b981; }
+.trendNeutral { color: #a1a1aa; }
+.trendDesc { color: #a1a1aa; font-weight: 500; } 
+
+/* --- ALT İÇERİK BÖLÜMÜ --- */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+.panelCard {
+  display: flex;
+  flex-direction: column;
+  background-color: #121212; /* Kartlar zemin ile ayrışsın */
+  border: 1px solid #27272a; 
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.panelTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.panelBadge {
+  font-size: 13px;
+  font-weight: 600;
+  color: #10b981;
+  background-color: rgba(16, 185, 129, 0.15);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.panelDesc {
+  font-size: 15px;
+  color: #a1a1aa;
+  margin: 0 0 24px 0;
+  font-weight: 500;
+}
+
+/* --- GRAFİK ALANI --- */
+.chartArea {
+  flex: 1;
+  border-top: 1px solid #27272a;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  height: 240px;
+  padding-top: 24px;
+}
+
+.chartColumn {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.chartBarContainer {
+  width: 100%;
+  max-width: 32px;
+  display: flex;
+  justify-content: center;
+}
+
+.chartBar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background-color: #27272a; /* DAHA BELİRGİN ÇUBUK */
+  transition: all 0.3s ease;
+}
+
+.chartBar:hover {
+  background-color: #ffffff;
+}
+
+.chartLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* --- AKTİVİTE LİSTESİ --- */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 8px;
+}
+
+.activityItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.activityIcon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  background-color: #1a1a1a;
+  border: 1px solid #3f3f46;
+  color: #ffffff; 
+}
+
+.activityContent {
+  flex: 1;
+  min-width: 0;
+  padding-top: 4px;
+}
+
+.activityText {
+  font-size: 15px;
+  color: #d4d4d8;
+  margin: 0;
+  font-weight: 500;
+}
+
+.activityUser {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.activityTime {
+  font-size: 13px;
+  color: #a1a1aa;
+  margin: 6px 0 0 0;
+  font-weight: 500;
+}
+
+.viewAllBtn {
+  margin-top: 24px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #3f3f46;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewAllBtn:hover {
+  background-color: #27272a;
+  color: #ffffff;
+}
+
+/* --- TABLOLAR (TABLES) --- */
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tableHead th {
+  border-bottom: 1px solid #27272a;
+  color: #a1a1aa;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 16px;
+}
+
+.tableRow {
+  transition: all 0.2s ease;
+}
+.tableRow:hover {
+  background-color: #1a1a1a;
+}
+.tableRow td {
+  padding: 16px;
+  border-bottom: 1px solid #27272a;
+  vertical-align: middle;
+}
+
+.tableRow:last-child td {
+  border-bottom: none;
+}
+
+/* Tablo Hücre İçerikleri */
+.productCell {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.productImgBox {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background-color: #0a0a0a;
+  border: 1px solid #27272a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.productImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.productName {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.productRole {
+  font-size: 14px;
+  color: #d4d4d8;
+  font-weight: 500;
+}
+
+.badgePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.badgeGreen {
+  color: #10b981;
+  background-color: rgba(16, 185, 129, 0.15);
+}
+.badgeGray {
+  color: #a1a1aa;
+  background-color: rgba(161, 161, 170, 0.15);
+}
+
+.actionBtns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.actionBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: #a1a1aa;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.actionBtn:hover {
+  background-color: #27272a;
+  color: #ffffff;
+}
+.actionBtn.danger:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* --- EKRANIN ORTASINDA AÇILAN GENİŞ PANEL (MODAL) --- */
+.drawerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+.drawerContent {
+  width: 100%;
+  max-width: 1400px;
+  background-color: #0a0a0a;
+  border: 1px solid #27272a;
+  border-radius: 16px;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.96) translateY(10px);
+  animation: popIn 0.3s forwards cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+  overflow: hidden;
+}
+
+.modalGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 40px;
+}
+
+
+.drawerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  border-bottom: 1px solid #27272a;
+  background-color: #121212;
+}
+
+.drawerTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.drawerDesc {
+  font-size: 14px;
+  color: #a1a1aa;
+  margin: 4px 0 0 0;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.closeBtn:hover {
+  background-color: #27272a;
+  color: #ffffff;
+}
+
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Scrollbar Tasarımı (Karanlık Temaya Uygun İnce) */
+.drawerBody::-webkit-scrollbar {
+  width: 6px;
+}
+.drawerBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+.drawerBody::-webkit-scrollbar-thumb {
+  background-color: #27272a;
+  border-radius: 10px;
+}
+.drawerBody::-webkit-scrollbar-thumb:hover {
+  background-color: #3f3f46;
+}
+
+.drawerFooter {
+  padding: 24px 32px;
+  border-top: 1px solid #27272a;
+  background-color: #121212;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+/* --- FORM ELEMANLARI --- */
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.formSectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 0 0 8px 0;
+  border-bottom: 1px solid #27272a;
+  padding-bottom: 8px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d4d4d8;
+}
+
+.formInput, .formSelect, .formTextarea {
+  width: 100%;
+  background-color: #1a1a1a;
+  border: 1px solid #3f3f46;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 12px 16px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.formInput:focus, .formSelect:focus, .formTextarea:focus {
+  border-color: #52525b;
+  background-color: #222222;
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.formButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnPrimary {
+  background-color: #ffffff;
+  color: #000000;
+}
+.btnPrimary:hover {
+  background-color: #e4e4e7;
+}
+
+.btnSecondary {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1px solid #3f3f46;
+}
+.btnSecondary:hover {
+  background-color: #27272a;
+}
+
+.dynamicListRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.addDynamicBtn {
+  background: transparent;
+  border: 1px dashed #3f3f46;
+  color: #a1a1aa;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s;
+}
+.addDynamicBtn:hover {
+  border-color: #52525b;
+  color: #ffffff;
+  background: #1a1a1a;
+}
+
+/* --- GALERİ VE SÜRÜKLE BIRAK SİSTEMİ --- */
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.galleryItem {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #3f3f46;
+  cursor: grab;
+  transition: transform 0.2s;
+  background-color: #121212;
+}
+.galleryItem:active {
+  cursor: grabbing;
+  transform: scale(0.95);
+}
+
+.galleryImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none; /* Sürüklemede bug olmaması için */
+}
+
+.galleryRemoveBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.galleryRemoveBtn:hover {
+  background: rgba(239, 68, 68, 0.9);
+}
+
+.mainCoverBadge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  font-size: 10px;
+  text-align: center;
+  padding: 4px 0;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes popIn {
+  from { transform: scale(0.96) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}

@@ -18,5 +18,7 @@ type SiteSettings struct {
 	SocialYoutube   string    `json:"social_youtube,omitempty"`
 	SocialX         string    `json:"social_x,omitempty"`
 	SocialGithub    string    `json:"social_github,omitempty"`
+	SocialLinksJSON string    `json:"social_links_json"`
+	OfficesJSON     string    `json:"offices_json"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }

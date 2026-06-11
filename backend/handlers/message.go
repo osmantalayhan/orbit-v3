@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"html"
 	"orbit-backend/config"
 	"orbit-backend/models"
 
@@ -23,6 +24,19 @@ func CreateMessage(c *fiber.Ctx) error {
 			"error": "All fields (name, email, subject, message) are required",
 		})
 	}
+
+	// Veritabanı sınırları için karakter uzunluğu kontrolü
+	if len(msg.Name) > 100 || len(msg.Email) > 150 || len(msg.Subject) > 100 || len(msg.Message) > 2000 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Field length exceeds maximum allowed characters",
+		})
+	}
+
+	// HTML etiketlerini temizle (XSS Koruması)
+	msg.Name = html.EscapeString(msg.Name)
+	msg.Email = html.EscapeString(msg.Email)
+	msg.Subject = html.EscapeString(msg.Subject)
+	msg.Message = html.EscapeString(msg.Message)
 
 	query := `
 		INSERT INTO contact_messages (name, email, subject, message, status, created_at)
@@ -49,13 +63,19 @@ func CreateMessage(c *fiber.Ctx) error {
 
 // GetMessages admin paneli için tüm iletişim mesajlarını yeniden eskiye doğru listeler
 func GetMessages(c *fiber.Ctx) error {
+	// İsteğe bağlı sayfalama parametreleri (Varsayılan 1000 limit, OOM koruması)
+	limit := c.QueryInt("limit", 1000)
+	page := c.QueryInt("page", 1)
+	offset := (page - 1) * limit
+
 	query := `
 		SELECT id, name, email, subject, message, status, created_at
 		FROM contact_messages
 		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
 	`
 
-	rows, err := config.DB.Query(context.Background(), query)
+	rows, err := config.DB.Query(context.Background(), query, limit, offset)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch messages",
@@ -111,5 +131,50 @@ func UpdateMessageStatus(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"message": "Message status updated successfully",
+	})
+}
+
+// DeleteMessage silme işlemi
+func DeleteMessage(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Message ID is required",
+		})
+	}
+
+	query := `DELETE FROM contact_messages WHERE id = $1`
+	res, err := config.DB.Exec(context.Background(), query, id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to delete message",
+		})
+	}
+
+	if res.RowsAffected() == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Message not found",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"message": "Message deleted successfully",
+	})
+}
+
+// GetUnreadMessagesCount okunanmamış mesaj sayısını döndürür
+func GetUnreadMessagesCount(c *fiber.Ctx) error {
+	query := `SELECT COUNT(*) FROM contact_messages WHERE status = 'unread'`
+	
+	var count int
+	err := config.DB.QueryRow(context.Background(), query).Scan(&count)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get unread messages count",
+		})
+	}
+
+	return c.JSON(fiber.Map{
+		"unread_count": count,
 	})
 }

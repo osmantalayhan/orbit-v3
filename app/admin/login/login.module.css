@@ -1,0 +1,154 @@
+/* === LOGIN PANELI - HAM CSS (CSS MODULES) === */
+
+.loginContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #0a0a0a; /* Sitenin ana mat koyu grisi */
+  color: #ffffff;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hafif arka plan parlaması (Performans dostu CSS gradient) */
+.glowBackground {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, rgba(10,10,10,0) 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.loginBox {
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  border-radius: 16px;
+  background-color: #121212; /* Kart arka planı */
+  border: 1px solid #27272a;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 2;
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.headerArea {
+  text-align: center;
+  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #a1a1aa;
+  font-weight: 500;
+  margin: 0;
+}
+
+.errorBox {
+  margin-bottom: 24px;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a1a1aa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background-color: #1a1a1a;
+  border: 1px solid #3f3f46;
+  color: #ffffff;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.inputField::placeholder {
+  color: #52525b;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #71717a;
+  background-color: #27272a;
+}
+
+.submitBtn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 15px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background-color: #e4e4e7;
+}
+
+.submitBtn:disabled {
+  background-color: #52525b;
+  color: #a1a1aa;
+  cursor: not-allowed;
+}

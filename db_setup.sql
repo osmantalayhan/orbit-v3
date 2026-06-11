@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
     social_youtube VARCHAR(255),
     social_x VARCHAR(255),
     social_github VARCHAR(255),
+    social_links_json JSONB DEFAULT '[]'::jsonb,
     updated_at TIMESTAMP DEFAULT NOW(),
     CONSTRAINT check_single_row CHECK (id = 1)
 );
@@ -44,6 +45,10 @@ CREATE TABLE IF NOT EXISTS products (
     images TEXT[] NOT NULL,
     specs JSONB NOT NULL,
     channels JSONB NOT NULL,
+    pinout_images TEXT[],
+    downloads JSONB,
+    is_teknofest_active BOOLEAN DEFAULT false,
+    teknofest_discount VARCHAR(50),
     badge VARCHAR(50),
     sort_order INT DEFAULT 0,
     active BOOLEAN DEFAULT true,
@@ -111,7 +116,7 @@ INSERT INTO site_settings (
     id, site_title, site_description, site_keywords, 
     contact_email, contact_phone, contact_address, 
     map_latitude, map_longitude, 
-    social_linkedin, social_youtube, social_x, social_github
+    social_linkedin, social_youtube, social_x, social_github, social_instagram, social_nsosyal
 ) VALUES (
     1,
     'Orbit Teknoloji — Yerli İHA Elektroniği',
@@ -124,5 +129,7 @@ INSERT INTO site_settings (
     'https://linkedin.com/company/orbitteknoloji',
     'https://youtube.com/c/orbitteknoloji',
     'https://x.com/orbitteknoloji',
-    'https://github.com/orbitteknoloji'
+    'https://github.com/orbitteknoloji',
+    'https://instagram.com/orbitteknoloji',
+    'https://nsosyal.com/orbitteknoloji'
 ) ON CONFLICT (id) DO NOTHING;

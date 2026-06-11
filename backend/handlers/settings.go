@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"orbit-backend/config"
 	"orbit-backend/models"
 
@@ -28,7 +29,7 @@ func GetSettings(c *fiber.Ctx) error {
 	query := `
 		SELECT id, site_title, site_description, site_keywords, logo_url, favicon_url, 
 		       contact_email, contact_phone, contact_address, map_latitude, map_longitude, 
-		       social_linkedin, social_youtube, social_x, social_github, updated_at
+		       social_linkedin, social_youtube, social_x, social_github, COALESCE(social_links_json::text, '[]'), COALESCE(offices_json::text, ''), updated_at
 		FROM site_settings 
 		WHERE id = 1
 	`
@@ -36,7 +37,7 @@ func GetSettings(c *fiber.Ctx) error {
 	err := config.DB.QueryRow(context.Background(), query).Scan(
 		&s.ID, &s.SiteTitle, &s.SiteDescription, &s.SiteKeywords, &s.LogoURL, &s.FaviconURL,
 		&s.ContactEmail, &s.ContactPhone, &s.ContactAddress, &s.MapLatitude, &s.MapLongitude,
-		&s.SocialLinkedin, &s.SocialYoutube, &s.SocialX, &s.SocialGithub, &s.UpdatedAt,
+		&s.SocialLinkedin, &s.SocialYoutube, &s.SocialX, &s.SocialGithub, &s.SocialLinksJSON, &s.OfficesJSON, &s.UpdatedAt,
 	)
 
 	if err != nil {
@@ -45,22 +46,23 @@ func GetSettings(c *fiber.Ctx) error {
 		})
 	}
 
-	// İletişim sayfasındaki "2 Adet Harita" için ofis bilgilerini dinamik ekliyoruz
-	offices := []OfficeLocation{
-		{
-			Name:      "Orbit İstanbul, Ofis",
-			City:      "İstanbul",
-			Address:   "Akşemsettin Mah. Akdeniz Cad. No:30 Kat:3 Fatih",
-			Latitude:  41.019087,
-			Longitude: 28.946238,
-		},
-		{
-			Name:      "Orbit Ankara, Merkez",
-			City:      "Ankara",
-			Address:   "Anadolu Blv Corner 2 Plaza No:151/6 Yenimahalle",
-			Latitude:  40.00089,
-			Longitude: 32.77203,
-		},
+	var offices []OfficeLocation
+	if s.OfficesJSON != "" && s.OfficesJSON != "null" {
+		json.Unmarshal([]byte(s.OfficesJSON), &offices)
+	}
+
+	// Sadece veritabanında henüz hiç ofis kaydedilmemişse (ilk migration anı) fallback kullan
+	// Kullanıcı bilerek tüm ofisleri silip "[]" kaydettiyse, zorla ofis ekleme.
+	if s.OfficesJSON == "" || s.OfficesJSON == "null" {
+		offices = []OfficeLocation{
+			{
+				Name:      "Merkez Ofis",
+				City:      "Türkiye",
+				Address:   s.ContactAddress,
+				Latitude:  s.MapLatitude,
+				Longitude: s.MapLongitude,
+			},
+		}
 	}
 
 	response := ExtendedSettings{
@@ -91,14 +93,14 @@ func UpdateSettings(c *fiber.Ctx) error {
 		UPDATE site_settings
 		SET site_title = $1, site_description = $2, site_keywords = $3, logo_url = $4, favicon_url = $5,
 		    contact_email = $6, contact_phone = $7, contact_address = $8, map_latitude = $9, map_longitude = $10,
-		    social_linkedin = $11, social_youtube = $12, social_x = $13, social_github = $14, updated_at = NOW()
+		    social_linkedin = $11, social_youtube = $12, social_x = $13, social_github = $14, social_links_json = $15::jsonb, offices_json = $16::jsonb, updated_at = NOW()
 		WHERE id = 1
 	`
 
 	_, err := config.DB.Exec(context.Background(), query,
 		s.SiteTitle, s.SiteDescription, s.SiteKeywords, s.LogoURL, s.FaviconURL,
 		s.ContactEmail, s.ContactPhone, s.ContactAddress, s.MapLatitude, s.MapLongitude,
-		s.SocialLinkedin, s.SocialYoutube, s.SocialX, s.SocialGithub,
+		s.SocialLinkedin, s.SocialYoutube, s.SocialX, s.SocialGithub, s.SocialLinksJSON, s.OfficesJSON,
 	)
 
 	if err != nil {

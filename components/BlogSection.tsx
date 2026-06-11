@@ -3,29 +3,32 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 // Mock data removed at user request
 
-export default function BlogSection() {
-  const [blogs, setBlogs] = React.useState<any[]>([]);
+import useSWR from "swr";
 
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:8080/api/v1/blog')
-      .then(res => res.json())
-      .then(data => {
-        if (data && Array.isArray(data) && data.length > 0) {
-          const mapped = data.slice(0, 3).map((b: any) => ({
-            id: b.id,
-            title: b.title,
-            excerpt: b.lead_paragraph || b.category,
-            date: b.date_published,
-            image: b.cover_image || "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800"
-          }));
-          setBlogs(mapped);
-        }
-      })
-      .catch(err => console.error("Error loading blog section:", err));
-  }, []);
+const fetcher = (url: string) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+});
+
+export default function BlogSection() {
+  const { data: apiBlogs, error } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
+
+  const blogs = (apiBlogs && Array.isArray(apiBlogs) && apiBlogs.length > 0)
+    ? apiBlogs.slice(0, 3).map((b: any) => ({
+        id: b.id,
+        title: b.title,
+        excerpt: b.lead_paragraph || b.category,
+        date: b.date_published,
+        image: b.cover_image || "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800"
+      }))
+    : [];
 
   return (
     <section 
@@ -52,7 +55,7 @@ export default function BlogSection() {
             whileInView={{ opacity: 1, x: 0 }}
             className="mt-8 md:mt-0 flex justify-center md:justify-end"
           >
-            <a 
+            <Link 
               href="/blog" 
               className="group/all inline-flex items-center justify-center gap-2 h-10 bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-sm no-underline whitespace-nowrap"
               style={{ paddingLeft: '30px', paddingRight: '30px' }}
@@ -61,7 +64,7 @@ export default function BlogSection() {
               <svg className="w-3.5 h-3.5 transition-transform group-hover/all:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </a>
+            </Link>
           </motion.div>
         </header>
       </div>
@@ -70,21 +73,21 @@ export default function BlogSection() {
       <div className="blog-sec-grid-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {blogs.map((blog, index) => (
-            <motion.div
-              key={blog.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ 
-                duration: 0.8, 
-                delay: index * 0.1,
-                ease: [0.16, 1, 0.3, 1]
-              }}
-              className="group cursor-pointer"
-            >
-              <div 
-                className="bg-[#0d0d0d] border border-white/5 rounded-[32px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111] h-full flex flex-col"
+            <Link href={`/blog/${blog.id}`} key={blog.id} className="block no-underline">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ 
+                  duration: 0.8, 
+                  delay: index * 0.1,
+                  ease: [0.16, 1, 0.3, 1]
+                }}
+                className="group cursor-pointer block no-underline h-full"
               >
+                <div 
+                  className="bg-[#0d0d0d] border border-white/5 rounded-[32px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111] h-full flex flex-col"
+                >
                 {/* Large Blog Image */}
                 <div className="relative aspect-[16/10] overflow-hidden w-full">
                   <Image 
@@ -163,6 +166,7 @@ export default function BlogSection() {
                 </div>
               </div>
             </motion.div>
+          </Link>
           ))}
         </div>
       </div>

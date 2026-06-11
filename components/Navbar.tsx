@@ -26,6 +26,10 @@ const SEARCH_DATABASE = {
   ]
 };
 
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url).then((res) => (res.ok ? res.json() : null));
+
 export default function Navbar() {
   const [lang, setLang] = useState("TR");
   const [isOpen, setIsOpen] = useState(false);
@@ -42,43 +46,37 @@ export default function Navbar() {
     blog: SEARCH_DATABASE.blog,
     careers: SEARCH_DATABASE.careers
   });
-  const [settings, setSettings] = useState<any>(null);
+
+  const swrConfig = { revalidateOnFocus: false, dedupingInterval: 60000 };
+  const { data: settings } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, fetcher, swrConfig);
+  const { data: productsData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`, fetcher, swrConfig);
+  const { data: blogsData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog`, fetcher, swrConfig);
+  const { data: careersData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/careers`, fetcher, swrConfig);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8080/api/v1/settings")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => setSettings(data))
-      .catch((err) => console.error("Navbar settings fetch error:", err));
-  }, []);
-
-  useEffect(() => {
-    Promise.all([
-      fetch('http://127.0.0.1:8080/api/v1/products').then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('http://127.0.0.1:8080/api/v1/blog').then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch('http://127.0.0.1:8080/api/v1/careers').then(r => r.ok ? r.json() : null).catch(() => null)
-    ]).then(([productsData, blogsData, careersData]) => {
-      setSearchData(prev => ({
-        products: productsData && Array.isArray(productsData) && productsData.length > 0 ? productsData.map(p => ({
-          id: p.id,
-          name: p.name,
-          desc: p.tagline || p.description || p.role,
-          url: `/urunler/${p.id}`
-        })) : prev.products,
-        blog: blogsData && Array.isArray(blogsData) && blogsData.length > 0 ? blogsData.map(b => ({
-          id: b.id,
-          title: b.title,
-          desc: b.lead_paragraph || b.category,
-          url: `/blog/${b.id}`
-        })) : prev.blog,
-        careers: careersData && Array.isArray(careersData) && careersData.length > 0 ? careersData.map(c => ({
-          id: c.id,
-          title: c.title,
-          desc: `${c.department} (${c.location})`,
-          url: `/kariyer`
-        })) : prev.careers
-      }));
-    });
-  }, []);
+    if (!productsData && !blogsData && !careersData) return;
+    
+    setSearchData(prev => ({
+      products: productsData && Array.isArray(productsData) && productsData.length > 0 ? productsData.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        desc: p.tagline || p.description || p.role,
+        url: `/urunler/${p.id}`
+      })) : prev.products,
+      blog: blogsData && Array.isArray(blogsData) && blogsData.length > 0 ? blogsData.map((b: any) => ({
+        id: b.id,
+        title: b.title,
+        desc: b.lead_paragraph || b.category,
+        url: `/blog/${b.id}`
+      })) : prev.blog,
+      careers: careersData && Array.isArray(careersData) && careersData.length > 0 ? careersData.map((c: any) => ({
+        id: c.id,
+        title: c.title,
+        desc: `${c.department} (${c.location})`,
+        url: `/kariyer`
+      })) : prev.careers
+    }));
+  }, [productsData, blogsData, careersData]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -538,7 +536,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          <Link href="#magaza" className="navbar-cta-blue">
+          <Link href="/urunler" className="navbar-cta-blue">
             Mağaza
           </Link>
 
@@ -660,7 +658,7 @@ export default function Navbar() {
             ))}
 
             <Link
-              href="#magaza"
+              href="/urunler"
               onClick={() => setIsMobileMenuOpen(false)}
               style={{
                 width: "100%",

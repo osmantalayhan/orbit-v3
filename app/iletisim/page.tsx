@@ -24,7 +24,7 @@ export default function IletisimPage() {
   });
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8080/api/v1/settings")
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`)
       .then((res) => {
         if (!res.ok) throw new Error("Settings fetch failed");
         return res.json();
@@ -79,7 +79,7 @@ export default function IletisimPage() {
     setStatus("loading");
     
     try {
-      const response = await fetch("http://127.0.0.1:8080/api/v1/contact", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -241,6 +241,7 @@ export default function IletisimPage() {
                         value={formData.name}
                         onChange={handleChange}
                         disabled={status === "loading"}
+                        maxLength={100}
                         placeholder="Jane Smith"
                         style={{ 
                           backgroundColor: 'rgba(255,255,255,0.05)', 
@@ -264,6 +265,7 @@ export default function IletisimPage() {
                         value={formData.email}
                         onChange={handleChange}
                         disabled={status === "loading"}
+                        maxLength={150}
                         placeholder="jane@orbit.com.tr"
                         style={{ 
                           backgroundColor: 'rgba(255,255,255,0.05)', 
@@ -326,6 +328,7 @@ export default function IletisimPage() {
                       value={formData.message}
                       onChange={handleChange}
                       disabled={status === "loading"}
+                      maxLength={2000}
                       placeholder="Mesajınızı buraya yazabilirsiniz..."
                       style={{ 
                         backgroundColor: 'rgba(255,255,255,0.05)', 

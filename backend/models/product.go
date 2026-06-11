@@ -10,12 +10,14 @@ type Product struct {
 	Tagline     string                 `json:"tagline"`
 	Description string                 `json:"description"`
 	Images       []string                 `json:"images"`   // Postgres TEXT[] dizisi
-	Specs        map[string]interface{}   `json:"specs"`    // Postgres JSONB alanı
-	Channels     map[string]interface{}   `json:"channels"` // Postgres JSONB alanı
+	Specs        interface{}              `json:"specs"`    // Postgres JSONB alanı (Eski Object veya Yeni Array)
+	Channels     interface{}              `json:"channels"` // Postgres JSONB alanı (Eski Object veya Yeni Array)
 	PinoutImages []string                 `json:"pinout_images"` // Postgres TEXT[] dizisi
-	Downloads    []map[string]interface{} `json:"downloads"`     // Postgres JSONB (Array of objects)
-	Badge       string                 `json:"badge,omitempty"`
-	SortOrder   int                    `json:"sort_order"`
-	Active      bool                   `json:"active"`
-	CreatedAt   time.Time              `json:"created_at"`
+	Downloads         []map[string]interface{} `json:"downloads"`     // Postgres JSONB (Array of objects)
+	IsTeknofestActive bool                     `json:"is_teknofest_active"`
+	TeknofestDiscount string                   `json:"teknofest_discount"`
+	Badge             string                   `json:"badge,omitempty"`
+	SortOrder         int                      `json:"sort_order"`
+	Active            bool                     `json:"active"`
+	CreatedAt         time.Time                `json:"created_at"`
 }

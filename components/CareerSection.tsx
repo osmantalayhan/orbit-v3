@@ -12,23 +12,20 @@ type JobPosition = {
   linkedin_url: string;
 };
 
-export default function CareerSection() {
-  const [jobs, setJobs] = useState<JobPosition[]>([]);
+import useSWR from "swr";
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8080/api/v1/careers")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch careers");
-        return res.json();
-      })
-      .then((data) => {
-        // En güncel 3 ilanı al (API zaten DESC gönderiyor)
-        if (Array.isArray(data)) {
-          setJobs(data.slice(0, 3));
-        }
-      })
-      .catch((err) => console.error("Career fetch error:", err));
-  }, []);
+const fetcher = (url: string) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+});
+
+export default function CareerSection() {
+  const { data: apiJobs, error } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/careers`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
+
+  const jobs = (apiJobs && Array.isArray(apiJobs)) ? apiJobs.slice(0, 3) : [];
 
   return (
     <section

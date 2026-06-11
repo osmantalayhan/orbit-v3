@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 
 const STATIC_PRODUCTS = [
@@ -50,31 +51,28 @@ const STATIC_PRODUCTS = [
   },
 ];
 
-export default function ProductVitrin() {
-  const [productsList, setProductsList] = React.useState(STATIC_PRODUCTS);
+import useSWR from "swr";
 
-  React.useEffect(() => {
-    // Fetch products from the backend API
-    fetch("http://127.0.0.1:8080/api/v1/products")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch products");
-        return res.json();
-      })
-      .then((data) => {
-        if (data && data.length > 0) {
-          // Map backend response fields to the frontend structure
-          const mapped = data.map((item: any) => ({
-            id: item.id,
-            name: item.name,
-            role: item.role,
-            desc: item.tagline,
-            image: item.images && item.images.length > 0 ? item.images[0] : "/img/ucuskontrol.png",
-          }));
-          setProductsList(mapped);
-        }
-      })
-      .catch((err) => console.error("Error loading products:", err));
-  }, []);
+const fetcher = (url: string) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error("Failed to fetch");
+  return res.json();
+});
+
+export default function ProductVitrin() {
+  const { data: apiProducts, error } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
+
+  const productsList = (apiProducts && apiProducts.length > 0)
+    ? apiProducts.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        role: item.role,
+        desc: item.tagline,
+        image: item.images && item.images.length > 0 ? item.images[0] : "/img/ucuskontrol.png",
+      }))
+    : STATIC_PRODUCTS;
 
   const [emblaRef] = useEmblaCarousel({ 
     align: "start",
@@ -107,7 +105,7 @@ export default function ProductVitrin() {
             whileInView={{ opacity: 1, x: 0 }}
             className="mt-8 md:mt-0 flex justify-center md:justify-end"
           >
-            <a 
+            <Link 
               href="/urunler" 
               className="group/all inline-flex items-center justify-center gap-2 h-10 bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-sm no-underline whitespace-nowrap"
               style={{ paddingLeft: '30px', paddingRight: '30px' }}
@@ -116,7 +114,7 @@ export default function ProductVitrin() {
               <svg className="w-3.5 h-3.5 transition-transform group-hover/all:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </a>
+            </Link>
           </motion.div>
         </header>
       </div>
@@ -170,12 +168,12 @@ export default function ProductVitrin() {
 
                     {/* Action */}
                     <div className="mt-auto">
-                      <button className="w-full h-16 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/5 flex items-center justify-center gap-3 group/btn text-lg">
+                      <Link href={`/urunler/${product.id}`} className="w-full h-16 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/5 flex items-center justify-center gap-3 group/btn text-lg no-underline cursor-pointer">
                         Detayları Görüntüle
                         <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                         </svg>
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>

@@ -1,0 +1,798 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import styles from "../admin.module.css";
+import { Package, Plus, Search, Edit2, Trash2, X, Trash, UploadCloud } from "lucide-react";
+
+interface Product {
+  id: string;
+  name: string;
+  role: string;
+  category: string;
+  tagline: string;
+  description: string;
+  images: string[];
+  specs: any[];
+  channels: any[];
+  pinout_images: string[];
+  downloads: any[];
+  is_teknofest_active: boolean;
+  teknofest_discount: string;
+  badge: string | null;
+}
+
+type GalleryItem = {
+  id: string;
+  type: 'existing' | 'new';
+  url?: string;
+  file?: File;
+};
+
+export default function AdminProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterCategory, setFilterCategory] = useState("TÜMÜ");
+
+  // Drawer State
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  
+  // Form State
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    role: "",
+    category: "OTOPİLOT",
+    badge: "",
+    tagline: "",
+    description: "",
+    isTeknofestActive: false,
+    teknofestDiscount: "",
+    specs: [{ label: "", value: "" }],
+    channels: [{ name: "", url: "" }],
+    downloads: [{ title: "", type: "", size: "", desc: "" }]
+  });
+
+  // File States
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [draggedGalleryIndex, setDraggedGalleryIndex] = useState<number | null>(null);
+  
+  const [pinoutFront, setPinoutFront] = useState<File | null>(null);
+  const [pinoutBack, setPinoutBack] = useState<File | null>(null);
+  const [downloadFiles, setDownloadFiles] = useState<(File | null)[]>([null]);
+
+  // Edit States
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [existingPinoutFront, setExistingPinoutFront] = useState<string | null>(null);
+  const [existingPinoutBack, setExistingPinoutBack] = useState<string | null>(null);
+
+  // Delete Confirm State
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+
+  const getImageUrl = (url: string) => {
+    if (!url) return "";
+    return url; // Next.js 'public' klasöründeki dosyaları kendi portundan (3000) sunar. 8080 eklememize gerek yok.
+  };
+
+  const truncateFileName = (name: string, maxLen = 30) => {
+    if (!name) return "";
+    if (name.length <= maxLen) return name;
+    const parts = name.split('.');
+    const ext = parts.length > 1 ? '.' + parts.pop() : '';
+    const base = parts.join('.');
+    return base.substring(0, maxLen - 10) + '...' + base.substring(base.length - 5) + ext;
+  };
+
+  const openNewProductDrawer = () => {
+    setEditingProductId(null);
+    setNewProduct({
+      name: "", role: "", category: "OTOPİLOT", badge: "", tagline: "", description: "",
+      isTeknofestActive: false, teknofestDiscount: "",
+      specs: [{ label: "", value: "" }], channels: [{ name: "", url: "" }],
+      downloads: [{ title: "", type: "", size: "", desc: "" }]
+    });
+    setGalleryItems([]);
+    setPinoutFront(null);
+    setPinoutBack(null);
+    setExistingPinoutFront(null);
+    setExistingPinoutBack(null);
+    setDownloadFiles([null]);
+    setIsDrawerOpen(true);
+  };
+
+  const parseDynamicField = (fieldData: any, key1: string, key2: string) => {
+    if (!fieldData) return [];
+    if (Array.isArray(fieldData)) return fieldData;
+    let obj = fieldData;
+    if (typeof fieldData === 'string') {
+      try { obj = JSON.parse(fieldData); } catch (e) { return []; }
+    }
+    return Object.entries(obj).map(([k, v]) => ({ [key1]: k, [key2]: v }));
+  };
+
+  const handleEditClick = (product: Product) => {
+    setEditingProductId(product.id);
+    
+    const parsedSpecs = parseDynamicField(product.specs, "label", "value");
+    const parsedChannels = parseDynamicField(product.channels, "name", "url");
+
+    setNewProduct({
+      name: product.name || "",
+      role: product.role || "",
+      category: product.category || "OTOPİLOT",
+      badge: product.badge || "",
+      tagline: product.tagline || "",
+      description: product.description || "",
+      isTeknofestActive: product.is_teknofest_active || false,
+      teknofestDiscount: product.teknofest_discount || "",
+      specs: parsedSpecs.length > 0 ? parsedSpecs : [{ label: "", value: "" }],
+      channels: parsedChannels.length > 0 ? parsedChannels : [{ name: "", url: "" }],
+      downloads: product.downloads && product.downloads.length > 0 ? product.downloads : [{ title: "", type: "", size: "", desc: "" }]
+    });
+    setGalleryItems(product.images ? product.images.map(img => ({ id: Math.random().toString(), type: 'existing', url: img })) : []);
+    setPinoutFront(null);
+    setPinoutBack(null);
+    setExistingPinoutFront(product.pinout_images && product.pinout_images.length > 0 ? product.pinout_images[0] : null);
+    setExistingPinoutBack(product.pinout_images && product.pinout_images.length > 1 ? product.pinout_images[1] : null);
+    setDownloadFiles(new Array(product.downloads?.length || 1).fill(null));
+    setIsDrawerOpen(true);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
+      if (!res.ok) throw new Error("Ürünler yüklenirken hata oluştu.");
+      const data = await res.json();
+      setProducts(data || []);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProduct = async () => {
+    try {
+      const formData = new FormData();
+      
+      const slug = newProduct.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      formData.append("id", slug || "prod_" + Date.now());
+      formData.append("name", newProduct.name);
+      formData.append("role", newProduct.role);
+      formData.append("category", newProduct.category);
+      formData.append("badge", newProduct.badge || "");
+      formData.append("tagline", newProduct.tagline);
+      formData.append("description", newProduct.description);
+      formData.append("is_teknofest_active", newProduct.isTeknofestActive ? "true" : "false");
+      formData.append("teknofest_discount", newProduct.teknofestDiscount);
+
+      // JSON'a çevrilen tablolar
+      formData.append("specs", JSON.stringify(newProduct.specs));
+      formData.append("channels", JSON.stringify(newProduct.channels));
+      formData.append("downloads", JSON.stringify(newProduct.downloads));
+
+      // Sürükle-Bırak ile sıralanan Galeri Resimleri
+      const layout: string[] = [];
+      let newFileCount = 0;
+      galleryItems.forEach((item) => {
+        if (item.type === 'existing') {
+          layout.push(item.url!);
+        } else {
+          formData.append("gallery", item.file!);
+          layout.push("FILE:" + newFileCount);
+          newFileCount++;
+        }
+      });
+      formData.append("gallery_layout", JSON.stringify(layout));
+
+      // Pinout şemaları
+      if (pinoutFront) formData.append("pinout_front", pinoutFront);
+      else if (existingPinoutFront) formData.append("existing_pinout_front", existingPinoutFront);
+
+      if (pinoutBack) formData.append("pinout_back", pinoutBack);
+      else if (existingPinoutBack) formData.append("existing_pinout_back", existingPinoutBack);
+
+      // İndirmeler (Belgeler) Dosya Upload'ı
+      newProduct.downloads.forEach((doc, idx) => {
+        if (downloadFiles[idx]) {
+          formData.append(`download_file_${idx}`, downloadFiles[idx] as File);
+        }
+      });
+
+      const url = editingProductId ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${editingProductId}` : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`;
+      const method = editingProductId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method: method,
+        body: formData, // JSON stringify değil, doğrudan form data objesi (files upload için)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Ürün kaydedilirken bir hata oluştu.");
+      }
+
+      setIsDrawerOpen(false);
+      
+      // Formu bir sonraki ekleme işlemi için tertemiz sıfırlıyoruz
+      setNewProduct({
+        name: "",
+        role: "",
+        category: "OTOPİLOT",
+        badge: "",
+        tagline: "",
+        description: "",
+        isTeknofestActive: false,
+        teknofestDiscount: "",
+        specs: [{ label: "", value: "" }],
+        channels: [{ name: "", url: "" }],
+        downloads: [{ title: "", type: "", size: "", desc: "" }]
+      });
+      setGalleryItems([]);
+      setPinoutFront(null);
+      setPinoutBack(null);
+      setDownloadFiles([null]);
+
+      // Listeyi güncellemek için
+      fetchProducts();
+    } catch (err: any) {
+      alert("Hata: " + err.message);
+    }
+  };
+
+  const handleDeleteProduct = (id: string) => {
+    setDeletingProductId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingProductId) return;
+    
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${deletingProductId}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        setProducts(products.filter(p => p.id !== deletingProductId));
+        setDeletingProductId(null);
+      } else {
+        alert("Ürün silinirken bir hata oluştu.");
+      }
+    } catch (err) {
+      console.error("Delete Error:", err);
+      alert("Sunucuya bağlanılamadı.");
+    }
+  };
+
+  // --- Galeri & Sürükle Bırak Fonksiyonları ---
+  const handleGallerySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files).map(file => ({
+        id: Math.random().toString(),
+        type: 'new' as const,
+        file
+      }));
+      setGalleryItems((prev) => [...prev, ...newFiles]);
+    }
+  };
+
+  const handleRemoveGalleryItem = (index: number) => {
+    setGalleryItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragStartGallery = (e: React.DragEvent, index: number) => {
+    setDraggedGalleryIndex(index);
+  };
+  const handleDragOverGallery = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+  const handleDropGallery = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedGalleryIndex === null) return;
+    
+    const items = [...galleryItems];
+    const draggedItem = items[draggedGalleryIndex];
+    items.splice(draggedGalleryIndex, 1);
+    items.splice(targetIndex, 0, draggedItem);
+    
+    setGalleryItems(items);
+    setDraggedGalleryIndex(null);
+  };
+  // ---------------------------------------------
+
+  // Dinamik Alan Fonksiyonları
+  const handleAddSpec = () => setNewProduct({ ...newProduct, specs: [...newProduct.specs, { label: "", value: "" }] });
+  const handleRemoveSpec = (index: number) => {
+    const updated = [...newProduct.specs];
+    updated.splice(index, 1);
+    setNewProduct({ ...newProduct, specs: updated });
+  };
+  const handleSpecChange = (index: number, field: "label"|"value", val: string) => {
+    const updated = [...newProduct.specs];
+    updated[index][field] = val;
+    setNewProduct({ ...newProduct, specs: updated });
+  };
+
+  const handleAddChannel = () => setNewProduct({ ...newProduct, channels: [...newProduct.channels, { name: "", url: "" }] });
+  const handleRemoveChannel = (index: number) => {
+    const updated = [...newProduct.channels];
+    updated.splice(index, 1);
+    setNewProduct({ ...newProduct, channels: updated });
+  };
+  const handleChannelChange = (index: number, field: "name"|"url", val: string) => {
+    const updated = [...newProduct.channels];
+    updated[index][field] = val;
+    setNewProduct({ ...newProduct, channels: updated });
+  };
+
+  const handleAddDownload = () => {
+    setNewProduct({ ...newProduct, downloads: [...newProduct.downloads, { title: "", type: "", size: "", desc: "" }] });
+    setDownloadFiles([...downloadFiles, null]);
+  };
+  const handleRemoveDownload = (index: number) => {
+    const updated = [...newProduct.downloads];
+    updated.splice(index, 1);
+    setNewProduct({ ...newProduct, downloads: updated });
+
+    const updatedFiles = [...downloadFiles];
+    updatedFiles.splice(index, 1);
+    setDownloadFiles(updatedFiles);
+  };
+  const handleDownloadChange = (index: number, field: keyof typeof newProduct.downloads[0], val: string) => {
+    const updated = [...newProduct.downloads];
+    updated[index][field] = val;
+    setNewProduct({ ...newProduct, downloads: updated });
+  };
+  const handleDownloadFileChange = (index: number, file: File | null) => {
+    const updatedFiles = [...downloadFiles];
+    updatedFiles[index] = file;
+    setDownloadFiles(updatedFiles);
+  };
+
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          p.category.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = filterCategory === "TÜMÜ" || 
+                            p.category.toLocaleLowerCase('tr-TR') === filterCategory.toLocaleLowerCase('tr-TR');
+
+    return matchesSearch && matchesCategory;
+  });
+
+  return (
+    <div className={styles.dashboardContainer}>
+      
+      {/* Üst Alan */}
+      <div className={styles.dashboardHeader}>
+        <div>
+          <h2 className={styles.pageTitle}>Katalog Yönetimi</h2>
+          <p className={styles.pageDesc}>
+            Web sitesinde sergilenen tüm İHA ve otopilot ürünlerini yönetin.
+          </p>
+        </div>
+        <button className={styles.downloadBtn} onClick={openNewProductDrawer}>
+          <Plus size={16} />
+          Yeni Ürün Ekle
+        </button>
+      </div>
+
+      {/* Tablo Kartı */}
+      <div className={styles.panelCard} style={{ padding: 0, overflow: 'hidden' }}>
+        
+        {/* Tablo Araç Çubuğu */}
+        <div style={{ padding: '24px', borderBottom: '1px solid #27272a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div className={styles.searchBox}>
+              <Search size={14} />
+              <input
+                type="text"
+                placeholder="Ürün adı veya donanım ara..."
+                className={styles.searchInput}
+                style={{ width: '250px' }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            
+            <select 
+              className={styles.formSelect} 
+              style={{ width: '180px', padding: '10px 14px', backgroundColor: '#1a1a1a', border: '1px solid #3f3f46', color: '#d4d4d8', borderRadius: '8px', fontSize: '13px', outline: 'none' }}
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              <option value="TÜMÜ">Tüm Kategoriler</option>
+              <option value="OTOPİLOT">Otopilot</option>
+              <option value="GÜÇ">Güç</option>
+              <option value="HABERLEŞME">Haberleşme</option>
+              <option value="NAVİGASYON">Navigasyon</option>
+              <option value="GÖVDE">Gövde (Frame)</option>
+            </select>
+          </div>
+
+          <div style={{ fontSize: '13px', color: '#a1a1aa', fontWeight: 600 }}>
+            Toplam: {filteredProducts.length} Ürün
+          </div>
+        </div>
+
+        {/* Yükleniyor / Hata Durumları */}
+        {loading && <div style={{ padding: '40px', textAlign: 'center', color: '#a1a1aa' }}>Ürünler yükleniyor...</div>}
+        {error && <div style={{ padding: '40px', textAlign: 'center', color: '#ef4444' }}>{error}</div>}
+
+        {/* Veri Tablosu */}
+        {!loading && !error && (
+          <div className={styles.tableContainer}>
+            <table className={styles.dataTable}>
+              <thead className={styles.tableHead}>
+                <tr>
+                  <th style={{ paddingLeft: '24px' }}>Ürün</th>
+                  <th>Donanım Tipi</th>
+                  <th>Kategori</th>
+                  <th>Etiket</th>
+                  <th style={{ textAlign: 'right', paddingRight: '24px' }}>İşlemler</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product) => (
+                    <tr key={product.id} className={styles.tableRow}>
+                      <td style={{ paddingLeft: '24px' }}>
+                        <div className={styles.productCell}>
+                          <div className={styles.productImgBox}>
+                            <img
+                              src={getImageUrl(product.images?.[0] || "/img/flight-control.png")}
+                              alt={product.name}
+                              className={styles.productImg}
+                            />
+                          </div>
+                          <span className={styles.productName}>{product.name}</span>
+                        </div>
+                      </td>
+                      <td><span className={styles.productRole}>{product.role}</span></td>
+                      <td>
+                        <span className={styles.badgePill} style={{ backgroundColor: '#1a1a1a', border: '1px solid #3f3f46', color: '#d4d4d8' }}>
+                          {product.category}
+                        </span>
+                      </td>
+                      <td>
+                        {product.badge ? (
+                          <span className={`${styles.badgePill} ${product.badge.toLowerCase() === 'yeni' ? styles.badgeGreen : styles.badgeGray}`}>
+                            {product.badge}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#52525b', fontSize: '13px' }}>-</span>
+                        )}
+                      </td>
+                      <td style={{ paddingRight: '24px' }}>
+                        <div className={styles.actionBtns}>
+                          <button className={styles.actionBtn} title="Düzenle" onClick={() => handleEditClick(product)}><Edit2 size={15} /></button>
+                          <button className={`${styles.actionBtn} ${styles.danger}`} title="Sil" onClick={() => handleDeleteProduct(product.id)}><Trash2 size={15} /></button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '60px', textAlign: 'center', color: '#a1a1aa' }}>Kritere uygun ürün bulunamadı.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* --- YENİ ÜRÜN MODAL (GENİŞ POPUP) --- */}
+      {isDrawerOpen && (
+        <div className={styles.drawerOverlay} onClick={() => setIsDrawerOpen(false)}>
+          <div className={styles.drawerContent} onClick={(e) => e.stopPropagation()}>
+            
+            {/* Header */}
+            <div className={styles.drawerHeader}>
+              <div>
+                <h3 className={styles.drawerTitle}>{editingProductId ? `Ürünü Düzenle: ${newProduct.name}` : "Yeni Ürün Ekle"}</h3>
+                <p className={styles.drawerDesc}>{editingProductId ? "Mevcut ürünün bilgilerini güncelleyin." : "Kataloga yeni bir donanım veya sistem ekleyin."}</p>
+              </div>
+              <button className={styles.closeBtn} onClick={() => setIsDrawerOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Body / Form (3 Sütunlu Grid Yapısı) */}
+            <div className={styles.drawerBody} data-lenis-prevent>
+              <div className={styles.modalGrid}>
+                
+                {/* --- 1. SÜTUN: Temel Bilgiler & Pazarlama --- */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                  <div className={styles.formSection}>
+                    <h4 className={styles.formSectionTitle}>Kimlik Bilgileri</h4>
+                    <div className={styles.formGrid}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Ürün Adı</label>
+                        <input type="text" className={styles.formInput} placeholder="Örn: Orbit F435" 
+                               value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Donanım Tipi (Role)</label>
+                        <input type="text" className={styles.formInput} placeholder="Örn: Uçuş Kontrol..." 
+                               value={newProduct.role} onChange={e => setNewProduct({...newProduct, role: e.target.value})} />
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Kategori</label>
+                        <select className={styles.formSelect} value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})}>
+                          <option value="OTOPİLOT">OTOPİLOT</option>
+                          <option value="GÜÇ">GÜÇ (ESC vb.)</option>
+                          <option value="HABERLEŞME">HABERLEŞME</option>
+                          <option value="NAVİGASYON">NAVİGASYON</option>
+                          <option value="GÖVDE">GÖVDE (Frame)</option>
+                        </select>
+                      </div>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Etiket</label>
+                        <select className={styles.formSelect} value={newProduct.badge} onChange={e => setNewProduct({...newProduct, badge: e.target.value})}>
+                          <option value="">(Boş)</option>
+                          <option value="YENİ">YENİ</option>
+                          <option value="POPÜLER">POPÜLER</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.formSection}>
+                    <h4 className={styles.formSectionTitle}>Vitrin & Galeri</h4>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Kısa Slogan (Tagline)</label>
+                      <input type="text" className={styles.formInput} placeholder="Kısa ve çarpıcı açıklama..." 
+                             value={newProduct.tagline} onChange={e => setNewProduct({...newProduct, tagline: e.target.value})} />
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Uzun Ürün Açıklaması</label>
+                      <textarea className={styles.formTextarea} placeholder="Detaylı açıklama..." 
+                                value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} />
+                    </div>
+                    
+                    {/* Galeri ve Sürükle Bırak Alanı */}
+                    <div className={styles.formGroup} style={{ marginTop: '8px' }}>
+                      <label className={styles.formLabel}>Ürün Görselleri (Çoklu Seçim)</label>
+                      <label style={{
+                        display: 'flex', alignItems: 'center', gap: '12px', padding: '16px',
+                        border: '1px dashed #3f3f46', borderRadius: '8px', cursor: 'pointer',
+                        backgroundColor: '#1a1a1a', transition: 'all 0.2s', color: '#a1a1aa',
+                        marginBottom: '16px'
+                      }} onMouseOver={e => e.currentTarget.style.borderColor = '#52525b'} onMouseOut={e => e.currentTarget.style.borderColor = '#3f3f46'}>
+                        <UploadCloud size={20} />
+                        <span style={{ fontSize: '13px', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          Bilgisayardan bir veya birden fazla görsel seçin...
+                        </span>
+                        <input type="file" accept="image/*" multiple hidden onChange={handleGallerySelect} />
+                      </label>
+
+                      {galleryItems.length > 0 && (
+                        <div className={styles.galleryGrid}>
+                          {galleryItems.map((item, index) => (
+                            <div 
+                              key={item.id} 
+                              draggable 
+                              onDragStart={(e) => handleDragStartGallery(e, index)}
+                              onDragOver={handleDragOverGallery}
+                              onDrop={(e) => handleDropGallery(e, index)}
+                              className={styles.galleryItem}
+                              title="Ana kapak yapmak için en başa sürükleyin"
+                            >
+                              <img src={item.type === 'existing' ? getImageUrl(item.url!) : URL.createObjectURL(item.file!)} className={styles.galleryImg} alt={`Galeri ${index}`} />
+                              <button className={styles.galleryRemoveBtn} onClick={(e) => { e.preventDefault(); handleRemoveGalleryItem(index); }}>
+                                <X size={12} />
+                              </button>
+                              {index === 0 && <div className={styles.mainCoverBadge}>ANA KAPAK</div>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+
+                  {/* Teknofest Kampanyası */}
+                  <div className={styles.formSection} style={{ backgroundColor: '#1a1a1a', padding: '16px', borderRadius: '8px', border: '1px solid #3f3f46' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <input type="checkbox" id="teknofestToggle" 
+                             checked={newProduct.isTeknofestActive} 
+                             onChange={e => setNewProduct({...newProduct, isTeknofestActive: e.target.checked})} 
+                             style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#3b82f6' }} />
+                      <label htmlFor="teknofestToggle" className={styles.formLabel} style={{ cursor: 'pointer', margin: 0, fontWeight: 700, color: '#ffffff' }}>
+                        Bu Üründe Teknofest Kampanyasını Aktif Et
+                      </label>
+                    </div>
+                    
+                    {newProduct.isTeknofestActive && (
+                      <div className={styles.formGroup} style={{ marginTop: '16px' }}>
+                        <label className={styles.formLabel}>İndirim Oranı (%)</label>
+                        <input type="number" className={styles.formInput} placeholder="Örn: 15" 
+                               value={newProduct.teknofestDiscount} onChange={e => setNewProduct({...newProduct, teknofestDiscount: e.target.value})} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* --- 2. SÜTUN: Satış Kanalları & Teknik Parametreler --- */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                  <div className={styles.formSection}>
+                    <h4 className={styles.formSectionTitle}>Satış Kanalları</h4>
+                    {newProduct.channels.map((channel, index) => (
+                      <div key={index} className={styles.dynamicListRow}>
+                        <input type="text" className={styles.formInput} placeholder="Örn: Hepsiburada" 
+                               value={channel.name} onChange={e => handleChannelChange(index, "name", e.target.value)} />
+                        <input type="text" className={styles.formInput} placeholder="Satış linki (https://...)" 
+                               value={channel.url} onChange={e => handleChannelChange(index, "url", e.target.value)} />
+                        <button className={styles.actionBtn} style={{ marginTop: '4px' }} onClick={() => handleRemoveChannel(index)}>
+                          <Trash size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    <button className={styles.addDynamicBtn} onClick={handleAddChannel}>+ Yeni Satış Kanalı Ekle</button>
+                  </div>
+
+                  <div className={styles.formSection}>
+                    <h4 className={styles.formSectionTitle}>Teknik Parametreler</h4>
+                    {newProduct.specs.map((spec, index) => (
+                      <div key={index} className={styles.dynamicListRow}>
+                        <input type="text" className={styles.formInput} placeholder="Örn: İşlemci" 
+                               value={spec.label} onChange={e => handleSpecChange(index, "label", e.target.value)} />
+                        <input type="text" className={styles.formInput} placeholder="Örn: STM32F405" 
+                               value={spec.value} onChange={e => handleSpecChange(index, "value", e.target.value)} />
+                        <button className={styles.actionBtn} style={{ marginTop: '4px' }} onClick={() => handleRemoveSpec(index)}>
+                          <Trash size={16} />
+                        </button>
+                      </div>
+                    ))}
+                    <button className={styles.addDynamicBtn} onClick={handleAddSpec}>+ Yeni Parametre Ekle</button>
+                  </div>
+                </div>
+
+                {/* --- 3. SÜTUN: Belgeler & Şemalar --- */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+                  <div className={styles.formSection}>
+                    <h4 className={styles.formSectionTitle}>Bağlantı Şeması (Pinout)</h4>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Ön Yüz Planı</label>
+                      <label style={{
+                        display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                        border: '1px dashed #3f3f46', borderRadius: '8px', cursor: 'pointer',
+                        backgroundColor: '#1a1a1a', color: '#a1a1aa', minWidth: 0
+                      }}>
+                        <UploadCloud size={16} style={{ flexShrink: 0 }} />
+                        <span style={{ fontSize: '13px', flex: 1, whiteSpace: 'nowrap' }} title={existingPinoutFront || ""}>
+                          {pinoutFront ? truncateFileName(pinoutFront.name) : (existingPinoutFront ? "Mevcut: " + truncateFileName(existingPinoutFront.split('/').pop() || "") : "Ön yüz şeması yükle...")}
+                        </span>
+                        <input type="file" accept="image/*" hidden onChange={e => setPinoutFront(e.target.files?.[0] || null)} />
+                      </label>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Arka Yüz (Pinout)</label>
+                      <label style={{
+                        display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                        border: '1px dashed #3f3f46', borderRadius: '8px', cursor: 'pointer',
+                        backgroundColor: '#1a1a1a', color: '#a1a1aa', minWidth: 0
+                      }}>
+                        <UploadCloud size={16} style={{ flexShrink: 0 }} />
+                        <span style={{ fontSize: '13px', flex: 1, whiteSpace: 'nowrap' }} title={existingPinoutBack || ""}>
+                          {pinoutBack ? truncateFileName(pinoutBack.name) : (existingPinoutBack ? "Mevcut: " + truncateFileName(existingPinoutBack.split('/').pop() || "") : "Arka pinout şeması yükle...")}
+                        </span>
+                        <input type="file" accept="image/*" hidden onChange={e => setPinoutBack(e.target.files?.[0] || null)} />
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className={styles.formSection}>
+                    <h4 className={styles.formSectionTitle}>Belgeler & İndirmeler</h4>
+                    {newProduct.downloads.map((doc, index) => (
+                      <div key={index} style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '16px', backgroundColor: '#1a1a1a', border: '1px solid #27272a', borderRadius: '8px', marginBottom: '8px' }}>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: '#d4d4d8' }}>Belge #{index + 1}</span>
+                          <button className={styles.actionBtn} style={{ width: '28px', height: '28px' }} onClick={() => handleRemoveDownload(index)}>
+                            <Trash size={14} />
+                          </button>
+                        </div>
+
+                        <div className={styles.formGrid}>
+                          <input type="text" className={styles.formInput} placeholder="Belge Adı" 
+                                 value={doc.title} onChange={e => handleDownloadChange(index, "title", e.target.value)} />
+                          <input type="text" className={styles.formInput} placeholder="Format (PDF vb.)" 
+                                 value={doc.type} onChange={e => handleDownloadChange(index, "type", e.target.value)} />
+                        </div>
+                        
+                        <input type="text" className={styles.formInput} placeholder="Kısa Açıklama (Opsiyonel)" 
+                               value={doc.desc} onChange={e => handleDownloadChange(index, "desc", e.target.value)} />
+
+                        <label style={{
+                          display: 'flex', alignItems: 'center', gap: '12px', padding: '12px',
+                          border: '1px dashed #3f3f46', borderRadius: '6px', cursor: 'pointer',
+                          backgroundColor: '#121212', color: '#a1a1aa', minWidth: 0
+                        }}>
+                          <UploadCloud size={16} style={{ flexShrink: 0 }} />
+                          <span style={{ fontSize: '12px', flex: 1, whiteSpace: 'nowrap' }} title={doc.file_name || ""}>
+                            {downloadFiles[index] ? truncateFileName(downloadFiles[index]?.name || "") : (doc.file_name ? "Mevcut: " + truncateFileName(doc.file_name) : "Bilgisayardan seç...")}
+                          </span>
+                          <input type="file" hidden onChange={e => handleDownloadFileChange(index, e.target.files?.[0] || null)} />
+                        </label>
+
+                      </div>
+                    ))}
+                    <button className={styles.addDynamicBtn} onClick={handleAddDownload}>+ Yeni Belge Ekle</button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Footer / Kaydet Butonu */}
+            <div className={styles.drawerFooter}>
+              <button className={`${styles.formButton} ${styles.btnSecondary}`} onClick={() => setIsDrawerOpen(false)}>
+                İptal Et
+              </button>
+              <button className={`${styles.formButton} ${styles.btnPrimary}`} onClick={handleSaveProduct}>
+                <Package size={16} />
+                Ürünü Kaydet
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Özel Silme Onayı Modal (Custom Confirm) */}
+      {deletingProductId && (
+        <div className={styles.drawerOverlay} onClick={() => setDeletingProductId(null)} style={{ zIndex: 999 }}>
+          <div 
+            style={{
+              backgroundColor: '#121212',
+              border: '1px solid #27272a',
+              borderRadius: '16px',
+              padding: '32px',
+              width: '400px',
+              maxWidth: '90%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+              animation: 'popIn 0.3s forwards cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Trash2 size={20} color="#ef4444" />
+              Ürünü Sil
+            </h3>
+            <p style={{ fontSize: '14px', color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
+              Bu ürünü kalıcı olarak silmek istediğinize emin misiniz? Bu işlem geri alınamaz ve tüm ilişkili dosyalar etkilenebilir.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+              <button 
+                onClick={() => setDeletingProductId(null)}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #27272a', backgroundColor: 'transparent', color: '#a1a1aa', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                İptal Et
+              </button>
+              <button 
+                onClick={confirmDelete}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#ef4444', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+              >
+                Evet, Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, notFound } from "next/navigation";
 import { motion } from "framer-motion";
 
 // Mock data removed at user request
@@ -14,20 +14,37 @@ export default function BlogDetailPage() {
   const [currentBlog, setCurrentBlog] = React.useState<any>(null);
 
   React.useEffect(() => {
-    fetch(`http://127.0.0.1:8080/api/v1/blog/${id}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog/${id}`)
       .then(res => {
-        if (!res.ok) throw new Error("Blog not found");
+        if (!res.ok) {
+          return { notFound: true };
+        }
         return res.json();
       })
       .then(data => {
+        if (data.notFound) {
+          setCurrentBlog({ notFound: true });
+          return;
+        }
+
         if (data) {
-          let bodyBlocks = [];
+          let htmlContent = "";
           if (data.body_content) {
-            if (Array.isArray(data.body_content)) {
-              bodyBlocks = data.body_content;
-            } else if (data.body_content.blocks) {
-              bodyBlocks = data.body_content.blocks;
+            if (typeof data.body_content === 'string') {
+              htmlContent = data.body_content;
+            } else if (Array.isArray(data.body_content)) {
+              // Geriye dönük uyumluluk: eski blokları HTML'e çevir
+              htmlContent = data.body_content.map((b: any) => {
+                if (b.type === 'subtitle') return `<h2 style="font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -0.025em; margin-top: 32px; margin-bottom: 16px">${b.content}</h2>`;
+                if (b.type === 'quote') return `<blockquote style="font-size: 20px; font-style: italic; color: rgba(255,255,255,0.8); border-left: 3px solid #3f3f46; padding-left: 24px; margin: 32px 0">${b.content}</blockquote>`;
+                return `<p style="font-size: 18px; color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 24px">${b.content}</p>`;
+              }).join("");
             }
+          }
+
+          if (data.active === false) {
+            setCurrentBlog({ isDraft: true });
+            return;
           }
 
           setCurrentBlog({
@@ -42,11 +59,14 @@ export default function BlogDetailPage() {
               role: data.author_role,
               avatar: data.author_avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
             },
-            bodyParagraphs: bodyBlocks
+            bodyHTML: htmlContent
           });
         }
       })
-      .catch(err => console.error("Error loading blog details:", err));
+      .catch(err => {
+        console.error("Error loading blog details:", err);
+        setCurrentBlog({ notFound: true });
+      });
   }, [id]);
 
   if (!currentBlog) {
@@ -55,6 +75,26 @@ export default function BlogDetailPage() {
         <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px' }}>Makale yükleniyor...</div>
       </main>
     );
+  }
+
+  if (currentBlog.isDraft) {
+    return (
+      <main style={{ minHeight: '100vh', backgroundColor: '#000', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: '24px' }}>
+        <div style={{ padding: '24px', backgroundColor: '#1a1a1a', border: '1px solid #3f3f46', borderRadius: '16px', textAlign: 'center', maxWidth: '400px' }}>
+          <h2 style={{ color: '#fff', fontSize: '24px', marginBottom: '12px', fontWeight: 'bold' }}>Erişim Yok</h2>
+          <p style={{ color: '#a1a1aa', fontSize: '15px', lineHeight: '1.6', marginBottom: '24px' }}>
+            Bu makale henüz taslak aşamasındadır veya yazar tarafından geçici olarak yayından kaldırılmıştır.
+          </p>
+          <Link href="/blog" style={{ padding: '10px 20px', backgroundColor: '#3b82f6', color: '#fff', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold', fontSize: '14px', display: 'inline-block' }}>
+            Bloglara Dön
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (currentBlog.notFound) {
+    notFound();
   }
 
   return (
@@ -106,6 +146,55 @@ export default function BlogDetailPage() {
           .blog-detail-table-card td {
             font-size: 13px !important;
             padding: 10px 0 !important;
+          }
+          .blog-detail-html-content p {
+            font-size: 18px !important;
+            line-height: 1.7 !important;
+            margin-bottom: 24px !important;
+            color: rgba(255,255,255,0.6) !important;
+          }
+          .blog-detail-html-content h2 {
+            font-size: 28px !important;
+            margin-top: 32px !important;
+            margin-bottom: 16px !important;
+            color: #fff !important;
+            font-weight: 700 !important;
+          }
+          .blog-detail-html-content h3 {
+            font-size: 24px !important;
+            margin-top: 24px !important;
+            margin-bottom: 12px !important;
+            color: #fff !important;
+            font-weight: 600 !important;
+          }
+          .blog-detail-html-content blockquote {
+            font-size: 20px !important;
+            font-style: italic !important;
+            border-left: 3px solid #3f3f46 !important;
+            padding-left: 24px !important;
+            margin: 32px 0 !important;
+            color: rgba(255,255,255,0.8) !important;
+          }
+          .blog-detail-html-content ul {
+            list-style-type: disc !important;
+            padding-left: 24px !important;
+            margin-bottom: 24px !important;
+            color: rgba(255,255,255,0.6) !important;
+          }
+          .blog-detail-html-content ol {
+            list-style-type: decimal !important;
+            padding-left: 24px !important;
+            margin-bottom: 24px !important;
+            color: rgba(255,255,255,0.6) !important;
+          }
+          .blog-detail-html-content li {
+            margin-bottom: 8px !important;
+          }
+          @media (max-width: 768px) {
+            .blog-detail-html-content p { font-size: 16px !important; }
+            .blog-detail-html-content h2 { font-size: 24px !important; }
+            .blog-detail-html-content h3 { font-size: 20px !important; }
+            .blog-detail-html-content blockquote { font-size: 18px !important; padding-left: 16px !important; }
           }
         }
       `}</style>
@@ -239,83 +328,32 @@ export default function BlogDetailPage() {
             {currentBlog.leadParagraph}
           </p>
 
-          {/* Blok Paragraflar */}
-          {currentBlog.bodyParagraphs.map((block, idx) => {
-            if (block.type === "subtitle") {
-              return (
-                <h2 key={idx} className="blog-detail-sub" style={{
-                  fontSize: '28px',
-                  fontWeight: '700',
-                  color: '#fff',
-                  letterSpacing: '-0.025em',
-                  marginTop: '32px',
-                  marginBottom: '8px'
-                }}>
-                  {block.content}
-                </h2>
-              );
-            }
+          {/* Zengin Metin (Rich Text) İçeriği */}
+          <style>{`
+            .blog-detail-html-content { color: rgba(255,255,255,0.6); font-size: 18px; line-height: 1.7; }
+            .blog-detail-html-content p:first-of-type { font-size: 20px; line-height: 1.6; color: rgba(255,255,255,0.9); margin-bottom: 32px; font-weight: 400; }
+            .blog-detail-html-content p { font-size: 18px; color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 24px; }
+            .blog-detail-html-content h2 { font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -0.025em; margin-top: 32px; margin-bottom: 16px; }
+            .blog-detail-html-content h3 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.025em; margin-top: 24px; margin-bottom: 16px; }
+            .blog-detail-html-content p { font-size: 18px; color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 24px; }
+            .blog-detail-html-content blockquote { font-size: 20px; font-style: italic; color: rgba(255,255,255,0.8); border-left: 3px solid #3f3f46; padding-left: 24px; margin: 32px 0; }
+            .blog-detail-html-content ul { list-style-type: disc; padding-left: 24px; margin-bottom: 24px; font-size: 18px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+            .blog-detail-html-content ol { list-style-type: decimal; padding-left: 24px; margin-bottom: 24px; font-size: 18px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+            .blog-detail-html-content a { color: #60a5fa; text-decoration: underline; text-underline-offset: 4px; }
+            
+            .blog-detail-html-content table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; margin: 40px 0 !important; background-color: rgba(255, 255, 255, 0.02) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 16px !important; overflow: hidden !important; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5) !important; }
+            .blog-detail-html-content td { border: none !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; border-right: 1px solid rgba(255,255,255,0.05) !important; padding: 20px 24px !important; font-size: 16px !important; color: rgba(255,255,255,0.8) !important; line-height: 1.6 !important; transition: background-color 0.2s ease !important; }
+            .blog-detail-html-content tr:first-child td { background-color: rgba(255,255,255,0.05) !important; font-weight: 600 !important; color: #fff !important; font-size: 15px !important; letter-spacing: 0.03em !important; text-transform: uppercase; }
+            .blog-detail-html-content tr:last-child td { border-bottom: none !important; }
+            .blog-detail-html-content td:last-child { border-right: none !important; }
+            .blog-detail-html-content tr:not(:first-child):hover td { background-color: rgba(255, 255, 255, 0.04) !important; color: #fff !important; }
+          `}</style>
+          <div 
+            className="blog-detail-html-content" 
+            dangerouslySetInnerHTML={{ __html: currentBlog.bodyHTML }} 
+            style={{ width: '100%' }}
+          />
 
-            if (block.type === "quote") {
-              return (
-                <blockquote key={idx} className="blog-detail-quote" style={{
-                  borderLeft: '3px solid rgba(255,255,255,0.3)',
-                  paddingLeft: '24px',
-                  margin: '24px 0',
-                  fontSize: '20px',
-                  lineHeight: '1.6',
-                  color: 'rgba(255,255,255,0.85)',
-                  fontStyle: 'italic',
-                  fontWeight: '500'
-                }}>
-                  "{block.content}"
-                </blockquote>
-              );
-            }
-
-            if (block.type === "spec-table") {
-              return (
-                <div key={idx} className="blog-detail-table-card" style={{
-                  backgroundColor: 'rgba(255,255,255,0.01)',
-                  border: '1px solid rgba(255,255,255,0.04)',
-                  borderRadius: '24px',
-                  padding: '30px',
-                  marginTop: '24px',
-                  marginBottom: '24px'
-                }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <tbody>
-                      {block.content.map((row: any, rIdx: number) => (
-                        <tr key={rIdx} style={{
-                          borderBottom: rIdx === block.content.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)'
-                        }}>
-                          <td style={{ padding: '14px 0', fontSize: '14px', fontWeight: '500', color: 'rgba(255,255,255,0.4)', width: '35%' }}>
-                            {row.label}
-                          </td>
-                          <td style={{ padding: '14px 0', fontSize: '14px', fontWeight: '600', color: '#fff' }}>
-                            {row.value}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              );
-            }
-
-            // Standart Paragraf
-            return (
-              <p key={idx} style={{
-                fontSize: '17px',
-                color: 'rgba(255,255,255,0.6)',
-                lineHeight: '1.82',
-                fontWeight: '500',
-                margin: 0
-              }}>
-                {block.content}
-              </p>
-            );
-          })}
 
           {/* Geri Dön Butonu */}
           <div style={{

@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const id = params.id;
   
   try {
-    const res = await fetch(`http://127.0.0.1:8080/api/v1/products/${id}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${id}`, { next: { revalidate: 60 } });
     if (res.ok) {
       const product = await res.json();
       return {

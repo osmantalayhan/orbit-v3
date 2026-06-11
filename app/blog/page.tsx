@@ -19,11 +19,14 @@ function BlogListSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8080/api/v1/blog')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog`)
       .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data) && data.length > 0) {
-          const mapped = data.map((b: any) => ({
+          // Taslak olanları (active: false) kullanıcılardan gizle
+          const activeData = data.filter((b: any) => b.active !== false);
+          
+          const mapped = activeData.map((b: any) => ({
             id: b.id,
             title: b.title,
             excerpt: b.lead_paragraph || b.category,
@@ -435,16 +438,28 @@ export default function BlogPage() {
         }
         @media (max-width: 768px) {
           .blog-page-container {
-            padding-top: 120px !important;
+            padding-top: 100px !important;
+          }
+          .blog-hero {
+            margin-bottom: 30px !important;
+            gap: 20px !important;
           }
           .blog-section-header {
             flex-direction: column !important;
             align-items: flex-start !important;
             gap: 16px !important;
+            margin-bottom: 24px !important;
+          }
+          .blog-list-section {
+            margin-top: 20px !important;
             margin-bottom: 40px !important;
           }
           .blog-search-container {
             max-width: 100% !important;
+          }
+          .blog-hero-text h1 {
+            font-size: 40px !important;
+            line-height: 1.1 !important;
           }
         }
         @media (max-width: 480px) {
@@ -469,8 +484,8 @@ export default function BlogPage() {
           justifyContent: 'space-between',
           position: 'relative',
           width: '100%',
-          minHeight: '500px',
-          marginBottom: '120px'
+          minHeight: '460px',
+          marginBottom: '80px'
         }}>
           
           {/* Sol Taraf: Marka Sloganımız */}

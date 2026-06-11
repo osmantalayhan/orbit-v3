@@ -7,14 +7,11 @@ export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // GELİŞTİRME MODU: Test için her sayfa yenilemesinde görünmesi ayarlandı.
-    // Prod'a çıkarken aşağıdaki `const hasInteracted` ve `if` bloklarını aktif edersin.
-    
-    // const hasInteracted = localStorage.getItem("cookiesInteracted");
-    // if (!hasInteracted) {
+    const hasInteracted = localStorage.getItem("cookiesInteracted");
+    if (!hasInteracted) {
       const timer = setTimeout(() => setIsVisible(true), 1200);
       return () => clearTimeout(timer);
-    // }
+    }
   }, []);
 
   const handleClose = () => {
