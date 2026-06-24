@@ -22,13 +22,13 @@ func SetupRoutes(app *fiber.App) {
 		},
 	})
 
-	// Brute-Force (Kaba Kuvvet) Koruması: Login için 1 dakikada max 5 deneme
+	// Brute-Force (Kaba Kuvvet) Koruması: Login için 15 dakikalık pencerede max 5 deneme
 	loginLimiter := limiter.New(limiter.Config{
 		Max:        5,
-		Expiration: 1 * time.Minute,
+		Expiration: 15 * time.Minute,
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "Çok fazla başarısız giriş denemesi. Lütfen 1 dakika bekleyin.",
+				"error": "Çok fazla deneme yaptınız, 15 dakika bekleyin",
 			})
 		},
 	})
@@ -45,6 +45,9 @@ func SetupRoutes(app *fiber.App) {
 	})
 
 	api := app.Group("/api/v1")
+	
+	// API altındaki tüm endpointler için genel korumayı aktifleştir
+	api.Use(generalLimiter)
 
 	// ==========================================
 	// 📂 Dosya Yükleme (Upload) Rotaları
@@ -56,7 +59,7 @@ func SetupRoutes(app *fiber.App) {
 	// ==========================================
 	// ⚙️ Site Ayarları (Settings) Rotaları
 	// ==========================================
-	api.Get("/settings", generalLimiter, handlers.GetSettings)
+	api.Get("/settings", handlers.GetSettings)
 	api.Put("/settings", middleware.Protected(), handlers.UpdateSettings)
 
 	// ==========================================
@@ -109,13 +112,13 @@ func SetupRoutes(app *fiber.App) {
 	// 📦 Ürün Kataloğu (Catalog) Rotaları
 	// ==========================================
 	api.Post("/products", middleware.Protected(), handlers.CreateProduct)
-	api.Get("/products", generalLimiter, handlers.GetProducts)
-	api.Get("/products/:id", generalLimiter, handlers.GetProductByID)
+	api.Get("/products", handlers.GetProducts)
+	api.Get("/products/:id", handlers.GetProductByID)
 	api.Put("/products/:id", middleware.Protected(), handlers.UpdateProduct)
 	api.Delete("/products/:id", middleware.Protected(), handlers.DeleteProduct)
 	
 	// Anasayfa Slider
-	api.Get("/slider", generalLimiter, handlers.GetSliderItems)
+	api.Get("/slider", handlers.GetSliderItems)
 	adminGroup.Get("/slider", handlers.GetAllSliderItems)
 	adminGroup.Post("/slider", handlers.CreateSliderItem)
 	adminGroup.Put("/slider/:id", handlers.UpdateSliderItem)
@@ -124,12 +127,12 @@ func SetupRoutes(app *fiber.App) {
 	// ==========================================
 	// ✍️ Blog Rotaları
 	// ==========================================
-	api.Get("/blog", generalLimiter, handlers.GetBlogPosts)
-	api.Get("/blog/:id", generalLimiter, handlers.GetBlogPostByID)
+	api.Get("/blog", handlers.GetBlogPosts)
+	api.Get("/blog/:id", handlers.GetBlogPostByID)
 
 	// ==========================================
 	// 💼 Kariyer/İş İlanı (Career) Rotaları
 	// ==========================================
-	api.Get("/careers", generalLimiter, handlers.GetJobPositions)
+	api.Get("/careers", handlers.GetJobPositions)
 	api.Post("/applications", spamLimiter, handlers.CreateApplication)
 }

@@ -16,6 +16,7 @@ function BlogListSection() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,7 +37,8 @@ function BlogListSection() {
           setBlogs(mapped);
         }
       })
-      .catch(err => console.error("Error fetching blogs for list:", err));
+      .catch(err => console.error("Error fetching blogs for list:", err))
+      .finally(() => setIsLoading(false));
   }, []);
 
   // Arama filtresi uyguluyoruz
@@ -71,6 +73,16 @@ function BlogListSection() {
 
   return (
     <div ref={sectionRef} className="blog-list-section" style={{ width: '100%', marginTop: '60px', marginBottom: '40px' }}>
+      <style>{`
+        @keyframes skeleton-pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.7; }
+        }
+        .skeleton-box {
+          animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          background-color: rgba(255,255,255,0.05);
+        }
+      `}</style>
       
       {/* Başlık ve Arama Kutusu Yan Yana */}
       <div className="blog-section-header" style={{
@@ -156,7 +168,20 @@ function BlogListSection() {
 
       {/* 3 Sütunlu Grid Listesi */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {paginatedBlogs.length > 0 ? (
+        {isLoading ? (
+          [1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={`skeleton-${i}`} className="bg-[#0d0d0d] border border-white/5 rounded-[32px] overflow-hidden h-full flex flex-col" style={{ minHeight: '400px' }}>
+              <div className="skeleton-box relative aspect-[16/10] overflow-hidden w-full" />
+              <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <div className="skeleton-box" style={{ width: "30%", height: "12px", marginBottom: "16px", borderRadius: "4px" }} />
+                <div className="skeleton-box" style={{ width: "90%", height: "24px", marginBottom: "8px", borderRadius: "4px" }} />
+                <div className="skeleton-box" style={{ width: "70%", height: "24px", marginBottom: "24px", borderRadius: "4px" }} />
+                <div className="skeleton-box" style={{ width: "100%", height: "14px", marginTop: "auto", borderRadius: "4px" }} />
+                <div className="skeleton-box" style={{ width: "80%", height: "14px", marginTop: "8px", borderRadius: "4px" }} />
+              </div>
+            </div>
+          ))
+        ) : paginatedBlogs.length > 0 ? (
           paginatedBlogs.map((blog, index) => (
             <Link 
               href={`/blog/${blog.id}`} 

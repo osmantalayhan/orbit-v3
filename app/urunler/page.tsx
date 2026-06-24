@@ -72,6 +72,7 @@ export default function UrunlerPage() {
   const [productsList, setProductsList] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState("tümü");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   React.useEffect(() => {
     // Fetch products from backend API
@@ -95,7 +96,9 @@ export default function UrunlerPage() {
           setProductsList(mapped);
         }
       })
-      .catch((err) => console.error("Error loading products:", err));
+      })
+      .catch((err) => console.error("Error loading products:", err))
+      .finally(() => setIsLoading(false));
   }, []);
 
   // Dynamically extract categories from the current product list
@@ -159,6 +162,14 @@ export default function UrunlerPage() {
             padding: 24px 24px 20px !important;
             border-radius: 20px !important;
           }
+        }
+        @keyframes skeleton-pulse {
+          0%, 100% { opacity: 0.3; }
+          50% { opacity: 0.7; }
+        }
+        .skeleton-box {
+          animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+          background-color: rgba(255,255,255,0.05);
         }
       `}</style>
 
@@ -310,7 +321,41 @@ export default function UrunlerPage() {
 
         {/* ── ÜRÜN GRID ── */}
         <AnimatePresence mode="popLayout">
-          {filtered.length > 0 ? (
+          {isLoading ? (
+            <motion.div
+              key="skeleton"
+              className="urunler-grid"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}
+            >
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={`skeleton-${i}`} style={{
+                  backgroundColor: "#0a0a0a",
+                  border: "1px solid rgba(255,255,255,0.02)",
+                  borderRadius: "28px",
+                  padding: "36px 36px 28px",
+                  display: "flex", flexDirection: "column",
+                  height: "100%",
+                }}>
+                  <div className="skeleton-box" style={{ width: "100%", aspectRatio: "4/3", marginBottom: "28px", borderRadius: "16px" }} />
+                  <div style={{
+                    borderTop: "1px solid rgba(255,255,255,0.05)",
+                    paddingTop: "20px",
+                    display: "flex", justifyContent: "space-between", alignItems: "flex-end",
+                    marginTop: "auto",
+                  }}>
+                    <div style={{ width: "70%" }}>
+                      <div className="skeleton-box" style={{ width: "50%", height: "11px", marginBottom: "8px", borderRadius: "4px" }} />
+                      <div className="skeleton-box" style={{ width: "80%", height: "24px", borderRadius: "4px" }} />
+                    </div>
+                    <div className="skeleton-box" style={{ width: "36px", height: "36px", borderRadius: "50%" }} />
+                  </div>
+                </div>
+              ))}
+            </motion.div>
+          ) : filtered.length > 0 ? (
             <motion.div
               key="grid"
               className="urunler-grid"

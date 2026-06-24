@@ -15,11 +15,7 @@ import (
 
 // GetJWTSecret JWT için gizli anahtarı .env dosyasından alır
 func GetJWTSecret() []byte {
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		return []byte("orbit_super_secret_key_2026_fallback")
-	}
-	return []byte(secret)
+	return []byte(os.Getenv("JWT_SECRET"))
 }
 
 // AdminLogin admin paneli giriş işlemi

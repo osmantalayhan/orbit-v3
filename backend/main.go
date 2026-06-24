@@ -4,6 +4,9 @@ import (
 	"context"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"orbit-backend/config"
 	"orbit-backend/router"
@@ -15,6 +18,11 @@ import (
 
 func main() {
 	_ = godotenv.Overload()
+
+	// Güvenlik Kontrolü: JWT_SECRET eksikse sunucuyu hiç başlatma
+	if os.Getenv("JWT_SECRET") == "" {
+		log.Fatal("CRITICAL ERROR: Bana gizli anahtar (JWT_SECRET) verilmedi, güvenlik riski alamam! Sunucu başlatılmıyor.")
+	}
 
 	config.ConnectDatabase()
 
@@ -76,6 +84,37 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("Orbit Unified Backend is online and running on port %s...\n", port)
-	log.Fatal(app.Listen(":" + port))
+	// ----------------------------------------------------
+	// Graceful Shutdown (Zarif Kapanma) Entegrasyonu
+	// ----------------------------------------------------
+	
+	// İşletim sisteminden gelecek sinyalleri dinlemek için bir kanal oluştur
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+
+	// Sunucuyu ana blokta (blocking) değil, ayrı bir goroutine'de başlat
+	go func() {
+		log.Printf("Orbit Unified Backend is online and running on port %s...\n", port)
+		if err := app.Listen(":" + port); err != nil {
+			log.Fatalf("Sunucu başlatılamadı: %v", err)
+		}
+	}()
+
+	// OS'ten (CTRL+C veya Docker stop vs) sinyal gelene kadar bekle
+	<-quit
+	log.Println("Kapanma sinyali (SIGINT/SIGTERM) alındı...")
+	log.Println("Sunucu kapıya kilit vurdu, yeni istek almıyor. Devam eden işlemlerin bitmesi bekleniyor...")
+
+	// 10 Saniyelik bekleme süresi tanıyıp açık kalan isteklerin tamamlanmasını sağla
+	if err := app.ShutdownWithTimeout(10 * time.Second); err != nil {
+		log.Fatalf("Sunucu kapatılırken hata oluştu: %v", err)
+	}
+
+	// Son olarak veritabanı bağlantı havuzunu (Connection Pool) düzgünce kapat
+	if config.DB != nil {
+		log.Println("Veritabanı bağlantıları güvenle sonlandırılıyor...")
+		config.DB.Close()
+	}
+
+	log.Println("Orbit Sunucusu başarıyla, hiçbir veri kaybetmeden kapatıldı. 👋")
 }
