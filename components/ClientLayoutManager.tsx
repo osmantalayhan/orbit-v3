@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
+import FloatingActionButtons from "@/components/FloatingActionButtons";
 
 export default function ClientLayoutManager({
   children,
@@ -19,11 +20,12 @@ export default function ClientLayoutManager({
   return (
     <>
       {!isAdminRoute && <Navbar />}
-      <div key={pathname}>
+      <div>
         {children}
       </div>
       {!isAdminRoute && <Footer />}
       {!isAdminRoute && <CookieBanner />}
+      {!isAdminRoute && <FloatingActionButtons />}
     </>
   );
 }

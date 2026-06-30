@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import useEmblaCarousel from "embla-carousel-react";
 
 // Mock data removed at user request
 
@@ -21,14 +22,35 @@ export default function BlogSection() {
   });
 
   const blogs = (apiBlogs && Array.isArray(apiBlogs) && apiBlogs.length > 0)
-    ? apiBlogs.slice(0, 3).map((b: any) => ({
+    ? apiBlogs.slice(0, 6).map((b: any) => ({
         id: b.id,
         title: b.title,
         excerpt: b.lead_paragraph || b.category,
         date: b.date_published,
-        image: b.cover_image || "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800"
+        image: b.cover_image || "/img/placeholder.png"
       }))
     : [];
+
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: false,
+    loop: true
+  });
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    
+    const autoplay = setInterval(() => {
+      if (emblaApi.canScrollNext()) {
+        emblaApi.scrollNext();
+      } else {
+        emblaApi.scrollTo(0); // Sona geldiyse başa dön
+      }
+    }, 4500); // 4.5 saniyede bir kaysın
+
+    return () => clearInterval(autoplay);
+  }, [emblaApi]);
 
   return (
     <section 
@@ -69,12 +91,13 @@ export default function BlogSection() {
         </header>
       </div>
  
-      {/* Blog Cards Grid */}
-      <div className="blog-sec-grid-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {blogs.map((blog, index) => (
-            <Link href={`/blog/${blog.id}`} key={blog.id} className="block no-underline">
+      {/* Blog Cards Slider */}
+      <div className="blog-sec-carousel-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
+        <div className="w-full overflow-hidden" ref={emblaRef}>
+          <div className="flex gap-8">
+            {blogs.map((blog, index) => (
               <motion.div
+                key={blog.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
@@ -83,8 +106,9 @@ export default function BlogSection() {
                   delay: index * 0.1,
                   ease: [0.16, 1, 0.3, 1]
                 }}
-                className="group cursor-pointer block no-underline h-full"
+                className="flex-[0_0_100%] md:flex-[0_0_calc((100%-64px)/3)] min-w-0"
               >
+                <Link href={`/blog/${blog.id}`} className="group cursor-pointer block no-underline h-full">
                 <div 
                   className="bg-[#0d0d0d] border border-white/5 rounded-[32px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111] h-full flex flex-col"
                 >
@@ -94,6 +118,9 @@ export default function BlogSection() {
                     src={blog.image} 
                     alt={blog.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    quality={85}
+                    priority={index < 3}
                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -163,11 +190,12 @@ export default function BlogSection() {
                     <span>Devamını Oku</span>
                     <span className="group-hover/link:translate-x-1 transition-transform">→</span>
                   </div>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </Link>
-          ))}
+                </Link>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

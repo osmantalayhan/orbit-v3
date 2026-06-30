@@ -35,7 +35,7 @@ func SetupRoutes(app *fiber.App) {
 
 	// Genel İstek Limitleyici (Spam / Bot / DDOS Koruması)
 	generalLimiter := limiter.New(limiter.Config{
-		Max:        60, // Saniyede 1 istek ortalaması için dakikada 60 iyi
+		Max:        1000, // Kullanıcı isteğiyle limit 1000'e çıkarıldı, SPA'lar için tamamen özgür bir deneyim sunar
 		Expiration: 1 * time.Minute,
 		LimitReached: func(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
@@ -53,6 +53,7 @@ func SetupRoutes(app *fiber.App) {
 	// 📂 Dosya Yükleme (Upload) Rotaları
 	// ==========================================
 	api.Post("/upload", middleware.Protected(), handlers.UploadImage)
+	api.Post("/upload-doc", middleware.Protected(), handlers.UploadDocument)
 
 	// Yetkilendirme şimdilik sadece Admin panel için /admin/login üzerinden yapılıyor.
 
@@ -61,6 +62,12 @@ func SetupRoutes(app *fiber.App) {
 	// ==========================================
 	api.Get("/settings", handlers.GetSettings)
 	api.Put("/settings", middleware.Protected(), handlers.UpdateSettings)
+
+	// ==========================================
+	// 📂 Kategoriler (Categories) Rotaları
+	// ==========================================
+	api.Get("/categories", handlers.GetAllCategories)
+	api.Post("/admin/categories", handlers.CreateCategory)
 
 	// ==========================================
 	// ==========================================
@@ -135,4 +142,13 @@ func SetupRoutes(app *fiber.App) {
 	// ==========================================
 	api.Get("/careers", handlers.GetJobPositions)
 	api.Post("/applications", spamLimiter, handlers.CreateApplication)
+
+	// ==========================================
+	// 🛒 Satış Kanalları (Sales Channels) Rotaları
+	// ==========================================
+	api.Get("/sales-channels", handlers.GetSalesChannels)
+	adminGroup.Get("/sales-channels", handlers.GetAllSalesChannels)
+	adminGroup.Post("/sales-channels", handlers.CreateSalesChannel)
+	adminGroup.Put("/sales-channels/:id", handlers.UpdateSalesChannel)
+	adminGroup.Delete("/sales-channels/:id", handlers.DeleteSalesChannel)
 }

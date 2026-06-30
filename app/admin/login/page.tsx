@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./login.module.css";
+import { apiClient } from "@/lib/api";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
@@ -28,7 +29,7 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/login`, {
+      const res = await apiClient("/api/v1/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

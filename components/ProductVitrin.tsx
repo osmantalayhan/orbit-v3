@@ -6,50 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import useEmblaCarousel from "embla-carousel-react";
 
-const STATIC_PRODUCTS = [
-  {
-    id: "f435",
-    name: "Orbit F435",
-    role: "Uçuş Kontrol Sistemi",
-    desc: "STM32F405 İşlemci & Dual IMU Teknolojisi",
-    image: "/img/ucuskontrol.png",
-  },
-  {
-    id: "e50",
-    name: "Orbit E50",
-    role: "50A 4-in-1 ESC",
-    desc: "BLHeli_32 & 128K PWM Desteği",
-    image: "/img/esc.png",
-  },
-  {
-    id: "lrs",
-    name: "Orbit LRS",
-    role: "2.4GHz ELRS Alıcı",
-    desc: "30km+ Menzil & 0.6g Ultra Hafif",
-    image: "/img/elrs.png",
-  },
-  {
-    id: "gps",
-    name: "Orbit M10",
-    role: "GPS Modülü",
-    desc: "Ublox M10 & Dual Kompas",
-    image: "/img/gps.png",
-  },
-  {
-    id: "vtx",
-    name: "Orbit Nebula",
-    role: "Video Verici",
-    desc: "1.2W Güç & SmartAudio Desteği",
-    image: "/img/vtx.png",
-  },
-  {
-    id: "frame",
-    name: "Orbit X5",
-    role: "Carbon Fiber Frame",
-    desc: "T700 Karbon & 5mm Kol Kalınlığı",
-    image: "/img/frame.png",
-  },
-];
+
 
 import useSWR from "swr";
 
@@ -64,6 +21,11 @@ export default function ProductVitrin() {
     dedupingInterval: 60000,
   });
 
+  const { data: siteSettings } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
+
   const productsList = (apiProducts && apiProducts.length > 0)
     ? apiProducts.map((item: any) => ({
         id: item.id,
@@ -72,13 +34,28 @@ export default function ProductVitrin() {
         desc: item.tagline,
         image: item.images && item.images.length > 0 ? item.images[0] : "/img/ucuskontrol.png",
       }))
-    : STATIC_PRODUCTS;
+    : [];
 
-  const [emblaRef] = useEmblaCarousel({ 
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
     align: "start",
     containScroll: "trimSnaps",
-    dragFree: false
+    dragFree: false,
+    loop: true
   });
+
+  React.useEffect(() => {
+    if (!emblaApi) return;
+    
+    const autoplay = setInterval(() => {
+      if (emblaApi.canScrollNext()) {
+        emblaApi.scrollNext();
+      } else {
+        emblaApi.scrollTo(0); // Sona geldiyse başa dön
+      }
+    }, 3500); // 3.5 saniyede bir kaysın
+
+    return () => clearInterval(autoplay);
+  }, [emblaApi]);
 
   return (
     <section 
@@ -103,8 +80,24 @@ export default function ProductVitrin() {
           <motion.div 
             initial={{ opacity: 0, x: 10 }}
             whileInView={{ opacity: 1, x: 0 }}
-            className="mt-8 md:mt-0 flex justify-center md:justify-end"
+            className="mt-8 md:mt-0 flex items-center justify-center md:justify-end gap-4"
           >
+            {/* Dinamik Katalog İndirme Butonu */}
+            {siteSettings?.catalog_url && (
+              <a 
+                href={siteSettings.catalog_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group/dl inline-flex items-center justify-center gap-2 h-10 bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-sm no-underline whitespace-nowrap"
+                style={{ paddingLeft: '20px', paddingRight: '20px' }}
+              >
+                <svg className="w-4 h-4 transition-transform group-hover/dl:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Ürün Kataloğunu İndir
+              </a>
+            )}
+
             <Link 
               href="/urunler" 
               className="group/all inline-flex items-center justify-center gap-2 h-10 bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-sm no-underline whitespace-nowrap"
@@ -123,7 +116,7 @@ export default function ProductVitrin() {
       <div className="vitrin-carousel-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="w-full overflow-hidden" ref={emblaRef}>
           <div className="flex gap-8">
-            {productsList.map((product, index) => (
+            {productsList.map((product: any, index: number) => (
               <motion.div
                 key={product.id}
                 initial={{ opacity: 0, y: 40 }}
@@ -145,11 +138,13 @@ export default function ProductVitrin() {
                   >
                     {/* Card Header */}
                     <div style={{ marginBottom: '32px' }}>
-                      <div className="product-vitrin-logo-box w-24 h-24 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
+                      <div className="product-vitrin-logo-box w-36 h-36 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
                          <Image 
                            src={product.image} 
                            alt="icon" 
                            fill 
+                           sizes="144px"
+                           quality={85}
                            className="object-contain filter brightness-125 p-4" 
                          />
                       </div>
@@ -160,9 +155,8 @@ export default function ProductVitrin() {
                       <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '20px' }}>
                         {product.name}
                       </h3>
-                      <div style={{ marginBottom: '60px' }}>
-                        <p className="text-white/90 text-xl font-medium" style={{ marginBottom: '10px' }}>{product.role}</p>
-                        <p className="text-white/40 text-base leading-relaxed">{product.desc}</p>
+                      <div style={{ marginBottom: '40px' }}>
+                        <p className="text-white/90 text-xl font-medium">{product.role}</p>
                       </div>
                     </div>
 

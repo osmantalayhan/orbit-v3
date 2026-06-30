@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"html"
+	"strconv"
 	"orbit-backend/config"
 	"orbit-backend/models"
 
@@ -12,9 +14,9 @@ import (
 // CreateMessage iletişim formundan gelen yeni bir mesajı veri tabanına kaydeder
 func CreateMessage(c *fiber.Ctx) error {
 	msg := new(models.ContactMessage)
-	if err := c.BodyParser(msg); err != nil {
+	if err := json.Unmarshal(c.Body(), msg); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Cannot parse request body",
+			"error": "Cannot parse request body: " + err.Error(),
 		})
 	}
 
@@ -100,19 +102,26 @@ func GetMessages(c *fiber.Ctx) error {
 
 // UpdateMessageStatus mesajların okundu/arşivlendi durumunu günceller (Admin için)
 func UpdateMessageStatus(c *fiber.Ctx) error {
-	id := c.Params("id")
-	if id == "" {
+	idStr := c.Params("id")
+	if idStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Message ID is required",
+		})
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid Message ID",
 		})
 	}
 
 	var body struct {
 		Status string `json:"status"`
 	}
-	if err := c.BodyParser(&body); err != nil || body.Status == "" {
+	if err := json.Unmarshal(c.Body(), &body); err != nil || body.Status == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Valid status field is required",
+			"error": "Valid status field is required: " + err.Error(),
 		})
 	}
 
@@ -122,7 +131,7 @@ func UpdateMessageStatus(c *fiber.Ctx) error {
 		WHERE id = $2
 	`
 
-	_, err := config.DB.Exec(context.Background(), query, body.Status, id)
+	_, err = config.DB.Exec(context.Background(), query, body.Status, id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update message status",

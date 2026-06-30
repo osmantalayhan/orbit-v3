@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"strconv"
+	"encoding/json"
 	"orbit-backend/config"
 	"orbit-backend/models"
 
@@ -70,8 +72,8 @@ func GetAdminJobPositions(c *fiber.Ctx) error {
 // CreateJobPosition yeni bir iş ilanı ekler
 func CreateJobPosition(c *fiber.Ctx) error {
 	var job models.JobPosition
-	if err := c.BodyParser(&job); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz JSON formatı"})
+	if err := json.Unmarshal(c.Body(), &job); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz JSON formatı: " + err.Error(), "body": string(c.Body())})
 	}
 
 	if job.Requirements == nil {
@@ -94,10 +96,15 @@ func CreateJobPosition(c *fiber.Ctx) error {
 
 // UpdateJobPosition var olan iş ilanını günceller
 func UpdateJobPosition(c *fiber.Ctx) error {
-	id := c.Params("id")
+	idStr := c.Params("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz ID"})
+	}
+
 	var job models.JobPosition
-	if err := c.BodyParser(&job); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz JSON formatı"})
+	if err := json.Unmarshal(c.Body(), &job); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz JSON formatı: " + err.Error(), "body": string(c.Body())})
 	}
 
 	if job.Requirements == nil {
@@ -109,7 +116,7 @@ func UpdateJobPosition(c *fiber.Ctx) error {
 			  description = $5, requirements = $6, linkedin_url = $7, active = $8
 			  WHERE id = $9`
 
-	_, err := config.DB.Exec(c.Context(), query, 
+	_, err = config.DB.Exec(c.Context(), query, 
 		job.Title, job.Department, job.Location, job.JobType, 
 		job.Description, job.Requirements, job.LinkedinURL, job.Active, id)
 

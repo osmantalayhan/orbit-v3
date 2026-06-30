@@ -134,7 +134,6 @@ export default function LiquidShowcase({ imageSrc }: { imageSrc: string }) {
     const startTime = Date.now();
 
     gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MIN_VALUE_SRC_ALPHA); // Fixed typo later, but actually just gl.ONE_MINUS_SRC_ALPHA
     
     // Actually just use standard blending
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -186,7 +185,7 @@ export default function LiquidShowcase({ imageSrc }: { imageSrc: string }) {
         <canvas
           ref={canvasRef}
           onMouseMove={handleMouseMove}
-          className="w-full h-full cursor-crosshair"
+          className="w-full h-full cursor-default"
         />
       </div>
     </div>

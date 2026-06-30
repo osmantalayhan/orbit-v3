@@ -2,71 +2,12 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Search, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { apiClient } from "@/lib/api";
 
-const STATIC_PRODUCTS = [
-  {
-    id: "f435",
-    name: "Orbit F435",
-    role: "Uçuş Kontrol Sistemi",
-    desc: "STM32F405 İşlemci & Dual IMU Teknolojisi",
-    category: "uçuş kontrol",
-    image: "/img/flight-control.png",
-    badge: "en çok satan",
-    index: "01",
-  },
-  {
-    id: "e50",
-    name: "Orbit E50",
-    role: "50A 4-in-1 ESC",
-    desc: "BLHeli_32 & 128K PWM Desteği",
-    category: "esc",
-    image: "/img/flight-control.png",
-    badge: null,
-    index: "02",
-  },
-  {
-    id: "lrs",
-    name: "Orbit LRS",
-    role: "2.4GHz ELRS Alıcı",
-    desc: "30km+ Menzil & 0.6g Ultra Hafif",
-    category: "lrs",
-    image: "/img/flight-control.png",
-    badge: "yeni",
-    index: "03",
-  },
-  {
-    id: "gps",
-    name: "Orbit M10",
-    role: "GPS Modülü",
-    desc: "Ublox M10 & Dual Kompas",
-    category: "gps",
-    image: "/img/flight-control.png",
-    badge: null,
-    index: "04",
-  },
-  {
-    id: "vtx",
-    name: "Orbit Nebula",
-    role: "Video Verici",
-    desc: "1.2W Güç & SmartAudio Desteği",
-    category: "video",
-    image: "/img/flight-control.png",
-    badge: null,
-    index: "05",
-  },
-  {
-    id: "frame",
-    name: "Orbit X5",
-    role: "Carbon Fiber Frame",
-    desc: "T700 Karbon & 5mm Kol Kalınlığı",
-    category: "frame",
-    image: "/img/flight-control.png",
-    badge: null,
-    index: "06",
-  },
-];
+
 
 export default function UrunlerPage() {
   const [productsList, setProductsList] = useState<any[]>([]);
@@ -76,7 +17,7 @@ export default function UrunlerPage() {
 
   React.useEffect(() => {
     // Fetch products from backend API
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`)
+    apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch products");
         return res.json();
@@ -95,7 +36,6 @@ export default function UrunlerPage() {
           }));
           setProductsList(mapped);
         }
-      })
       })
       .catch((err) => console.error("Error loading products:", err))
       .finally(() => setIsLoading(false));
@@ -341,16 +281,17 @@ export default function UrunlerPage() {
                 }}>
                   <div className="skeleton-box" style={{ width: "100%", aspectRatio: "4/3", marginBottom: "28px", borderRadius: "16px" }} />
                   <div style={{
-                    borderTop: "1px solid rgba(255,255,255,0.05)",
-                    paddingTop: "20px",
-                    display: "flex", justifyContent: "space-between", alignItems: "flex-end",
+                    backgroundColor: "#161616",
+                    borderRadius: "18px",
+                    padding: "20px 24px",
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
                     marginTop: "auto",
                   }}>
                     <div style={{ width: "70%" }}>
-                      <div className="skeleton-box" style={{ width: "50%", height: "11px", marginBottom: "8px", borderRadius: "4px" }} />
-                      <div className="skeleton-box" style={{ width: "80%", height: "24px", borderRadius: "4px" }} />
+                      <div className="skeleton-box" style={{ width: "80%", height: "29px", marginBottom: "8px", borderRadius: "4px" }} />
+                      <div className="skeleton-box" style={{ width: "50%", height: "13px", borderRadius: "4px" }} />
                     </div>
-                    <div className="skeleton-box" style={{ width: "36px", height: "36px", borderRadius: "50%" }} />
+                    <div className="skeleton-box" style={{ width: "24px", height: "12px", borderRadius: "4px", marginRight: "6px" }} />
                   </div>
                 </div>
               ))}
@@ -403,34 +344,33 @@ export default function UrunlerPage() {
 
                       {/* Alt bölge: isim + ok */}
                       <div style={{
-                        borderTop: "1px solid rgba(255,255,255,0.05)",
-                        paddingTop: "20px",
-                        display: "flex", justifyContent: "space-between", alignItems: "flex-end",
+                        backgroundColor: "#161616",
+                        borderRadius: "18px",
+                        padding: "20px 24px",
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
                         marginTop: "auto",
                       }}>
                         <div>
-                          <p style={{
-                            fontSize: "11px", color: "rgba(255,255,255,0.25)", fontWeight: "600",
-                            textTransform: "lowercase", marginBottom: "5px",
-                          }}>
-                            {product.role}
-                          </p>
                           <h3 style={{
-                            fontSize: "24px", fontWeight: "700",
-                            letterSpacing: "-0.025em", margin: 0, color: "#fff",
+                            fontSize: "29px", fontWeight: "700",
+                            letterSpacing: "-0.025em", margin: 0, marginBottom: "4px", color: "#fff",
                           }}>
                             {product.name}
                           </h3>
+                          <p style={{
+                            fontSize: "13px", color: "rgba(255,255,255,0.35)", fontWeight: "600",
+                            textTransform: "lowercase", margin: 0,
+                          }}>
+                            {product.role}
+                          </p>
                         </div>
                         <div style={{
-                          width: "36px", height: "36px", borderRadius: "50%",
-                          border: "1px solid rgba(255,255,255,0.09)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           flexShrink: 0, color: "rgba(255,255,255,0.45)",
                           transition: "all 0.25s ease",
                         }}>
-                          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                           </svg>
                         </div>
                       </div>

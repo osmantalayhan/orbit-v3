@@ -3,18 +3,21 @@
 import React from "react";
 import { useParams, useRouter, notFound } from "next/navigation";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import { apiClient } from "@/lib/api";
+import DOMPurify from "isomorphic-dompurify";
 
 // Mock data removed at user request
 
 export default function BlogDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const id = (params?.id as string) || "1";
+  const id = (params?.id as string) || "";
 
   const [currentBlog, setCurrentBlog] = React.useState<any>(null);
 
   React.useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog/${id}`)
+    apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog/${id}`)
       .then(res => {
         if (!res.ok) {
           return { notFound: true };
@@ -52,12 +55,12 @@ export default function BlogDetailPage() {
             category: data.category,
             date: data.date_published,
             readTime: data.read_time,
-            image: data.cover_image || "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=1200",
+            image: data.cover_image || "/img/placeholder.png",
             leadParagraph: data.lead_paragraph,
             author: {
               name: data.author_name,
               role: data.author_role,
-              avatar: data.author_avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"
+              avatar: data.author_avatar || "/img/placeholder.png"
             },
             bodyHTML: htmlContent
           });
@@ -350,7 +353,7 @@ export default function BlogDetailPage() {
           `}</style>
           <div 
             className="blog-detail-html-content" 
-            dangerouslySetInnerHTML={{ __html: currentBlog.bodyHTML }} 
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(currentBlog.bodyHTML) }} 
             style={{ width: '100%' }}
           />
 

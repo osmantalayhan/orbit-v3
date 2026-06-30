@@ -8,7 +8,9 @@ import {
   Mail,
   ArrowRight,
   TrendingUp,
+  TrendingDown,
 } from "lucide-react";
+import { apiClient } from "@/lib/api";
 import styles from "./admin.module.css";
 
 /* ─── AYLIK B2B TALEP GRAFİĞİ (CSS Modules) ─── */
@@ -98,8 +100,12 @@ function MetricCard({
       <div>
         <div className={styles.metricValue}>{value}</div>
         <div className={styles.metricTrend}>
-          <TrendingUp size={14} className={trendUp ? styles.trendUp : styles.trendNeutral} />
-          <span className={trendUp ? styles.trendUp : styles.trendNeutral}>{trend}</span>
+          {trendUp ? (
+            <TrendingUp size={14} className={styles.trendUp} />
+          ) : (
+            <TrendingDown size={14} className={styles.trendDown} />
+          )}
+          <span className={trendUp ? styles.trendUp : styles.trendDown}>{trend}</span>
           <span className={styles.trendDesc}>geçen aya göre</span>
         </div>
       </div>
@@ -120,8 +126,14 @@ export default function AdminDashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/dashboard`);
-      if (!res.ok) throw new Error("Dashboard verileri çekilemedi");
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/dashboard`);
+      if (!res.ok) {
+        // If it's a 401, apiClient already handles the redirect, so we shouldn't throw an unhandled error here.
+        if (res.status === 401) return; 
+        const errText = await res.text();
+        console.error("Dashboard error:", res.status, errText);
+        return;
+      }
       const json = await res.json();
       setData(json);
     } catch (error) {

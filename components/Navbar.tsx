@@ -2,29 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState, useRef, useEffect } from "react";
-
-const SEARCH_DATABASE = {
-  products: [
-    { id: "f435", name: "Orbit F435", desc: "Uçuş Kontrol Sistemi — STM32F405 & Dual IMU", url: "/urunler/f435" },
-    { id: "e50", name: "Orbit E50", desc: "50A 4-in-1 ESC — BLHeli_32 & 128K PWM Desteği", url: "/urunler/e50" },
-    { id: "lrs", name: "Orbit LRS", desc: "2.4GHz ELRS Alıcı — 30km+ Menzil & 0.6g Hafiflik", url: "/urunler/lrs" },
-    { id: "gps", name: "Orbit M10", desc: "GPS Modülü — Ublox M10 & Dual Pusula Teknolojisi", url: "/urunler/gps" },
-    { id: "vtx", name: "Orbit Nebula", desc: "Video Verici — 1.2W Güç & SmartAudio Desteği", url: "/urunler/vtx" },
-    { id: "frame", name: "Orbit X5", desc: "Carbon Fiber Frame — T700 Karbon & 5mm Kol Kalınlığı", url: "/urunler/frame" },
-  ],
-  blog: [
-    { id: 1, title: "Yeni Nesil Kontrolcüler", desc: "Orbit F435 ile uçuş stabilitesi derin teknik analiz.", url: "/blog/1" },
-    { id: 2, title: "Otonom Uçuş Yazılımları", desc: "Yapay zeka destekli otonom görev planlama vizyonu.", url: "/blog/2" },
-    { id: 3, title: "Yerli Üretim ve Standartlar", desc: "Yüksek teknolojili ESC sistemlerinin üretim hikayesi.", url: "/blog/3" },
-    { id: 4, title: "Uzun Menzilli LRS Haberleşme", desc: "30km+ askeri sınıf menzillerde parazit sıfırlama.", url: "/blog/4" },
-  ],
-  careers: [
-    { id: 1, title: "Software Engineer (New Grand)", desc: "Ar-Ge / Yazılım Departmanı (İstanbul Hybrid)", url: "/kariyer" },
-    { id: 2, title: "PCB Designer (New Grand)", desc: "Donanım / Üretim Departmanı (İstanbul Yerinde)", url: "/kariyer" },
-    { id: 3, title: "Software Engineer (Python)", desc: "Ar-Ge / Yapay Zeka Departmanı (Ankara Hybrid)", url: "/kariyer" },
-  ]
-};
 
 import useSWR from "swr";
 
@@ -40,11 +19,32 @@ export default function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const pathname = usePathname();
 
-  const [searchData, setSearchData] = useState({
-    products: SEARCH_DATABASE.products,
-    blog: SEARCH_DATABASE.blog,
-    careers: SEARCH_DATABASE.careers
+  const handleHashClick = (e: React.MouseEvent<HTMLAnchorElement>, hash: string) => {
+    setIsMobileMenuOpen(false);
+    if (pathname === "/") {
+      e.preventDefault();
+      const element = document.querySelector(hash);
+      if (element) {
+        // Adjust for navbar height (approx 80px)
+        const y = element.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: "smooth" });
+        window.history.pushState(null, "", `/${hash}`);
+      }
+    }
+  };
+
+  interface SearchData {
+    products: any[];
+    blog: any[];
+    careers: any[];
+  }
+
+  const [searchData, setSearchData] = useState<SearchData>({
+    products: [],
+    blog: [],
+    careers: []
   });
 
   const swrConfig = { revalidateOnFocus: false, dedupingInterval: 60000 };
@@ -160,7 +160,17 @@ export default function Navbar() {
   };
   return (
     <>
-      <nav className="navbar" role="navigation" aria-label="Ana menü" style={{ zIndex: 100 }}>
+      <nav 
+        className="navbar" 
+        role="navigation" 
+        aria-label="Ana menü" 
+        style={{ 
+          zIndex: 100,
+          background: "rgba(15, 15, 15, 0.4)",
+          backdropFilter: "blur(16px) saturate(180%)",
+          WebkitBackdropFilter: "blur(16px) saturate(180%)"
+        }}
+      >
         <style>{`
           .custom-scrollbar::-webkit-scrollbar {
             width: 5px;
@@ -189,8 +199,8 @@ export default function Navbar() {
             <Image
               src={settings?.logo_url || "/img/logo.png"}
               alt="Orbit Teknoloji"
-              width={90}
-              height={27}
+              width={110}
+              height={33}
               priority
             />
           </Link>
@@ -198,6 +208,11 @@ export default function Navbar() {
           <ul className="navbar-links">
             <li><Link href="/">Ana Sayfa</Link></li>
             <li><Link href="/urunler">Ürünler</Link></li>
+            <li>
+              <Link href="/#satis-kanallari" onClick={(e) => handleHashClick(e, "#satis-kanallari")}>
+                Satış Kanalları
+              </Link>
+            </li>
             <li><Link href="/blog">Blog</Link></li>
             <li><Link href="/kariyer">Kariyer</Link></li>
             <li><Link href="/iletisim">İletişim</Link></li>
@@ -482,7 +497,8 @@ export default function Navbar() {
                     position: "absolute",
                     top: "calc(100% + 22px)",
                     right: 0,
-                    width: "140px",
+                    width: "175px",
+                    whiteSpace: "nowrap",
                     background: "linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(10, 10, 10, 0.92)",
                     backdropFilter: "blur(20px)",
                     border: "0.5px solid rgba(255, 255, 255, 0.12)",
@@ -495,10 +511,13 @@ export default function Navbar() {
                     zIndex: 100,
                   }}
                 >
-                  {["TR", "EN"].map((l) => (
+                  {["TR", "EN"].map((l) => {
+                    const isDisabled = l === "EN";
+                    return (
                     <button
                       key={l}
                       onClick={() => {
+                        if (isDisabled) return;
                         setLang(l);
                         setIsOpen(false);
                       }}
@@ -508,29 +527,42 @@ export default function Navbar() {
                         background: lang === l ? "rgba(255, 255, 255, 0.06)" : "transparent",
                         border: "none",
                         borderRadius: "8px",
-                        color: lang === l ? "#fff" : "rgba(255, 255, 255, 0.5)",
+                        color: isDisabled ? "rgba(255, 255, 255, 0.25)" : (lang === l ? "#fff" : "rgba(255, 255, 255, 0.5)"),
                         fontSize: "13px",
                         fontWeight: lang === l ? "600" : "500",
                         textAlign: "left",
-                        cursor: "pointer",
+                        cursor: isDisabled ? "not-allowed" : "pointer",
                         transition: "all 0.2s ease",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between"
                       }}
                       onMouseOver={(e) => {
+                        if (isDisabled) return;
                         e.currentTarget.style.background = "rgba(255, 255, 255, 0.06)";
                         e.currentTarget.style.color = "#fff";
                       }}
                       onMouseOut={(e) => {
+                        if (isDisabled) return;
                         e.currentTarget.style.background = lang === l ? "rgba(255, 255, 255, 0.06)" : "transparent";
                         e.currentTarget.style.color = lang === l ? "#fff" : "rgba(255, 255, 255, 0.5)";
                       }}
                     >
-                      <span>{l === "TR" ? "TR (Türkçe)" : "EN (English)"}</span>
-                      {lang === l && <span style={{ color: "var(--blue-primary)", fontSize: "11px" }}>●</span>}
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span>{l === "TR" ? "TR (Türkçe)" : "EN (English)"}</span>
+                        {isDisabled && (
+                          <span style={{ 
+                            fontSize: "9px", 
+                            padding: "2px 6px", 
+                            background: "rgba(255,255,255,0.05)", 
+                            borderRadius: "4px",
+                            color: "rgba(255,255,255,0.4)"
+                          }}>Yakında</span>
+                        )}
+                      </div>
+                      {!isDisabled && lang === l && <span style={{ color: "var(--blue-primary)", fontSize: "11px" }}>●</span>}
                     </button>
-                  ))}
+                  )})}
                 </div>
               )}
             </div>
@@ -626,36 +658,45 @@ export default function Navbar() {
             {[
               { href: "/", label: "Ana Sayfa" },
               { href: "/urunler", label: "Ürünler" },
+              { href: "/#satis-kanallari", label: "Satış Kanalları", hash: "#satis-kanallari" },
               { href: "/blog", label: "Blog" },
               { href: "/kariyer", label: "Kariyer" },
               { href: "/iletisim", label: "İletişim" }
-            ].map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                style={{
-                  color: "#fff",
-                  fontSize: "26px",
-                  fontWeight: "700",
-                  letterSpacing: "-0.03em",
-                  textDecoration: "none",
-                  textTransform: "lowercase",
-                  opacity: 0.85,
-                  transition: "all 0.2s ease"
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.color = "var(--blue-primary)";
-                  e.currentTarget.style.opacity = "1";
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.color = "#fff";
-                  e.currentTarget.style.opacity = "0.85";
-                }}
-              >
-                {link.label}
-              </Link>
-            ))}
+            ].map((link) => {
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={(e) => {
+                    if (link.hash) {
+                      handleHashClick(e, link.hash);
+                    } else {
+                      setIsMobileMenuOpen(false);
+                    }
+                  }}
+                  style={{
+                    color: "#fff",
+                    fontSize: "26px",
+                    fontWeight: "700",
+                    letterSpacing: "-0.03em",
+                    textDecoration: "none",
+                    textTransform: "lowercase",
+                    opacity: 0.85,
+                    transition: "all 0.2s ease"
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = "var(--blue-primary)";
+                    e.currentTarget.style.opacity = "1";
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = "#fff";
+                    e.currentTarget.style.opacity = "0.85";
+                  }}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
 
             <Link
               href="/urunler"

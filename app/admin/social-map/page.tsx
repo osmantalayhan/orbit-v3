@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "../admin.module.css";
 import { Save, Map, Share2, Mail, Phone, MapPin, Loader2, Plus, Trash2 } from "lucide-react";
+import { apiClient } from "@/lib/api";
 import Toast from "../../../components/Toast";
 
 interface OfficeLocation {
@@ -51,7 +52,7 @@ export default function SocialMapAdminPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings?t=${new Date().getTime()}`, { cache: "no-store" });
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings?t=${new Date().getTime()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Ayarlar getirilemedi");
       const json = await res.json();
       
@@ -67,13 +68,7 @@ export default function SocialMapAdminPage() {
           setOffices([]);
         }
       } else {
-        setOffices([{
-          name: "Merkez Ofis",
-          city: "İstanbul",
-          address: settingsObj.contact_address || "",
-          latitude: settingsObj.map_latitude || 41.0082,
-          longitude: settingsObj.map_longitude || 28.9784
-        }]);
+        setOffices([]);
       }
 
       if (settingsObj.social_links_json && settingsObj.social_links_json !== "[]") {
@@ -106,7 +101,7 @@ export default function SocialMapAdminPage() {
         social_links_json: JSON.stringify(socialLinks)
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

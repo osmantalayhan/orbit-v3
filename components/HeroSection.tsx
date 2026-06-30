@@ -6,15 +6,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import LiquidShowcase from "./LiquidShowcase";
 
-const PRODUCTS_FALLBACK = [
-  {
-    id: "default",
-    model: "ORBIT",
-    title: "Yükleniyor...",
-    desc: "Veriler sunucudan alınıyor, lütfen bekleyin.",
-    image: "/img/flight-control.png",
-  }
-];
+
 
 import useSWR from "swr";
 
@@ -51,14 +43,29 @@ export default function HeroSection() {
     return () => clearInterval(timer);
   }, [products]);
 
-  // Veriler yükleniyorsa hiçbir şey gösterme, yüklendiyse ve boşsa fallback göster
+  // Veriler yükleniyorsa hiçbir şey gösterme
   const isLoading = sliderData === undefined && !error;
-  const displayProducts = products.length > 0 ? products : (isLoading ? [] : PRODUCTS_FALLBACK);
+  const displayProducts = products.length > 0 ? products : [];
   const currentIndex = index >= displayProducts.length ? 0 : index;
   const current = displayProducts.length > 0 ? displayProducts[currentIndex] : null;
 
   return (
     <section className="hero">
+      <style>{`
+        @media (max-width: 768px) {
+          .hero-bg-text { font-size: 60vw !important; }
+          .hero-img-container { 
+            width: 130vw !important; 
+            height: 130vh !important;
+            min-width: 130vw !important;
+            min-height: 130vh !important;
+            flex-shrink: 0 !important;
+            top: 0% !important;
+            margin-top: 0 !important;
+          }
+        }
+      `}</style>
+      
       {/* Background Technical Text (BEHIND EVERYTHING) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
         <AnimatePresence mode="wait">
@@ -69,10 +76,11 @@ export default function HeroSection() {
               animate={{ opacity: 0.4, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 1.1, y: -20 }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-              className="text-[35vw] font-[500] tracking-tighter uppercase select-none whitespace-nowrap"
+              className="hero-bg-text text-[35vw] font-[500] tracking-tighter uppercase select-none whitespace-nowrap"
               style={{
                 color: "transparent",
                 WebkitTextStroke: "2px rgba(255, 255, 255, 0.5)",
+                textIndent: "-0.05em", // tracking-tighter'ın sebep olduğu sağ boşluğu soldan dengeler
               }}
             >
               {current.model}
@@ -91,7 +99,7 @@ export default function HeroSection() {
               animate={{ opacity: 1, y: 20, scale: 1.0 }}
               exit={{ opacity: 0, y: -50, scale: 0.9 }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="w-[75%] h-[75%] relative select-none opacity-90"
+              className="hero-img-container w-[75%] h-[75%] relative select-none opacity-90"
               style={{
                 rotate: -5,
               }}

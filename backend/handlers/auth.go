@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 	"orbit-backend/config"
 	"orbit-backend/models"
@@ -21,7 +22,7 @@ func GetJWTSecret() []byte {
 // AdminLogin admin paneli giriş işlemi
 func AdminLogin(c *fiber.Ctx) error {
 	var req models.LoginRequest
-	if err := c.BodyParser(&req); err != nil {
+	if err := json.Unmarshal(c.Body(), &req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Geçersiz istek"})
 	}
 

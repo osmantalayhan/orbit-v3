@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
-
-const productMap: Record<string, { name: string; tagline: string }> = {
-  "f435": { name: "Orbit F435 Uçuş Kontrolör Sistemi", tagline: "Çift IMU ile sınıfının en kararlı uçuş kontrolörü." },
-  "e50": { name: "Orbit E50 50A 4-in-1 ESC", tagline: "BLHeli_32 ve 128K PWM desteği ile yüksek verimli motor sürücü." },
-  "g50": { name: "Orbit G50 GPS & Pusula", tagline: "U-blox M10 çip seti ile yüksek hassasiyetli konumlandırma." },
-  "l500": { name: "Orbit L500 Telemetri Modülü", tagline: "915MHz LoRa teknolojisi ile 15 km+ menzilli veri haberleşmesi." },
-  "v50": { name: "Orbit V50 FPV Kamera", tagline: "1200TVL çözünürlük ve ultra düşük gecikmeli gece görüşü." },
-  "f450": { name: "Orbit F450 Karbon Frame", tagline: "Hafif ve dayanıklı 3K saf karbon fiber gövde tasarımı." }
-};
+import { apiClient } from "@/lib/api";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const id = params.id;
   
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${id}`, { next: { revalidate: 60 } });
+    const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${id}`, { next: { revalidate: 60 } });
     if (res.ok) {
       const product = await res.json();
       return {
@@ -26,10 +18,11 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
 
   // Fallback (Yedek)
-  const product = productMap[id] || { name: "İHA Elektroniği Ürünü", tagline: "Yerli Ar-Ge'den doğan üstün performanslı İHA donanımı." };
+  const fallbackName = "İHA Elektroniği Ürünü";
+  const fallbackTagline = "Yerli Ar-Ge'den doğan üstün performanslı İHA donanımı.";
   return {
-    title: product.name,
-    description: `${product.name} - ${product.tagline} Yerli Ar-Ge'den doğan askeri ve endüstriyel sınıf İHA elektroniği.`,
+    title: fallbackName,
+    description: `${fallbackName} - ${fallbackTagline} Yerli Ar-Ge'den doğan askeri ve endüstriyel sınıf İHA elektroniği.`,
   };
 }
 

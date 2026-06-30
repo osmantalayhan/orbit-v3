@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"orbit-backend/config"
@@ -11,14 +12,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// isValidPassword şifrenin en az 8 karakter, 1 büyük harf ve 1 rakam içerdiğini doğrular
+// isValidPassword şifrenin en az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içerdiğini doğrular
 func isValidPassword(password string) bool {
 	if len(password) < 8 {
 		return false
 	}
 	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(password)
 	hasDigit := regexp.MustCompile(`[0-9]`).MatchString(password)
-	return hasUpper && hasDigit
+	hasLower := regexp.MustCompile(`[a-z]`).MatchString(password)
+	hasSpecial := regexp.MustCompile(`[^A-Za-z0-9]`).MatchString(password)
+	return hasUpper && hasDigit && hasLower && hasSpecial
 }
 
 // GetUsers tüm admin yöneticilerini getirir (Şifre hariç)
@@ -56,8 +59,8 @@ func GetUsers(c *fiber.Ctx) error {
 // CreateUser yeni bir admin yöneticisi ekler
 func CreateUser(c *fiber.Ctx) error {
 	var req models.LoginRequest // Email ve Password alıyoruz
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz veri"})
+	if err := json.Unmarshal(c.Body(), &req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Geçersiz veri: " + err.Error()})
 	}
 
 	if req.Email == "" || req.Password == "" {
@@ -65,7 +68,7 @@ func CreateUser(c *fiber.Ctx) error {
 	}
 
 	if !isValidPassword(req.Password) {
-		return c.Status(400).JSON(fiber.Map{"error": "Şifre en az 8 karakter uzunluğunda olmalı, en az 1 büyük harf ve 1 rakam içermelidir"})
+		return c.Status(400).JSON(fiber.Map{"error": "Şifreniz en az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir"})
 	}
 
 	// Şifreyi hashle
@@ -97,12 +100,12 @@ func UpdateUserPassword(c *fiber.Ctx) error {
 	var req struct {
 		Password string `json:"password"`
 	}
-	if err := c.BodyParser(&req); err != nil || req.Password == "" {
+	if err := json.Unmarshal(c.Body(), &req); err != nil || req.Password == "" {
 		return c.Status(400).JSON(fiber.Map{"error": "Yeni şifre gereklidir"})
 	}
 
 	if !isValidPassword(req.Password) {
-		return c.Status(400).JSON(fiber.Map{"error": "Şifre en az 8 karakter uzunluğunda olmalı, en az 1 büyük harf ve 1 rakam içermelidir"})
+		return c.Status(400).JSON(fiber.Map{"error": "Şifreniz en az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir"})
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), 10)

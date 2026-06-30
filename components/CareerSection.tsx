@@ -19,6 +19,8 @@ const fetcher = (url: string) => fetch(url).then((res) => {
   return res.json();
 });
 
+import Link from "next/link";
+
 export default function CareerSection() {
   const { data: apiJobs, error } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/careers`, fetcher, {
     revalidateOnFocus: false,
@@ -63,7 +65,7 @@ export default function CareerSection() {
               </svg>
             </a>
 
-            <a
+            <Link
               href="/kariyer"
               className="group/all inline-flex items-center justify-center gap-2 h-10 bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-sm no-underline whitespace-nowrap"
               style={{ paddingLeft: '30px', paddingRight: '30px' }}
@@ -72,7 +74,7 @@ export default function CareerSection() {
               <svg className="w-3.5 h-3.5 transition-transform group-hover/all:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </a>
+            </Link>
           </motion.div>
         </header>
       </div>

@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../admin.module.css";
-import { Search, Plus, X, Trash2, Edit, Save, Download } from "lucide-react";
+import { Search, Plus, X, Trash2, Edit, Save, Download, Briefcase, Users, CheckCircle, Clock } from "lucide-react";
+import { apiClient } from "@/lib/api";
 
 interface JobPosition {
   id: number | string;
@@ -68,7 +69,7 @@ export default function AdminCareersPage() {
   const fetchJobs = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/careers?t=${new Date().getTime()}`, { cache: 'no-store' });
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/careers?t=${new Date().getTime()}`);
       if (!res.ok) throw new Error("İlanlar getirilemedi");
       const data = await res.json();
       setJobs(data || []);
@@ -84,7 +85,7 @@ export default function AdminCareersPage() {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/applications?t=${new Date().getTime()}`, { cache: 'no-store' });
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/applications?t=${new Date().getTime()}`);
       if (!res.ok) throw new Error("Başvurular getirilemedi");
       const data = await res.json();
       setApplications(data || []);
@@ -103,7 +104,7 @@ export default function AdminCareersPage() {
     } else {
       fetchApplications();
       // "Gelen Başvurular" sekmesine girildiğinde, okundu olarak işaretle ve menüdeki badge'i sıfırla
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/applications/mark-read`, { method: "PUT" })
+      apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/applications/mark-read`, { method: "PUT" })
         .then(res => {
           if (res.ok) {
             window.dispatchEvent(new Event("orbit_apps_read"));
@@ -152,17 +153,21 @@ export default function AdminCareersPage() {
         active: newJob.active !== undefined ? newJob.active : true,
       };
 
+      console.log("Gönderilen payload:", payload);
+
       const url = editingJobId ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/careers/${editingJobId}` : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/careers`;
       const method = editingJobId ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiClient(url, {
         method: method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        throw new Error("İlan kaydedilemedi");
+        const errorText = await res.text();
+        console.error("Backend error response:", res.status, errorText);
+        throw new Error("İlan kaydedilemedi: " + errorText);
       }
 
       setIsDrawerOpen(false);
@@ -176,7 +181,7 @@ export default function AdminCareersPage() {
   const handleDeleteJob = async () => {
     if (!deletingJobId) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/careers/${deletingJobId}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/careers/${deletingJobId}`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -194,7 +199,7 @@ export default function AdminCareersPage() {
   const handleDeleteApplication = async () => {
     if (!deletingAppId) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/applications/${deletingAppId}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/applications/${deletingAppId}`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -225,7 +230,9 @@ export default function AdminCareersPage() {
         requirements: []
       };
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/careers/${job.id}`, {
+      console.log("Toggle payload:", payload);
+
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/careers/${job.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

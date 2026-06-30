@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "../admin.module.css";
+import { apiClient } from "@/lib/api";
 import { Search, Trash2, Eye, MailOpen } from "lucide-react";
 
 interface ContactMessage {
@@ -37,8 +38,8 @@ export default function AdminMessagesPage() {
   const fetchMessages = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/messages?t=${new Date().getTime()}`, { cache: 'no-store' });
-      if (!res.ok) throw new Error("Mesajlar getirilemedi");
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/messages?t=${new Date().getTime()}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error("Mesajlar çekilemedi");
       const data = await res.json();
       setMessages(data || []);
       setError(null);
@@ -60,7 +61,7 @@ export default function AdminMessagesPage() {
 
     if (msg.status === 'unread') {
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/messages/${msg.id}/status`, {
+        await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/messages/${msg.id}/status`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ status: 'read' })
@@ -78,7 +79,7 @@ export default function AdminMessagesPage() {
   const handleDeleteMessage = async () => {
     if (!deletingMsgId) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/messages/${deletingMsgId}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/messages/${deletingMsgId}`, {
         method: "DELETE"
       });
       if (res.ok) {

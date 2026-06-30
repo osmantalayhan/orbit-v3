@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import Toast, { ToastType } from "@/components/Toast";
+import { apiClient } from "@/lib/api";
 
 type JobPosition = {
   id: number;
@@ -22,7 +23,7 @@ function JobListSection() {
   const [jobs, setJobs] = useState<JobPosition[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/careers`)
+    apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/careers`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch careers");
         return res.json();
@@ -290,7 +291,7 @@ function GeneralApplicationSection() {
     submitData.append("cv_file", selectedFile);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications`, {
         method: "POST",
         body: submitData
       });
@@ -378,7 +379,7 @@ function GeneralApplicationSection() {
                   value={formData.name}
                   onChange={handleInputChange}
                   disabled={isLoading}
-                  placeholder="Jane Smith"
+                  placeholder="Adınız Soyadınız"
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.05)',
                     border: '1px solid rgba(255,255,255,0.05)',

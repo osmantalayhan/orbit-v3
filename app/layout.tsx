@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Geist } from "next/font/google";
 import CookieBanner from "@/components/CookieBanner";
+import { apiClient } from "@/lib/api";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -18,9 +19,8 @@ const defaultMetadata: Metadata = {
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, { 
-      cache: "no-store",
-      next: { revalidate: 0 } // Her request'te taze veri al
+    const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, { 
+      next: { revalidate: 10 } 
     });
     
     if (!res.ok) return defaultMetadata;

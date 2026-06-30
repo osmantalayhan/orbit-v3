@@ -2,6 +2,7 @@
  
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { apiClient } from "@/lib/api";
 import MapSection from "@/components/MapSection";
 import Toast, { ToastType } from "@/components/Toast";
  
@@ -24,7 +25,7 @@ export default function IletisimPage() {
   });
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`)
+    apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`)
       .then((res) => {
         if (!res.ok) throw new Error("Settings fetch failed");
         return res.json();
@@ -79,7 +80,7 @@ export default function IletisimPage() {
     setStatus("loading");
     
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contact`, {
+      const response = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/contact`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -242,7 +243,7 @@ export default function IletisimPage() {
                         onChange={handleChange}
                         disabled={status === "loading"}
                         maxLength={100}
-                        placeholder="Jane Smith"
+                        placeholder="Adınız Soyadınız"
                         style={{ 
                           backgroundColor: 'rgba(255,255,255,0.05)', 
                           border: errors.name ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(255,255,255,0.05)', 
@@ -266,7 +267,7 @@ export default function IletisimPage() {
                         onChange={handleChange}
                         disabled={status === "loading"}
                         maxLength={150}
-                        placeholder="jane@orbit.com.tr"
+                        placeholder="ornek@sirket.com"
                         style={{ 
                           backgroundColor: 'rgba(255,255,255,0.05)', 
                           border: errors.email ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(255,255,255,0.05)', 

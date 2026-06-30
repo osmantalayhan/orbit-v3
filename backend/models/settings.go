@@ -20,5 +20,6 @@ type SiteSettings struct {
 	SocialGithub    string    `json:"social_github,omitempty"`
 	SocialLinksJSON string    `json:"social_links_json"`
 	OfficesJSON     string    `json:"offices_json"`
+	CatalogURL      string    `json:"catalog_url,omitempty"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }

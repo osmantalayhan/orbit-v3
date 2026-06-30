@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "../admin.module.css";
 import { Package, Plus, Search, Edit2, Trash2, X, Trash, UploadCloud } from "lucide-react";
+import { apiClient } from "@/lib/api";
 
 interface Product {
   id: string;
@@ -37,6 +38,16 @@ export default function AdminProductsPage() {
 
   // Drawer State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  // Categories State
+  const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+
+  // Global Catalog State
+  const [siteSettings, setSiteSettings] = useState<any>(null);
+  const [catalogFile, setCatalogFile] = useState<File | null>(null);
+  const [uploadingCatalog, setUploadingCatalog] = useState(false);
   
   // Form State
   const [newProduct, setNewProduct] = useState({
@@ -50,7 +61,7 @@ export default function AdminProductsPage() {
     teknofestDiscount: "",
     specs: [{ label: "", value: "" }],
     channels: [{ name: "", url: "" }],
-    downloads: [{ title: "", type: "", size: "", desc: "" }]
+    downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
   });
 
   // File States
@@ -89,7 +100,7 @@ export default function AdminProductsPage() {
       name: "", role: "", category: "OTOPİLOT", badge: "", tagline: "", description: "",
       isTeknofestActive: false, teknofestDiscount: "",
       specs: [{ label: "", value: "" }], channels: [{ name: "", url: "" }],
-      downloads: [{ title: "", type: "", size: "", desc: "" }]
+      downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
     });
     setGalleryItems([]);
     setPinoutFront(null);
@@ -140,12 +151,68 @@ export default function AdminProductsPage() {
 
   useEffect(() => {
     fetchProducts();
+    fetchSettings();
+    fetchCategories();
   }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/categories`);
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(data || []);
+      }
+    } catch (err) {
+      console.error("Kategoriler yüklenemedi:", err);
+    }
+  };
+
+  const handleAddCategory = () => {
+    setNewCategoryName("");
+    setIsCategoryModalOpen(true);
+  };
+
+  const confirmAddCategory = async () => {
+    if (!newCategoryName || !newCategoryName.trim()) {
+      alert("Kategori adı boş olamaz.");
+      return;
+    }
+    try {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCategoryName.trim() })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(`Hata: ${errorData.error} | Detay: ${errorData.details} | Raw: ${errorData.rawBody}`);
+        return;
+      }
+      fetchCategories();
+      setNewProduct({ ...newProduct, category: newCategoryName.trim() });
+      setIsCategoryModalOpen(false);
+    } catch (err) {
+      console.error("Kategori ekleme hatası:", err);
+      alert("Bir hata oluştu.");
+    }
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`);
+      if (res.ok) {
+        const data = await res.json();
+        setSiteSettings(data);
+      }
+    } catch (err) {
+      console.error("Ayarlar yüklenemedi:", err);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
       if (!res.ok) throw new Error("Ürünler yüklenirken hata oluştu.");
       const data = await res.json();
       setProducts(data || []);
@@ -207,7 +274,7 @@ export default function AdminProductsPage() {
       const url = editingProductId ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${editingProductId}` : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`;
       const method = editingProductId ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiClient(url, {
         method: method,
         body: formData, // JSON stringify değil, doğrudan form data objesi (files upload için)
       });
@@ -231,7 +298,7 @@ export default function AdminProductsPage() {
         teknofestDiscount: "",
         specs: [{ label: "", value: "" }],
         channels: [{ name: "", url: "" }],
-        downloads: [{ title: "", type: "", size: "", desc: "" }]
+        downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
       });
       setGalleryItems([]);
       setPinoutFront(null);
@@ -249,11 +316,62 @@ export default function AdminProductsPage() {
     setDeletingProductId(id);
   };
 
+  const handleCatalogUpload = async () => {
+    if (!catalogFile) return;
+    try {
+      setUploadingCatalog(true);
+      const formData = new FormData();
+      formData.append("file", catalogFile);
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload-doc`, {
+        method: "POST",
+        body: formData
+      });
+      if (!res.ok) throw new Error("Dosya yükleme hatası");
+      const uploadData = await res.json();
+      
+      const updatedSettings = { ...siteSettings, catalog_url: uploadData.url };
+      
+      const saveRes = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedSettings)
+      });
+      
+      if (!saveRes.ok) throw new Error("Katalog URL kaydedilemedi");
+      setSiteSettings(updatedSettings);
+      setCatalogFile(null);
+      alert("Genel Katalog başarıyla güncellendi!");
+    } catch (err: any) {
+      alert("Hata: " + err.message);
+    } finally {
+      setUploadingCatalog(false);
+    }
+  };
+
+  const handleRemoveCatalog = async () => {
+    try {
+      setUploadingCatalog(true);
+      const updatedSettings = { ...siteSettings, catalog_url: "" };
+      const saveRes = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedSettings)
+      });
+      if (!saveRes.ok) throw new Error("Katalog kaldırılamadı");
+      setSiteSettings(updatedSettings);
+      alert("Katalog kaldırıldı!");
+    } catch (err: any) {
+      alert("Hata: " + err.message);
+    } finally {
+      setUploadingCatalog(false);
+    }
+  };
+
   const confirmDelete = async () => {
     if (!deletingProductId) return;
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${deletingProductId}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${deletingProductId}`, {
         method: "DELETE"
       });
       if (res.ok) {
@@ -330,7 +448,7 @@ export default function AdminProductsPage() {
   };
 
   const handleAddDownload = () => {
-    setNewProduct({ ...newProduct, downloads: [...newProduct.downloads, { title: "", type: "", size: "", desc: "" }] });
+    setNewProduct({ ...newProduct, downloads: [...newProduct.downloads, { title: "", type: "", size: "", desc: "", file_name: "" }] });
     setDownloadFiles([...downloadFiles, null]);
   };
   const handleRemoveDownload = (index: number) => {
@@ -382,7 +500,7 @@ export default function AdminProductsPage() {
       </div>
 
       {/* Tablo Kartı */}
-      <div className={styles.panelCard} style={{ padding: 0, overflow: 'hidden' }}>
+      <div className={styles.panelCard} style={{ padding: 0, overflow: 'hidden', marginBottom: '24px' }}>
         
         {/* Tablo Araç Çubuğu */}
         <div style={{ padding: '24px', borderBottom: '1px solid #27272a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -406,11 +524,9 @@ export default function AdminProductsPage() {
               onChange={(e) => setFilterCategory(e.target.value)}
             >
               <option value="TÜMÜ">Tüm Kategoriler</option>
-              <option value="OTOPİLOT">Otopilot</option>
-              <option value="GÜÇ">Güç</option>
-              <option value="HABERLEŞME">Haberleşme</option>
-              <option value="NAVİGASYON">Navigasyon</option>
-              <option value="GÖVDE">Gövde (Frame)</option>
+              {categories.map((cat: any) => (
+                <option key={cat.id} value={cat.name}>{cat.name}</option>
+              ))}
             </select>
           </div>
 
@@ -486,6 +602,51 @@ export default function AdminProductsPage() {
         )}
       </div>
 
+      {/* --- GENEL ÜRÜN KATALOĞU BÖLÜMÜ --- */}
+      <div className={styles.panelCard} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', margin: 0, marginBottom: '8px' }}>Genel Ürün Kataloğu (Ana Sayfa)</h3>
+          <p style={{ fontSize: '13px', color: '#a1a1aa', margin: 0 }}>
+            Ana sayfadaki "Ürün Kataloğunu İndir" butonunun yönlendireceği global PDF dosyasını buradan yükleyebilirsiniz.
+          </p>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+            border: '1px dashed #3f3f46', borderRadius: '8px', cursor: 'pointer',
+            backgroundColor: '#1a1a1a', color: '#a1a1aa', flex: 1, minWidth: '250px'
+          }}>
+            <UploadCloud size={16} style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: '13px', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {catalogFile ? catalogFile.name : (siteSettings?.catalog_url ? "Mevcut: " + siteSettings.catalog_url.split('/').pop() : "Yeni Katalog Seç (PDF vb.)...")}
+            </span>
+            <input type="file" accept=".pdf" hidden onChange={e => setCatalogFile(e.target.files?.[0] || null)} />
+          </label>
+
+          {catalogFile && (
+            <button 
+              className={`${styles.formButton} ${styles.btnPrimary}`} 
+              onClick={handleCatalogUpload} 
+              disabled={uploadingCatalog}
+            >
+              {uploadingCatalog ? "Yükleniyor..." : "Kataloğu Kaydet"}
+            </button>
+          )}
+
+          {siteSettings?.catalog_url && !catalogFile && (
+            <>
+              <a href={siteSettings.catalog_url} target="_blank" rel="noopener noreferrer" className={styles.actionBtn} style={{ padding: '0 16px', width: 'auto', borderRadius: '8px' }}>
+                Kataloğu Görüntüle
+              </a>
+              <button className={`${styles.actionBtn} ${styles.danger}`} style={{ padding: '0 16px', width: 'auto', borderRadius: '8px' }} onClick={handleRemoveCatalog} disabled={uploadingCatalog}>
+                {uploadingCatalog ? "Siliniyor..." : "Kataloğu Kaldır"}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* --- YENİ ÜRÜN MODAL (GENİŞ POPUP) --- */}
       {isDrawerOpen && (
         <div className={styles.drawerOverlay} onClick={() => setIsDrawerOpen(false)}>
@@ -513,7 +674,7 @@ export default function AdminProductsPage() {
                     <div className={styles.formGrid}>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Ürün Adı</label>
-                        <input type="text" className={styles.formInput} placeholder="Örn: Orbit F435" 
+                        <input type="text" className={styles.formInput} placeholder="Örn: Yeni Ürün" 
                                value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
                       </div>
                       <div className={styles.formGroup}>
@@ -523,13 +684,17 @@ export default function AdminProductsPage() {
                       </div>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Kategori</label>
-                        <select className={styles.formSelect} value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})}>
-                          <option value="OTOPİLOT">OTOPİLOT</option>
-                          <option value="GÜÇ">GÜÇ (ESC vb.)</option>
-                          <option value="HABERLEŞME">HABERLEŞME</option>
-                          <option value="NAVİGASYON">NAVİGASYON</option>
-                          <option value="GÖVDE">GÖVDE (Frame)</option>
-                        </select>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <select className={styles.formSelect} value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ flex: 1 }}>
+                            <option value="">Seçiniz...</option>
+                            {categories.map((cat: any) => (
+                              <option key={cat.id} value={cat.name}>{cat.name}</option>
+                            ))}
+                          </select>
+                          <button type="button" onClick={handleAddCategory} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px' }}>
+                            +
+                          </button>
+                        </div>
                       </div>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Etiket</label>
@@ -787,6 +952,76 @@ export default function AdminProductsPage() {
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
               >
                 Evet, Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Yeni Kategori Ekleme Modalı */}
+      {isCategoryModalOpen && (
+        <div className={styles.drawerOverlay} onClick={() => setIsCategoryModalOpen(false)} style={{ zIndex: 999 }}>
+          <div 
+            style={{
+              backgroundColor: '#121212',
+              border: '1px solid #27272a',
+              borderRadius: '16px',
+              padding: '32px',
+              width: '400px',
+              maxWidth: '90%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+              animation: 'popIn 0.3s forwards cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Plus size={20} color="#3b82f6" />
+              Yeni Kategori Ekle
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '13px', color: '#a1a1aa' }}>Kategori Adı</label>
+              <input 
+                type="text" 
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Örn: EĞİTİM KİTLERİ"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  backgroundColor: '#1a1a1a',
+                  border: '1px solid #27272a',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '14px',
+                  outline: 'none'
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') confirmAddCategory();
+                }}
+                autoFocus
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+              <button 
+                onClick={() => setIsCategoryModalOpen(false)}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #27272a', backgroundColor: 'transparent', color: '#a1a1aa', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                İptal
+              </button>
+              <button 
+                onClick={confirmAddCategory}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#3b82f6', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+              >
+                Kategoriyi Ekle
               </button>
             </div>
           </div>

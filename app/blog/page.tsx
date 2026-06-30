@@ -2,8 +2,10 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Search, Calendar, User, ArrowRight, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { apiClient } from "@/lib/api";
 
 // Mock data removed at user request
 
@@ -20,7 +22,7 @@ function BlogListSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog`)
+    apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog`)
       .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data) && data.length > 0) {
@@ -32,7 +34,7 @@ function BlogListSection() {
             title: b.title,
             excerpt: b.lead_paragraph || b.category,
             date: b.date_published,
-            image: b.cover_image || "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&q=80&w=800"
+            image: b.cover_image || "/img/placeholder.png"
           }));
           setBlogs(mapped);
         }

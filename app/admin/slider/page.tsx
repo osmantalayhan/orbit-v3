@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import styles from "../admin.module.css";
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, CheckCircle, XCircle } from "lucide-react";
+import { apiClient } from "@/lib/api";
 
 interface SliderItem {
   id: number;
@@ -50,7 +51,7 @@ export default function AdminSliderPage() {
   const fetchSliders = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/slider`);
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/slider`);
       if (!res.ok) throw new Error("Slider verileri yüklenirken hata oluştu.");
       const data = await res.json();
       setSliders(data || []);
@@ -63,12 +64,12 @@ export default function AdminSliderPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
       if (res.ok) {
         const data = await res.json();
         setProducts(data || []);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Ürünler yüklenemedi", err);
     }
   };
@@ -106,7 +107,7 @@ export default function AdminSliderPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Bu slaytı silmek istediğinize emin misiniz?")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/slider/${id}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/slider/${id}`, {
         method: "DELETE"
       });
       if (!res.ok) throw new Error("Silme işlemi başarısız.");
@@ -127,7 +128,7 @@ export default function AdminSliderPage() {
       fd.append("active", (!item.active).toString());
       fd.append("image_url", item.image_url);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/slider/${item.id}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/slider/${item.id}`, {
         method: "PUT",
         body: fd
       });
@@ -162,7 +163,7 @@ export default function AdminSliderPage() {
       
       const method = editingId ? "PUT" : "POST";
 
-      const res = await fetch(url, { method, body: fd });
+      const res = await apiClient(url, { method, body: fd });
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error || "Kaydetme başarısız.");
@@ -313,7 +314,7 @@ export default function AdminSliderPage() {
             <form onSubmit={handleSave} className={styles.drawerBody} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Slayt Başlığı *</label>
-                <input required type="text" name="slide_title" value={formData.slide_title} onChange={handleChange} className={styles.formInput} placeholder="Örn: ORBIT F435" />
+                <input required type="text" name="slide_title" value={formData.slide_title} onChange={handleChange} className={styles.formInput} placeholder="Örn: Slayt Başlığı" />
               </div>
               
               <div className={styles.formGroup}>

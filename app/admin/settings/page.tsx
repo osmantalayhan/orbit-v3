@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "../admin.module.css";
 import { Save, Settings, Users, UploadCloud, Plus, Trash2, KeyRound, Loader2 } from "lucide-react";
+import { apiClient } from "@/lib/api";
 import Toast from "../../../components/Toast";
 
 interface SettingsData {
@@ -22,6 +23,7 @@ interface SettingsData {
   social_youtube: string;
   social_x: string;
   social_github: string;
+  social_links_json: string;
   offices_json: string;
 }
 
@@ -73,7 +75,7 @@ export default function SettingsAdminPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings?t=${new Date().getTime()}`, { cache: "no-store" });
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings?t=${new Date().getTime()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Ayarlar getirilemedi");
       const json = await res.json();
       setData(json.SiteSettings || json);
@@ -88,7 +90,7 @@ export default function SettingsAdminPage() {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users?t=${new Date().getTime()}`, { cache: "no-store" });
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users?t=${new Date().getTime()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Yöneticiler getirilemedi");
       const json = await res.json();
       setUsers(json || []);
@@ -116,10 +118,29 @@ export default function SettingsAdminPage() {
 
     setSaving(true);
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, {
+      const payloadToSave = {
+        site_title: data.site_title,
+        site_description: data.site_description,
+        site_keywords: data.site_keywords,
+        logo_url: data.logo_url,
+        favicon_url: data.favicon_url,
+        contact_email: data.contact_email,
+        contact_phone: data.contact_phone,
+        contact_address: data.contact_address,
+        map_latitude: parseFloat(String(data.map_latitude)) || 0,
+        map_longitude: parseFloat(String(data.map_longitude)) || 0,
+        social_linkedin: data.social_linkedin,
+        social_youtube: data.social_youtube,
+        social_x: data.social_x,
+        social_github: data.social_github,
+        social_links_json: data.social_links_json,
+        offices_json: data.offices_json,
+      };
+
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payloadToSave),
       });
 
       if (!res.ok) throw new Error("Kaydedilemedi");
@@ -156,28 +177,89 @@ export default function SettingsAdminPage() {
     formData.append("image", file);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/upload`, {
         method: "POST",
         body: formData,
       });
       const resData = await res.json();
       if (!res.ok) throw new Error(resData.error || "Yükleme hatası");
 
-      setData(prev => prev ? { ...prev, [field]: resData.url } : null);
-      showToast("Dosya başarıyla yüklendi", "success");
+      const updatedData = data ? { ...data, [field]: resData.url } : null;
+      setData(updatedData);
+      
+      if (updatedData) {
+        // Strict mapping to avoid Unprocessable Entity from Go
+        const payloadToSave = {
+          site_title: updatedData.site_title,
+          site_description: updatedData.site_description,
+          site_keywords: updatedData.site_keywords,
+          logo_url: updatedData.logo_url,
+          favicon_url: updatedData.favicon_url,
+          contact_email: updatedData.contact_email,
+          contact_phone: updatedData.contact_phone,
+          contact_address: updatedData.contact_address,
+          map_latitude: parseFloat(String(updatedData.map_latitude)) || 0,
+          map_longitude: parseFloat(String(updatedData.map_longitude)) || 0,
+          social_linkedin: updatedData.social_linkedin,
+          social_youtube: updatedData.social_youtube,
+          social_x: updatedData.social_x,
+          social_github: updatedData.social_github,
+          social_links_json: updatedData.social_links_json,
+          offices_json: updatedData.offices_json,
+        };
+
+        // Dosya yüklendikten sonra anında veritabanına kaydet
+        const saveRes = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payloadToSave),
+        });
+        if (!saveRes.ok) {
+          const errData = await saveRes.json().catch(() => ({}));
+          throw new Error(errData.error || "Veritabanına kaydedilemedi");
+        }
+
+        // Eğer favicon yüklendiyse DOM'u hemen güncelle
+        if (field === "favicon_url") {
+          const bustUrl = `${resData.url}?_cb=${Date.now()}`;
+          document
+            .querySelectorAll("link[rel='icon'], link[rel='shortcut icon'], link[rel='apple-touch-icon']")
+            .forEach((el) => el.remove());
+          const addLink = (rel: string, href: string) => {
+            const link = document.createElement("link");
+            link.rel = rel;
+            link.href = href;
+            document.head.appendChild(link);
+          };
+          addLink("icon", bustUrl);
+          addLink("shortcut icon", bustUrl);
+          addLink("apple-touch-icon", bustUrl);
+        }
+      }
+
+      showToast("Dosya başarıyla yüklendi ve kaydedildi", "success");
     } catch (err: any) {
       showToast(err.message, "error");
     }
   };
 
   // --- ADMIN USERS LOGIC ---
+  const calculateStrength = (pass: string) => {
+    let score = 0;
+    if (pass.length >= 8) score += 25;
+    if (/[A-Z]/.test(pass)) score += 25;
+    if (/[a-z]/.test(pass)) score += 25;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 25;
+    return score;
+  };
+
   const handleAddUser = async () => {
     if (newUser.password !== newUser.confirmPassword) {
       showToast("Şifreler eşleşmiyor!", "error");
       return;
     }
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: newUser.email, password: newUser.password }),
@@ -201,7 +283,7 @@ export default function SettingsAdminPage() {
       return;
     }
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users/${showPasswordModal}/password`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users/${showPasswordModal}/password`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: newPassword }),
@@ -225,7 +307,7 @@ export default function SettingsAdminPage() {
     }
     if (!window.confirm("Bu yöneticiyi silmek istediğinize emin misiniz?")) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users/${id}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/users/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -482,6 +564,27 @@ export default function SettingsAdminPage() {
             <div className={styles.formGroup} style={{ marginBottom: '16px' }}>
               <label className={styles.formLabel}>Şifre</label>
               <input type="password" value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})} className={styles.formInput} placeholder="••••••••" />
+              {newUser.password.length > 0 && (
+                <div style={{ marginTop: '12px' }}>
+                  <div style={{ display: 'flex', gap: '4px', height: '6px' }}>
+                    {[1, 2, 3, 4].map(i => {
+                      const strength = calculateStrength(newUser.password);
+                      const active = strength >= i * 25;
+                      let color = '#3f3f46';
+                      if (active) {
+                        if (strength <= 25) color = '#ef4444'; // red
+                        else if (strength <= 50) color = '#f59e0b'; // orange
+                        else if (strength <= 75) color = '#eab308'; // yellow
+                        else color = '#22c55e'; // green
+                      }
+                      return <div key={i} style={{ flex: 1, backgroundColor: color, borderRadius: '4px', transition: 'all 0.3s ease' }} />;
+                    })}
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#a1a1aa', marginTop: '8px', lineHeight: '1.4' }}>
+                    Şifreniz en az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir.
+                  </p>
+                </div>
+              )}
             </div>
             <div className={styles.formGroup} style={{ marginBottom: '32px' }}>
               <label className={styles.formLabel}>Şifre (Tekrar)</label>
@@ -503,6 +606,27 @@ export default function SettingsAdminPage() {
             <div className={styles.formGroup} style={{ marginBottom: '16px' }}>
               <label className={styles.formLabel}>Yeni Şifre</label>
               <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className={styles.formInput} placeholder="Yeni şifreyi girin..." />
+              {newPassword.length > 0 && (
+                <div style={{ marginTop: '12px' }}>
+                  <div style={{ display: 'flex', gap: '4px', height: '6px' }}>
+                    {[1, 2, 3, 4].map(i => {
+                      const strength = calculateStrength(newPassword);
+                      const active = strength >= i * 25;
+                      let color = '#3f3f46';
+                      if (active) {
+                        if (strength <= 25) color = '#ef4444'; // red
+                        else if (strength <= 50) color = '#f59e0b'; // orange
+                        else if (strength <= 75) color = '#eab308'; // yellow
+                        else color = '#22c55e'; // green
+                      }
+                      return <div key={i} style={{ flex: 1, backgroundColor: color, borderRadius: '4px', transition: 'all 0.3s ease' }} />;
+                    })}
+                  </div>
+                  <p style={{ fontSize: '11px', color: '#a1a1aa', marginTop: '8px', lineHeight: '1.4' }}>
+                    Şifreniz en az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir.
+                  </p>
+                </div>
+              )}
             </div>
             <div className={styles.formGroup} style={{ marginBottom: '32px' }}>
               <label className={styles.formLabel}>Yeni Şifre (Tekrar)</label>

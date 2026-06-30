@@ -1,156 +1,93 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import Image from "next/image";
-
-// Ürün Veritabanı
-const STATIC_PRODUCT_DATA: Record<string, {
-  name: string;
-  role: string;
-  tagline: string;
-  description: string;
-  images: string[];
-  specs: { label: string; value: string }[];
-  channels: { name: string; logo?: string; url: string }[];
-  pinout_images?: string[];
-  downloads?: any[];
-}> = {
-  "f435": {
-    name: "Orbit F435",
-    role: "Uçuş Kontrolör Sistemi",
-    tagline: "Çift IMU ile sınıfının en kararlı uçuş kontrolörü.",
-    description: "Orbit F435, endüstriyel ve askeri sınıf İHA operasyonları için tasarlanmış yüksek performanslı bir uçuş kontrol kartıdır. Birbirine 90° açıyla yerleştirilmiş çift yedekli IMU sensör mimarisi ve gerçek zamanlı Kalman Filtresi algoritmaları sayesinde 45 knot'a kadar ani rüzgar darbelerinde stabilite kaybı sıfıra indirilmiştir. STM32F405 ARM Cortex-M4 işlemcisi üzerinde çalışan Orbit RTOS, tüm sensör verilerini 1kHz frekansında işler.",
-    images: ["/img/ucuskontrol.png", "/img/flight-control.png", "/img/ucuskontrol1.png"],
-    specs: [
-      { label: "İşlemci", value: "STM32F405 ARM Cortex-M4 @ 168MHz" },
-      { label: "IMU Sensörleri", value: "Dual ICM-42688-P (Yedekli & İzole)" },
-      { label: "Barometre", value: "SPL06-001 Hassas Barometre" },
-      { label: "Giriş Voltajı", value: "2S – 8S LiPo (7.4V – 33.6V)" },
-      { label: "Kara Kutu", value: "16MB Onboard Flash Bellek" },
-      { label: "UART Port", value: "6x UART, 2x I2C, 1x SPI" },
-      { label: "PWM Çıkış", value: "8x Motor + 4x Servo" },
-      { label: "Boyutlar", value: "38.5 × 38.5 mm" },
-      { label: "Ağırlık", value: "8.2g" },
-      { label: "Sertifikasyon", value: "MIL-STD-810G / RoHS" },
-    ],
-    channels: [
-      { name: "Trendyol", logo: "/img/saleschanell/trendyol.png", url: "#" },
-      { name: "Hepsiburada", logo: "/img/saleschanell/hepsiburada.png", url: "#" },
-      { name: "N11", logo: "/img/saleschanell/n11.png", url: "#" },
-      { name: "Robolink", logo: "/img/saleschanell/robolink.png", url: "#" },
-      { name: "PTT AVM", logo: "/img/saleschanell/pttavm.png", url: "#" },
-    ],
-  },
-  "e50": {
-    name: "Orbit E50",
-    role: "Güç Sistemleri (ESC)",
-    tagline: "BLHeli_32 tabanlı, 50A sürekli akım kapasiteli 4-in-1 ESC.",
-    description: "Orbit E50, dört bağımsız ESC'yi tek kompakt kart üzerinde birleştiren yüksek verimli güç elektroniğidir. 128kHz PWM frekansı ve aktif fren özelliği ile motor kontrolünde milisaniyelik hassasiyet sağlar. Özel çok katmanlı bakır mimarisi ile yüksek akım altında sıcaklık yönetimi optimize edilmiştir.",
-    images: ["/img/esc.png", "/img/flight-control.png"],
-    specs: [
-      { label: "Sürekli Akım", value: "50A (Her Kanal)" },
-      { label: "Zirve Akım", value: "65A (10 saniye)" },
-      { label: "Giriş Voltajı", value: "3S – 6S LiPo" },
-      { label: "PWM Frekansı", value: "16kHz – 128kHz" },
-      { label: "Protokoller", value: "DSHOT150/300/600/1200" },
-      { label: "Boyutlar", value: "38 × 38 mm" },
-      { label: "Ağırlık", value: "14.5g" },
-    ],
-    channels: [
-      { name: "Trendyol", logo: "/img/saleschanell/trendyol.png", url: "#" },
-      { name: "Hepsiburada", logo: "/img/saleschanell/hepsiburada.png", url: "#" },
-      { name: "N11", logo: "/img/saleschanell/n11.png", url: "#" },
-      { name: "Robolink", logo: "/img/saleschanell/robolink.png", url: "#" },
-      { name: "PTT AVM", logo: "/img/saleschanell/pttavm.png", url: "#" },
-    ],
-  },
-};
-
-const fallbackProduct = STATIC_PRODUCT_DATA["f435"];
+import { apiClient } from "@/lib/api";
 
 export default function UrunDetayPage() {
   const params = useParams();
   const router = useRouter();
-  const id = (params?.id as string) || "f435";
+  const id = (params?.id as string) || "";
   
-  const [product, setProduct] = useState<any>(STATIC_PRODUCT_DATA[id] || fallbackProduct);
-
-  React.useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${id}`)
-      .then(res => {
-        if (!res.ok) throw new Error("Failed to fetch product");
-        return res.json();
-      })
-      .then(data => {
-        if (data) {
-          const mappedProduct = {
-            name: data.name,
-            role: data.role,
-            tagline: data.tagline,
-            description: data.description,
-            images: data.images && data.images.length > 0 ? data.images : ["/img/flight-control.png"],
-            specs: Array.isArray(data.specs) ? data.specs : (data.specs ? Object.entries(data.specs).map(([label, value]) => ({ label, value: String(value) })) : []),
-            channels: Array.isArray(data.channels) ? data.channels : (data.channels ? Object.entries(data.channels).map(([name, url]) => ({ name, url: String(url) })) : []),
-            pinout_images: data.pinout_images || [],
-            downloads: data.downloads || [],
-            is_teknofest_active: data.is_teknofest_active || false,
-            teknofest_discount: data.teknofest_discount || "15"
-          };
-          setProduct(mappedProduct);
-          if (data.is_teknofest_active) {
-            setShowPromo(true);
-          } else {
-            setShowPromo(false);
-          }
-        }
-      })
-      .catch(err => console.error("Error loading product:", err));
-  }, [id]);
-
+  // Tüm Hook'lar (useState, useRef, useEffect) koşullardan önce en üstte tanımlanmalı
+  const [product, setProduct] = useState<any>(null);
+  const [isNotFound, setIsNotFound] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [showPromo, setShowPromo] = useState(false);
   const [activeTab, setActiveTab] = useState("specs");
   const salesRef = useRef<HTMLDivElement>(null);
-
-  const scrollToSales = () => {
-    salesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const [recommendations, setRecommendations] = useState<any[]>([
-    {
-      id: "f435",
-      name: "Orbit F435",
-      role: "Uçuş Kontrol Sistemi",
-      desc: "STM32F405 İşlemci & Dual IMU Teknolojisi",
-      image: "/img/ucuskontrol.png",
-    },
-    {
-      id: "e50",
-      name: "Orbit E50",
-      role: "50A 4-in-1 ESC",
-      desc: "BLHeli_32 & 128K PWM Desteği",
-      image: "/img/esc.png",
-    },
-    {
-      id: "lrs",
-      name: "Orbit LRS",
-      role: "2.4GHz ELRS Alıcı",
-      desc: "30km+ Menzil & 0.6g Ultra Hafif",
-      image: "/img/elrs.png",
-    },
-    {
-      id: "gps",
-      name: "Orbit M10",
-      role: "GPS Modülü",
-      desc: "Ublox M10 & Dual Kompas",
-      image: "/img/gps.png",
-    }
-  ].filter(p => p.id !== id).slice(0, 3));
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   React.useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLightboxOpen || !product?.images) return;
+      if (e.key === "Escape") setIsLightboxOpen(false);
+      if (e.key === "ArrowRight") setLightboxIndex((prev) => (prev + 1) % product.images.length);
+      if (e.key === "ArrowLeft") setLightboxIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    if (isLightboxOpen) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+      document.documentElement.style.overflow = "";
+    };
+  }, [isLightboxOpen, product]);
+
+  React.useEffect(() => {
+    apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${id}`)
+      .then(res => {
+        if (!res.ok) {
+          if (res.status === 404) return null;
+          console.error("Failed to fetch product, status:", res.status);
+          return null;
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (!data) {
+          setIsNotFound(true);
+          return;
+        }
+        const mappedProduct = {
+          name: data.name,
+          role: data.role,
+          tagline: data.tagline,
+          description: data.description,
+          images: data.images && data.images.length > 0 ? data.images : ["/img/flight-control.png"],
+          specs: Array.isArray(data.specs) ? data.specs : (data.specs ? Object.entries(data.specs).map(([label, value]) => ({ label, value: String(value) })) : []),
+          channels: Array.isArray(data.channels) ? data.channels : (data.channels ? Object.entries(data.channels).map(([name, url]) => ({ name, url: String(url) })) : []),
+          pinout_images: data.pinout_images || [],
+          downloads: data.downloads || [],
+          is_teknofest_active: data.is_teknofest_active || false,
+          teknofest_discount: data.teknofest_discount || "15"
+        };
+        setProduct(mappedProduct);
+        if (data.is_teknofest_active) {
+          setShowPromo(true);
+        } else {
+          setShowPromo(false);
+        }
+      })
+      .catch(err => {
+        console.error("Error loading product:", err);
+      });
+  }, [id]);
+
+  React.useEffect(() => {
+    apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`)
       .then(res => res.json())
       .then(data => {
         if (data && Array.isArray(data)) {
@@ -171,6 +108,23 @@ export default function UrunDetayPage() {
       })
       .catch(err => console.error("Error loading recommendations:", err));
   }, [id]);
+
+  const scrollToSales = () => {
+    salesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  // Erken dönüş (Early Return) işlemleri tüm Hook'lardan SONRA yapılmalı
+  if (isNotFound) {
+    notFound();
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="w-8 h-8 border-4 border-[#3b82f6] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <main style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", overflow: "hidden" }}>
@@ -310,14 +264,21 @@ export default function UrunDetayPage() {
             }}>
 
               {/* Ürün Resmi (Sadece Yalın Görsel) */}
-              <div style={{
-                position: "relative",
-                width: "100%",
-                aspectRatio: "1/1",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
+              <div 
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  aspectRatio: "1/1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "zoom-in"
+                }}
+                onClick={() => {
+                  setLightboxIndex(activeImage);
+                  setIsLightboxOpen(true);
+                }}
+              >
                 <Image
                   src={product.images[activeImage]}
                   alt={product.name}
@@ -331,7 +292,7 @@ export default function UrunDetayPage() {
             {/* Küçük Görsel Seçiciler */}
             {product.images.length > 1 && (
               <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-                {product.images.map((img, i) => (
+                {product.images.map((img: string, i: number) => (
                   <button
                     key={i}
                     onClick={() => setActiveImage(i)}
@@ -418,7 +379,7 @@ export default function UrunDetayPage() {
                 Satış Kanalları
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "16px", alignItems: "flex-start" }}>
-                {product.channels.map((channel, i) => (
+                {product.channels.map((channel: any, i: number) => (
                   <a
                     key={i}
                     href={channel.url}
@@ -520,7 +481,7 @@ export default function UrunDetayPage() {
                   columnGap: "80px",
                 }}
               >
-                {product.specs.map((spec, i) => (
+                {product.specs.map((spec: any, i: number) => (
                   <div
                     key={i}
                     style={{
@@ -594,37 +555,8 @@ export default function UrunDetayPage() {
                         />
                       </div>
                       
-                      {/* Technical Blueprint styling inside frame */}
-                      <div style={{
-                        zIndex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "12px",
-                        pointerEvents: "none"
-                      }}>
-                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: "rgba(255,255,255,0.2)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 017.5 0z" />
-                        </svg>
-                        <span style={{
-                          fontSize: "12px",
-                          fontFamily: "var(--font-mono)",
-                          color: "rgba(255,255,255,0.25)",
-                          letterSpacing: "0.05em",
-                          textTransform: "uppercase"
-                        }}>
-                          Bağlantı Şeması (Ön Yüz)
-                        </span>
-                      </div>
                     </div>
-                    <p style={{
-                      fontSize: "14px",
-                      color: "rgba(255,255,255,0.4)",
-                      fontFamily: "var(--font-mono)",
-                      margin: 0,
-                      textAlign: "center"
-                    }}>
+                    <p className="text-white/60 text-sm text-center font-medium mt-1">
                       {product.name} Ön Yüz Şeması
                     </p>
                   </div>
@@ -663,37 +595,8 @@ export default function UrunDetayPage() {
                         />
                       </div>
                       
-                      {/* Technical Blueprint styling inside frame */}
-                      <div style={{
-                        zIndex: 1,
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "12px",
-                        pointerEvents: "none"
-                      }}>
-                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{ color: "rgba(255,255,255,0.2)" }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 017.5 0z" />
-                        </svg>
-                        <span style={{
-                          fontSize: "12px",
-                          fontFamily: "var(--font-mono)",
-                          color: "rgba(255,255,255,0.25)",
-                          letterSpacing: "0.05em",
-                          textTransform: "uppercase"
-                        }}>
-                          Pinout Diyagramı (Arka Yüz)
-                        </span>
-                      </div>
                     </div>
-                    <p style={{
-                      fontSize: "14px",
-                      color: "rgba(255,255,255,0.4)",
-                      fontFamily: "var(--font-mono)",
-                      margin: 0,
-                      textAlign: "center"
-                    }}>
+                    <p className="text-white/60 text-sm text-center font-medium mt-1">
                       {product.name} Arka Yüz Pinout Planı
                     </p>
                   </div>
@@ -764,7 +667,10 @@ export default function UrunDetayPage() {
                         <span style={{ fontSize: "13px", fontFamily: "var(--font-mono)", color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>
                           {doc.size}
                         </span>
-                        <button
+                        <a
+                          href={doc.url || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           style={{
                             background: "rgba(255,255,255,0.05)",
                             border: "none",
@@ -776,7 +682,8 @@ export default function UrunDetayPage() {
                             justifyContent: "center",
                             color: "#fff",
                             cursor: "pointer",
-                            transition: "all 0.2s ease"
+                            transition: "all 0.2s ease",
+                            textDecoration: "none"
                           }}
                           onMouseOver={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.15)"; }}
                           onMouseOut={(e) => { e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)"; }}
@@ -784,7 +691,7 @@ export default function UrunDetayPage() {
                           <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                           </svg>
-                        </button>
+                        </a>
                       </div>
                     </div>
                   ))}
@@ -975,7 +882,7 @@ export default function UrunDetayPage() {
               lineHeight: "1.6",
               margin: "0 0 20px 0",
             }}>
-              Teknofest dönemine özel, <strong>{product.name}</strong> ve tüm uçuş donanımlarımızda sepette <strong style={{ color: "#fff", fontWeight: "800" }}>%{product.teknofest_discount || "15"} indirim</strong> fırsatını kaçırmayın!
+              Teknofest dönemine özel, <strong>{product.name}</strong> ve tüm uçuş donanımlarımızda sepette <strong style={{ color: "#fff", fontWeight: "800" }}>%{product.teknofest_discount} indirim</strong> fırsatını kaçırmayın!
             </p>
 
             {/* Mini Buton */}
@@ -1005,6 +912,114 @@ export default function UrunDetayPage() {
             >
               Kapat
             </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── LIGHTBOX OVERLAY ── */}
+      <AnimatePresence>
+        {isLightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center cursor-pointer"
+            onClick={() => setIsLightboxOpen(false)}
+          >
+            {/* Kapatma Butonu */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLightboxOpen(false);
+              }}
+              className="absolute top-6 right-6 z-50 p-2 text-white/50 hover:text-white transition-colors"
+            >
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* Sol Ok (Sadece 1'den fazla resim varsa) */}
+            {product.images.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+                }}
+                className="absolute left-4 md:left-12 z-50 p-3 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-all backdrop-blur-md"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Resim Container */}
+            <motion.div 
+              key={lightboxIndex}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="relative w-[90vw] h-[75vh] md:w-[80vw] md:h-[80vh] flex items-center justify-center cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={product.images[lightboxIndex]}
+                alt={`${product.name} Gallery Image`}
+                fill
+                className="object-contain"
+                quality={100}
+                priority
+              />
+            </motion.div>
+
+            {/* Sağ Ok (Sadece 1'den fazla resim varsa) */}
+            {product.images.length > 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setLightboxIndex((prev) => (prev + 1) % product.images.length);
+                }}
+                className="absolute right-4 md:right-12 z-50 p-3 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-all backdrop-blur-md"
+              >
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Alt Önizlemeler (Küçük Thumbnail'lar) */}
+            {product.images.length > 1 && (
+              <div 
+                className="absolute bottom-4 md:bottom-8 z-50 flex items-center justify-center gap-3 w-full px-4 overflow-x-auto no-scrollbar cursor-default"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* CSS ile Scrollbar'ı gizlemek için head içine style ekliyoruz veya inline yapıyoruz. Webkit için global.css lazım ama Firefox/IE inline ile çözüldü */}
+                <style jsx>{`
+                  div::-webkit-scrollbar {
+                    display: none;
+                  }
+                `}</style>
+                {product.images.map((img: string, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLightboxIndex(idx);
+                    }}
+                    className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 my-6 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-pointer ${
+                      idx === lightboxIndex 
+                        ? "border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.3)] opacity-100" 
+                        : "border-transparent opacity-40 hover:opacity-80"
+                    }`}
+                  >
+                    <Image src={img} alt="" fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

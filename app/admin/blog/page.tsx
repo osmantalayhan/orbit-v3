@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "../admin.module.css";
 import { FileText, Search, Plus, X, Trash2, Edit, Save, Bold, Italic, Underline, List, ListOrdered, Quote, Table, Link as LinkIcon, Code, Image as ImageIcon } from "lucide-react";
+import { apiClient } from "@/lib/api";
 
 interface BlogPost {
   id: string | number;
@@ -39,7 +40,8 @@ export default function AdminBlogPage() {
     read_time: "",
     lead_paragraph: "",
     author_name: "",
-    author_role: ""
+    author_role: "",
+    active: true
   });
 
   const [coverImage, setCoverImage] = useState<File | null>(null);
@@ -342,7 +344,7 @@ export default function AdminBlogPage() {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog`);
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog`);
       if (!res.ok) {
         if (res.status === 404) {
           // Backend route might not exist yet
@@ -443,7 +445,7 @@ export default function AdminBlogPage() {
       const url = editingPostId ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog/${editingPostId}` : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog`;
       const method = editingPostId ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await apiClient(url, {
         method: method,
         body: formData,
       });
@@ -463,7 +465,7 @@ export default function AdminBlogPage() {
   const confirmDelete = async () => {
     if (!deletingPostId) return;
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog/${deletingPostId}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog/${deletingPostId}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Silme işlemi başarısız.");
@@ -493,7 +495,7 @@ export default function AdminBlogPage() {
       if (post.cover_image) formData.append("existing_cover_image", post.cover_image);
       if (post.author_avatar) formData.append("existing_author_avatar", post.author_avatar);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog/${post.id}`, {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog/${post.id}`, {
         method: "PUT",
         body: formData,
       });

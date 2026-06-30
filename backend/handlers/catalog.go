@@ -16,53 +16,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// SeedCatalogData veri tabanında ürün veya slider verisi boşsa varsayılan başlangıç verilerini otomatik yükler
-func SeedCatalogData() {
-	var count int
-	err := config.DB.QueryRow(context.Background(), "SELECT COUNT(*) FROM products").Scan(&count)
-	if err != nil {
-		log.Println("Error checking products count:", err)
-		return
-	}
 
-	if count == 0 {
-		log.Println("Seeding default products into database...")
-		productsQuery := `
-			INSERT INTO products (id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, badge, sort_order, active)
-			VALUES 
-			('f435', 'Orbit F435', 'Uçuş Kontrol Sistemi', 'Otopilot', 'STM32F405 İşlemci & Dual IMU Teknolojisi', 'Havacılık standartlarında yedekli otopilot sistemi.', ARRAY['/img/ucuskontrol.png'], '{}'::jsonb, '{}'::jsonb, ARRAY[]::text[], '[]'::jsonb, 'Yeni', 0, true),
-			('e50', 'Orbit E50', '50A 4-in-1 ESC', 'Güç', 'BLHeli_32 & 128K PWM Desteği', 'Yüksek akımlı ve kararlı motor hız kontrolcüsü.', ARRAY['/img/esc.png'], '{}'::jsonb, '{}'::jsonb, ARRAY[]::text[], '[]'::jsonb, '', 1, true)
-		`
-		_, err = config.DB.Exec(context.Background(), productsQuery)
-		if err != nil {
-			log.Println("Error seeding products:", err)
-		} else {
-			log.Println("Successfully seeded default products!")
-		}
-	}
-
-	var sliderCount int
-	err = config.DB.QueryRow(context.Background(), "SELECT COUNT(*) FROM home_slider").Scan(&sliderCount)
-	if err != nil {
-		log.Println("Error checking slider count:", err)
-		return
-	}
-
-	if sliderCount == 0 {
-		log.Println("Seeding default slider items into database...")
-		sliderQuery := `
-			INSERT INTO home_slider (product_id, model_code, slide_title, slide_desc, image_url, sort_order, active)
-			VALUES 
-			('f435', 'F435', 'ORBIT F435', 'Uçuş Kontrol Kartı', '/img/ucuskontrol.png', 0, true)
-		`
-		_, err = config.DB.Exec(context.Background(), sliderQuery)
-		if err != nil {
-			log.Println("Error seeding slider items:", err)
-		} else {
-			log.Println("Successfully seeded default slider items!")
-		}
-	}
-}
 
 // GetProducts tüm ürünleri listeler
 func GetProducts(c *fiber.Ctx) error {
@@ -139,7 +93,7 @@ func GetProductByID(c *fiber.Ctx) error {
 // GetSliderItems anasayfa slider elemanlarını listeler
 func GetSliderItems(c *fiber.Ctx) error {
 	rows, err := config.DB.Query(context.Background(), `
-		SELECT id, product_id, model_code, slide_title, slide_desc, image_url, sort_order, active
+		SELECT id, COALESCE(product_id, ''), model_code, slide_title, slide_desc, image_url, sort_order, active
 		FROM home_slider
 		WHERE active = true
 		ORDER BY sort_order ASC
@@ -171,7 +125,7 @@ func GetSliderItems(c *fiber.Ctx) error {
 // GetAllSliderItems tüm slider elemanlarını (aktif/pasif fark etmeksizin) admin paneli için listeler
 func GetAllSliderItems(c *fiber.Ctx) error {
 	rows, err := config.DB.Query(context.Background(), `
-		SELECT id, product_id, model_code, slide_title, slide_desc, image_url, sort_order, active
+		SELECT id, COALESCE(product_id, ''), model_code, slide_title, slide_desc, image_url, sort_order, active
 		FROM home_slider
 		ORDER BY sort_order ASC
 	`)

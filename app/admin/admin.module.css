@@ -360,7 +360,7 @@
 }
 
 .trendUp { color: #10b981; }
-.trendNeutral { color: #a1a1aa; }
+.trendDown { color: #ef4444; }
 .trendDesc { color: #a1a1aa; font-weight: 500; } 
 
 /* --- ALT İÇERİK BÖLÜMÜ --- */

@@ -14,6 +14,7 @@ import {
   Search,
   MapPin,
   Image as ImageIcon,
+  ShoppingCart,
 } from "lucide-react";
 import styles from "../../app/admin/admin.module.css";
 
@@ -21,6 +22,7 @@ const menuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Katalog", url: "/admin/products", icon: Package },
   { title: "Ana Slider", url: "/admin/slider", icon: ImageIcon },
+  { title: "Satış Kanalları", url: "/admin/sales-channels", icon: ShoppingCart },
   { title: "Blog", url: "/admin/blog", icon: FileText },
   { title: "Kariyer", url: "/admin/careers", icon: Briefcase },
   { title: "İletişim", url: "/admin/messages", icon: Mail },
@@ -89,7 +91,8 @@ export default function AdminLayoutWrapper({
       const response = await originalFetch(resource, config);
       
       // Eğer Backend JWT Middleware "401 Unauthorized" verirse
-      if (response.status === 401 && !isLoginPage) {
+      const isAlreadyLoginPage = window.location.pathname === "/admin/login";
+      if (response.status === 401 && !isLoginPage && !isAlreadyLoginPage) {
         localStorage.removeItem("admin_token");
         localStorage.removeItem("admin_user");
         window.location.href = "/admin/login";
@@ -129,7 +132,7 @@ export default function AdminLayoutWrapper({
       fetchUnreadCount();
       
       const handleAppsReadEvent = () => setUnreadCareersCount(0);
-      const handleMsgsReadEvent = () => setUnreadMessagesCount(0);
+      const handleMsgsReadEvent = () => setUnreadMessagesCount(prev => Math.max(0, prev - 1));
       
       window.addEventListener("orbit_apps_read", handleAppsReadEvent);
       window.addEventListener("orbit_messages_read", handleMsgsReadEvent);

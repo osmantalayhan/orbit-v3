@@ -138,11 +138,9 @@ body {
   padding: 0 16px 0 32px;
   z-index: 50;
   /* Apple Mica Material Style */
-  background: 
-    linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.01) 100%),
-    rgba(15, 15, 15, 0.4);
-  backdrop-filter: blur(40px) saturate(250%) contrast(80%) brightness(1.1);
-  -webkit-backdrop-filter: blur(40px) saturate(250%) contrast(80%) brightness(1.1);
+  background: rgba(15, 15, 15, 0.3);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 0.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 999px;
   box-shadow: 
@@ -184,7 +182,7 @@ body {
 }
 
 .navbar-logo img {
-  height: 20px;
+  height: 24px;
   width: auto;
   filter: brightness(0) invert(1);
 }
@@ -328,12 +326,13 @@ body {
 }
 
 .btn-secondary:hover {
-  background: var(--accents-2);
-  border-color: var(--accents-4);
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 @media (max-width: 1024px) {
   .navbar {
+    width: calc(100% - 32px);
     padding: 0 24px;
   }
 
@@ -458,7 +457,9 @@ img {
   .blog-sec-header-wrapper,
   .blog-sec-grid-wrapper,
   .career-sec-header-wrapper,
-  .career-sec-grid-wrapper {
+  .career-sec-grid-wrapper,
+  .page-container,
+  .blog-page-container {
     width: calc(100% - 48px) !important;
   }
 }
@@ -468,6 +469,11 @@ img {
   .hero-content-wrapper {
     width: calc(100% - 32px) !important;
     bottom: 32px !important;
+  }
+  
+  .page-container,
+  .blog-page-container {
+    width: calc(100% - 32px) !important;
   }
   .hero-content-wrapper > div {
     align-items: center !important;
@@ -503,16 +509,16 @@ img {
 
   /* About Scroll Cards Flow */
   .about-scroll-right {
-    gap: 20px !important;
+    gap: 32px !important;
   }
   .about-scroll-container {
-    padding: 0 16px !important;
+    padding: 0 24px !important;
   }
   .scroll-item-card {
     opacity: 1 !important;
     transform: none !important;
     border-radius: 24px !important;
-    height: auto !important;
+    /* Removed height: auto to maintain the tall, aesthetic card shape */
   }
 
   /* Product Vitrin Carousel & Inner Layouts */
@@ -677,9 +683,23 @@ img {
     padding-top: 60px !important;
   }
   
-  /* 9. ProductVitrin Mobile Squeeze Fix */
-  .vitrin-carousel-wrapper {
+  /* 9. Unified Mobile Side Paddings (Matches AboutScroll 24px) */
+  .vitrin-header-wrapper,
+  .vitrin-carousel-wrapper,
+  .blog-sec-header-wrapper,
+  .blog-sec-carousel-wrapper {
     width: 100% !important;
-    padding: 0 16px !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    box-sizing: border-box !important;
   }
+}
+
+/* Utilities */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

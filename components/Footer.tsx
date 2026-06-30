@@ -65,7 +65,7 @@ export default function Footer() {
         }
       `}</style>
 
-      {/* 1. Background Large Text (Outlined Doku - Visibility Reduced) */}
+      {/* 1. Background Large Text (Outlined Doku - 2.2px Solid) */}
       <div className="footer-bg-text absolute top-0 left-1/2 -translate-x-1/2 select-none pointer-events-none whitespace-nowrap">
         <h1
           style={{
@@ -73,7 +73,7 @@ export default function Footer() {
             fontWeight: '900',
             letterSpacing: '-0.05em',
             color: 'transparent',
-            WebkitTextStroke: '1.2px rgba(255,255,255,0.15)',
+            WebkitTextStroke: '2.2px rgba(255,255,255,0.2)',
             opacity: 1
           }}
         >
