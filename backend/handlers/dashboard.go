@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"log"
 	"orbit-backend/config"
 	"sync"
 	"time"
@@ -45,9 +46,15 @@ func GetDashboardStats(c *fiber.Ctx) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM products WHERE active = true").Scan(&prodTotal)
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM products WHERE active = true AND created_at >= $1", thisMonthStart).Scan(&prodThisMonth)
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM products WHERE active = true AND created_at >= $1 AND created_at < $2", lastMonthStart, thisMonthStart).Scan(&prodLastMonth)
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM products WHERE active = true").Scan(&prodTotal); err != nil {
+			log.Println("Dashboard ProdTotal Error:", err)
+		}
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM products WHERE active = true AND created_at >= $1", thisMonthStart).Scan(&prodThisMonth); err != nil {
+			log.Println("Dashboard ProdThisMonth Error:", err)
+		}
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM products WHERE active = true AND created_at >= $1 AND created_at < $2", lastMonthStart, thisMonthStart).Scan(&prodLastMonth); err != nil {
+			log.Println("Dashboard ProdLastMonth Error:", err)
+		}
 		prodTrend, prodTrendUp = calculateTrendStr(prodThisMonth, prodLastMonth)
 	}()
 
@@ -58,9 +65,15 @@ func GetDashboardStats(c *fiber.Ctx) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM contact_messages WHERE status = 'unread'").Scan(&msgTotal)
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM contact_messages WHERE created_at >= $1", thisMonthStart).Scan(&msgThisMonth)
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM contact_messages WHERE created_at >= $1 AND created_at < $2", lastMonthStart, thisMonthStart).Scan(&msgLastMonth)
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM contact_messages WHERE status = 'unread'").Scan(&msgTotal); err != nil {
+			log.Println("Dashboard MsgTotal Error:", err)
+		}
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM contact_messages WHERE created_at >= $1", thisMonthStart).Scan(&msgThisMonth); err != nil {
+			log.Println("Dashboard MsgThisMonth Error:", err)
+		}
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM contact_messages WHERE created_at >= $1 AND created_at < $2", lastMonthStart, thisMonthStart).Scan(&msgLastMonth); err != nil {
+			log.Println("Dashboard MsgLastMonth Error:", err)
+		}
 		msgTrend, msgTrendUp = calculateTrendStr(msgThisMonth, msgLastMonth)
 	}()
 
@@ -71,9 +84,15 @@ func GetDashboardStats(c *fiber.Ctx) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM blog_posts WHERE active = true").Scan(&blogTotal)
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM blog_posts WHERE active = true AND created_at >= $1", thisMonthStart).Scan(&blogThisMonth)
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM blog_posts WHERE active = true AND created_at >= $1 AND created_at < $2", lastMonthStart, thisMonthStart).Scan(&blogLastMonth)
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM blog_posts WHERE active = true").Scan(&blogTotal); err != nil {
+			log.Println("Dashboard BlogTotal Error:", err)
+		}
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM blog_posts WHERE active = true AND created_at >= $1", thisMonthStart).Scan(&blogThisMonth); err != nil {
+			log.Println("Dashboard BlogThisMonth Error:", err)
+		}
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM blog_posts WHERE active = true AND created_at >= $1 AND created_at < $2", lastMonthStart, thisMonthStart).Scan(&blogLastMonth); err != nil {
+			log.Println("Dashboard BlogLastMonth Error:", err)
+		}
 		blogTrend, blogTrendUp = calculateTrendStr(blogThisMonth, blogLastMonth)
 	}()
 
@@ -84,9 +103,15 @@ func GetDashboardStats(c *fiber.Ctx) error {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM job_applications").Scan(&careerTotal)
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM job_applications WHERE created_at >= $1", thisMonthStart).Scan(&careerThisMonth)
-		config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM job_applications WHERE created_at >= $1 AND created_at < $2", lastMonthStart, thisMonthStart).Scan(&careerLastMonth)
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM job_applications").Scan(&careerTotal); err != nil {
+			log.Println("Dashboard CareerTotal Error:", err)
+		}
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM job_applications WHERE created_at >= $1", thisMonthStart).Scan(&careerThisMonth); err != nil {
+			log.Println("Dashboard CareerThisMonth Error:", err)
+		}
+		if err := config.DB.QueryRow(ctx, "SELECT COUNT(*) FROM job_applications WHERE created_at >= $1 AND created_at < $2", lastMonthStart, thisMonthStart).Scan(&careerLastMonth); err != nil {
+			log.Println("Dashboard CareerLastMonth Error:", err)
+		}
 		careerTrend, careerTrendUp = calculateTrendStr(careerThisMonth, careerLastMonth)
 	}()
 

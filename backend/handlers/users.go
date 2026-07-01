@@ -136,13 +136,16 @@ func DeleteUser(c *fiber.Ctx) error {
 
 	// Son kalan adminin silinmesini engelle
 	var count int
-	config.DB.QueryRow(context.Background(), "SELECT COUNT(*) FROM users WHERE role = 'admin'").Scan(&count)
+	err := config.DB.QueryRow(context.Background(), "SELECT COUNT(*) FROM users WHERE role = 'admin'").Scan(&count)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Veritabanı bağlantı hatası oluştu, işlem iptal edildi."})
+	}
 	if count <= 1 {
 		return c.Status(400).JSON(fiber.Map{"error": "Sistemde en az 1 yönetici kalmalıdır. Bu hesap silinemez."})
 	}
 
 	deleteQuery := `DELETE FROM users WHERE id = $1`
-	_, err := config.DB.Exec(context.Background(), deleteQuery, id)
+	_, err = config.DB.Exec(context.Background(), deleteQuery, id)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Kullanıcı silinemedi"})
 	}

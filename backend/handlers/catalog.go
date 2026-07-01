@@ -246,19 +246,33 @@ func CreateProduct(c *fiber.Ctx) error {
 		}
 	}
 
-	var pinoutImages = []string{}
-	if files, ok := form.File["pinout_front"]; ok && len(files) > 0 {
-		file := files[0]
-		filename := fmt.Sprintf("%s_front_%d_%s", id, time.Now().UnixNano(), file.Filename)
-		if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
-			pinoutImages = append(pinoutImages, "/uploads/"+filename)
-		}
-	}
-	if files, ok := form.File["pinout_back"]; ok && len(files) > 0 {
-		file := files[0]
-		filename := fmt.Sprintf("%s_back_%d_%s", id, time.Now().UnixNano(), file.Filename)
-		if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
-			pinoutImages = append(pinoutImages, "/uploads/"+filename)
+	var finalPinouts = []string{}
+	pinoutLayoutRaw := c.FormValue("pinout_layout")
+	if pinoutLayoutRaw != "" {
+		var layout []string
+		if err := json.Unmarshal([]byte(pinoutLayoutRaw), &layout); err == nil {
+			uploadedCount := 0
+			for _, item := range layout {
+				parts := strings.Split(item, "|")
+				baseItem := parts[0]
+				titleSuffix := ""
+				if len(parts) > 1 {
+					titleSuffix = "|" + parts[1]
+				}
+
+				if strings.HasPrefix(baseItem, "FILE:") {
+					if files, ok := form.File["pinouts"]; ok && uploadedCount < len(files) {
+						file := files[uploadedCount]
+						filename := fmt.Sprintf("%s_pinout_%d_%s", id, time.Now().UnixNano(), file.Filename)
+						if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+							finalPinouts = append(finalPinouts, "/uploads/"+filename+titleSuffix)
+						}
+						uploadedCount++
+					}
+				} else {
+					finalPinouts = append(finalPinouts, item)
+				}
+			}
 		}
 	}
 
@@ -273,7 +287,7 @@ func CreateProduct(c *fiber.Ctx) error {
 	
 	_, dbErr := config.DB.Exec(context.Background(), insertQuery,
 		id, name, role, category, tagline, description, galleryImages, specsRaw, channelsRaw,
-		pinoutImages, downloadsRaw, isTeknofestActive, teknofestDiscount, badge,
+		finalPinouts, downloadsRaw, isTeknofestActive, teknofestDiscount, badge,
 	)
 
 	if dbErr != nil {
@@ -294,10 +308,13 @@ func UpdateProduct(c *fiber.Ctx) error {
 	// Eski dosyaları çöpe atmak üzere mevcut durumu veritabanından okuyalım
 	var oldImages, oldPinouts []string
 	var oldDownloads interface{}
-	_ = config.DB.QueryRow(context.Background(), `
+	err := config.DB.QueryRow(context.Background(), `
 		SELECT images, pinout_images, downloads
 		FROM products WHERE id = $1
 	`, id).Scan(&oldImages, &oldPinouts, &oldDownloads)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Güncellenecek ürün bulunamadı veya veritabanı hatası"})
+	}
 
 	name := c.FormValue("name")
 	role := c.FormValue("role")
@@ -410,31 +427,35 @@ func UpdateProduct(c *fiber.Ctx) error {
 		}
 	}
 
-	// Pinout handling
-	var pinoutImages = []string{}
-	existingFront := c.FormValue("existing_pinout_front")
-	existingBack := c.FormValue("existing_pinout_back")
+	var finalPinouts = []string{}
+	pinoutLayoutRaw := c.FormValue("pinout_layout")
+	if pinoutLayoutRaw != "" {
+		var layout []string
+		if err := json.Unmarshal([]byte(pinoutLayoutRaw), &layout); err == nil {
+			uploadedCount := 0
+			for _, item := range layout {
+				parts := strings.Split(item, "|")
+				baseItem := parts[0]
+				titleSuffix := ""
+				if len(parts) > 1 {
+					titleSuffix = "|" + parts[1]
+				}
 
-	frontUrl := existingFront
-	if files, ok := form.File["pinout_front"]; ok && len(files) > 0 {
-		file := files[0]
-		filename := fmt.Sprintf("%s_front_%d_%s", id, time.Now().UnixNano(), file.Filename)
-		if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
-			frontUrl = "/uploads/" + filename
+				if strings.HasPrefix(baseItem, "FILE:") {
+					if files, ok := form.File["pinouts"]; ok && uploadedCount < len(files) {
+						file := files[uploadedCount]
+						filename := fmt.Sprintf("%s_pinout_%d_%s", id, time.Now().UnixNano(), file.Filename)
+						if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+							finalPinouts = append(finalPinouts, "/uploads/"+filename+titleSuffix)
+						}
+						uploadedCount++
+					}
+				} else {
+					finalPinouts = append(finalPinouts, item)
+				}
+			}
 		}
 	}
-
-	backUrl := existingBack
-	if files, ok := form.File["pinout_back"]; ok && len(files) > 0 {
-		file := files[0]
-		filename := fmt.Sprintf("%s_back_%d_%s", id, time.Now().UnixNano(), file.Filename)
-		if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
-			backUrl = "/uploads/" + filename
-		}
-	}
-
-	if frontUrl != "" { pinoutImages = append(pinoutImages, frontUrl) }
-	if backUrl != "" { pinoutImages = append(pinoutImages, backUrl) }
 
 	updateQuery := `
 		UPDATE products 
@@ -445,7 +466,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 	
 	_, dbErr := config.DB.Exec(context.Background(), updateQuery,
 		name, role, category, tagline, description, finalGallery, specsRaw, channelsRaw,
-		pinoutImages, downloadsRaw, isTeknofestActive, teknofestDiscount, badge, id,
+		finalPinouts, downloadsRaw, isTeknofestActive, teknofestDiscount, badge, id,
 	)
 
 	if dbErr != nil {
@@ -484,7 +505,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 	}
 
 	deleteOrphans(oldImages, finalGallery)
-	deleteOrphans(oldPinouts, pinoutImages)
+	deleteOrphans(oldPinouts, finalPinouts)
 	deleteOrphans(oldDlUrls, finalDownloads)
 	// ===============================================
 

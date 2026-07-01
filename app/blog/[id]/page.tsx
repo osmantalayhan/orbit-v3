@@ -4,6 +4,7 @@ import React from "react";
 import { useParams, useRouter, notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { apiClient } from "@/lib/api";
 import DOMPurify from "isomorphic-dompurify";
 
@@ -257,14 +258,12 @@ export default function BlogDetailPage() {
             marginBottom: '60px'
           }}
         >
-          <img 
+          <Image 
             src={currentBlog.image} 
             alt={currentBlog.title}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover'
-            }}
+            fill
+            className="object-cover"
+            priority
           />
         </motion.div>
 
@@ -290,10 +289,11 @@ export default function BlogDetailPage() {
               border: '1px solid rgba(255,255,255,0.1)',
               position: 'relative'
             }}>
-              <img 
+              <Image 
                 src={currentBlog.author.avatar} 
                 alt={currentBlog.author.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                fill
+                className="object-cover"
               />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>

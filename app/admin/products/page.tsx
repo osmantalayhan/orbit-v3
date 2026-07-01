@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import styles from "../admin.module.css";
-import { Package, Plus, Search, Edit2, Trash2, X, Trash, UploadCloud } from "lucide-react";
+import { Package, Plus, Search, Edit2, Trash2, X, Trash, UploadCloud, GripVertical } from "lucide-react";
 import { apiClient } from "@/lib/api";
 
 interface Product {
@@ -27,6 +27,7 @@ type GalleryItem = {
   type: 'existing' | 'new';
   url?: string;
   file?: File;
+  title?: string;
 };
 
 export default function AdminProductsPage() {
@@ -68,14 +69,13 @@ export default function AdminProductsPage() {
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [draggedGalleryIndex, setDraggedGalleryIndex] = useState<number | null>(null);
   
-  const [pinoutFront, setPinoutFront] = useState<File | null>(null);
-  const [pinoutBack, setPinoutBack] = useState<File | null>(null);
+  const [pinoutItems, setPinoutItems] = useState<GalleryItem[]>([]);
+  const [draggedPinoutIndex, setDraggedPinoutIndex] = useState<number | null>(null);
+
   const [downloadFiles, setDownloadFiles] = useState<(File | null)[]>([null]);
 
   // Edit States
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
-  const [existingPinoutFront, setExistingPinoutFront] = useState<string | null>(null);
-  const [existingPinoutBack, setExistingPinoutBack] = useState<string | null>(null);
 
   // Delete Confirm State
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
@@ -103,10 +103,7 @@ export default function AdminProductsPage() {
       downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
     });
     setGalleryItems([]);
-    setPinoutFront(null);
-    setPinoutBack(null);
-    setExistingPinoutFront(null);
-    setExistingPinoutBack(null);
+    setPinoutItems([]);
     setDownloadFiles([null]);
     setIsDrawerOpen(true);
   };
@@ -141,10 +138,10 @@ export default function AdminProductsPage() {
       downloads: product.downloads && product.downloads.length > 0 ? product.downloads : [{ title: "", type: "", size: "", desc: "" }]
     });
     setGalleryItems(product.images ? product.images.map(img => ({ id: Math.random().toString(), type: 'existing', url: img })) : []);
-    setPinoutFront(null);
-    setPinoutBack(null);
-    setExistingPinoutFront(product.pinout_images && product.pinout_images.length > 0 ? product.pinout_images[0] : null);
-    setExistingPinoutBack(product.pinout_images && product.pinout_images.length > 1 ? product.pinout_images[1] : null);
+    setPinoutItems(product.pinout_images ? product.pinout_images.map(img => {
+      const parts = img.split('|');
+      return { id: Math.random().toString(), type: 'existing', url: parts[0], title: parts.length > 1 ? parts[1] : '' };
+    }) : []);
     setDownloadFiles(new Array(product.downloads?.length || 1).fill(null));
     setIsDrawerOpen(true);
   };
@@ -258,11 +255,20 @@ export default function AdminProductsPage() {
       formData.append("gallery_layout", JSON.stringify(layout));
 
       // Pinout şemaları
-      if (pinoutFront) formData.append("pinout_front", pinoutFront);
-      else if (existingPinoutFront) formData.append("existing_pinout_front", existingPinoutFront);
-
-      if (pinoutBack) formData.append("pinout_back", pinoutBack);
-      else if (existingPinoutBack) formData.append("existing_pinout_back", existingPinoutBack);
+      const pinoutLayout: string[] = [];
+      let newPinoutCount = 0;
+      pinoutItems.forEach((item) => {
+        const itemTitle = item.title || "";
+        const titleSuffix = itemTitle ? "|" + itemTitle : "";
+        if (item.type === 'existing') {
+          pinoutLayout.push(item.url! + titleSuffix);
+        } else {
+          formData.append("pinouts", item.file!);
+          pinoutLayout.push("FILE:" + newPinoutCount + titleSuffix);
+          newPinoutCount++;
+        }
+      });
+      formData.append("pinout_layout", JSON.stringify(pinoutLayout));
 
       // İndirmeler (Belgeler) Dosya Upload'ı
       newProduct.downloads.forEach((doc, idx) => {
@@ -301,8 +307,7 @@ export default function AdminProductsPage() {
         downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
       });
       setGalleryItems([]);
-      setPinoutFront(null);
-      setPinoutBack(null);
+      setPinoutItems([]);
       setDownloadFiles([null]);
 
       // Listeyi güncellemek için
@@ -402,23 +407,53 @@ export default function AdminProductsPage() {
     setGalleryItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleDragStartGallery = (e: React.DragEvent, index: number) => {
-    setDraggedGalleryIndex(index);
-  };
-  const handleDragOverGallery = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
+  const handleDragStartGallery = (e: React.DragEvent, index: number) => setDraggedGalleryIndex(index);
+  const handleDragOverGallery = (e: React.DragEvent) => e.preventDefault();
   const handleDropGallery = (e: React.DragEvent, targetIndex: number) => {
     e.preventDefault();
     if (draggedGalleryIndex === null) return;
-    
     const items = [...galleryItems];
     const draggedItem = items[draggedGalleryIndex];
     items.splice(draggedGalleryIndex, 1);
     items.splice(targetIndex, 0, draggedItem);
-    
     setGalleryItems(items);
     setDraggedGalleryIndex(null);
+  };
+
+  // --- Pinout Fonksiyonları ---
+  const handlePinoutSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files).map(file => ({
+        id: Math.random().toString(),
+        type: 'new' as const,
+        file,
+        title: truncateFileName(file.name)
+      }));
+      setPinoutItems((prev) => [...prev, ...newFiles]);
+    }
+  };
+
+  const handlePinoutTitleChange = (index: number, newTitle: string) => {
+    const updated = [...pinoutItems];
+    updated[index].title = newTitle;
+    setPinoutItems(updated);
+  };
+
+  const handleRemovePinoutItem = (index: number) => {
+    setPinoutItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDragStartPinout = (e: React.DragEvent, index: number) => setDraggedPinoutIndex(index);
+  const handleDragOverPinout = (e: React.DragEvent) => e.preventDefault();
+  const handleDropPinout = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedPinoutIndex === null) return;
+    const items = [...pinoutItems];
+    const draggedItem = items[draggedPinoutIndex];
+    items.splice(draggedPinoutIndex, 1);
+    items.splice(targetIndex, 0, draggedItem);
+    setPinoutItems(items);
+    setDraggedPinoutIndex(null);
   };
   // ---------------------------------------------
 
@@ -822,32 +857,59 @@ export default function AdminProductsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                   <div className={styles.formSection}>
                     <h4 className={styles.formSectionTitle}>Bağlantı Şeması (Pinout)</h4>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Ön Yüz Planı</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      {pinoutItems.map((item, idx) => (
+                        <div
+                          key={item.id}
+                          draggable
+                          onDragStart={(e) => handleDragStartPinout(e, idx)}
+                          onDragOver={handleDragOverPinout}
+                          onDrop={(e) => handleDropPinout(e, idx)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                            backgroundColor: '#1a1a1a', border: '1px solid #27272a', borderRadius: '8px', cursor: 'grab'
+                          }}
+                        >
+                          <GripVertical size={16} color="#52525b" />
+                          <div style={{ width: '40px', height: '40px', borderRadius: '4px', overflow: 'hidden', backgroundColor: '#27272a', flexShrink: 0 }}>
+                            <img
+                              src={item.type === 'existing' ? getImageUrl(item.url!) : URL.createObjectURL(item.file!)}
+                              alt="pinout"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                          </div>
+                          <input
+                            type="text"
+                            value={item.title || ''}
+                            onChange={(e) => handlePinoutTitleChange(idx, e.target.value)}
+                            placeholder="Şema Adı (Opsiyonel)"
+                            style={{
+                              flex: 1, backgroundColor: 'transparent', border: '1px solid #3f3f46',
+                              color: '#d4d4d8', fontSize: '13px', padding: '6px 10px', borderRadius: '4px',
+                              outline: 'none'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemovePinoutItem(idx)}
+                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            title="Sil"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
                       <label style={{
-                        display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px',
                         border: '1px dashed #3f3f46', borderRadius: '8px', cursor: 'pointer',
-                        backgroundColor: '#1a1a1a', color: '#a1a1aa', minWidth: 0
-                      }}>
-                        <UploadCloud size={16} style={{ flexShrink: 0 }} />
-                        <span style={{ fontSize: '13px', flex: 1, whiteSpace: 'nowrap' }} title={existingPinoutFront || ""}>
-                          {pinoutFront ? truncateFileName(pinoutFront.name) : (existingPinoutFront ? "Mevcut: " + truncateFileName(existingPinoutFront.split('/').pop() || "") : "Ön yüz şeması yükle...")}
-                        </span>
-                        <input type="file" accept="image/*" hidden onChange={e => setPinoutFront(e.target.files?.[0] || null)} />
-                      </label>
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Arka Yüz (Pinout)</label>
-                      <label style={{
-                        display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
-                        border: '1px dashed #3f3f46', borderRadius: '8px', cursor: 'pointer',
-                        backgroundColor: '#1a1a1a', color: '#a1a1aa', minWidth: 0
-                      }}>
-                        <UploadCloud size={16} style={{ flexShrink: 0 }} />
-                        <span style={{ fontSize: '13px', flex: 1, whiteSpace: 'nowrap' }} title={existingPinoutBack || ""}>
-                          {pinoutBack ? truncateFileName(pinoutBack.name) : (existingPinoutBack ? "Mevcut: " + truncateFileName(existingPinoutBack.split('/').pop() || "") : "Arka pinout şeması yükle...")}
-                        </span>
-                        <input type="file" accept="image/*" hidden onChange={e => setPinoutBack(e.target.files?.[0] || null)} />
+                        backgroundColor: '#1a1a1a', color: '#a1a1aa', transition: 'all 0.2s ease'
+                      }}
+                      onMouseOver={e => { e.currentTarget.style.borderColor = 'var(--blue-primary)'; e.currentTarget.style.color = '#fff'; }}
+                      onMouseOut={e => { e.currentTarget.style.borderColor = '#3f3f46'; e.currentTarget.style.color = '#a1a1aa'; }}
+                      >
+                        <UploadCloud size={18} />
+                        <span style={{ fontSize: '13px', fontWeight: 500 }}>Bağlantı Şeması Ekle (+)</span>
+                        <input type="file" accept="image/*" multiple hidden onChange={handlePinoutSelect} />
                       </label>
                     </div>
                   </div>

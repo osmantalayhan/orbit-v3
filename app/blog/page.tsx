@@ -561,17 +561,15 @@ export default function BlogPage() {
           >
             <div style={{
               width: '90%',
-              display: 'flex',
+              aspectRatio: '1',
+              position: 'relative'
             }}>
-              <img
+              <Image
                 src="/img/blog.png"
                 alt="Orbit Blog"
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  objectFit: 'contain',
-                  display: 'block'
-                }}
+                fill
+                className="object-contain"
+                priority
               />
             </div>
           </motion.div>

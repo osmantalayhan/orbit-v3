@@ -521,85 +521,58 @@ export default function UrunDetayPage() {
                   className="grid grid-cols-1 md:grid-cols-2 gap-8" 
                   style={{ padding: "20px 0" }}
                 >
-                  {/* Birinci Resim Alanı (Ön Yüz) */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <div style={{
-                      position: "relative",
-                      width: "100%",
-                      aspectRatio: "16/10",
-                      background: "rgba(255,255,255,0.02)",
-                      border: "1px solid rgba(255,255,255,0.05)",
-                      borderRadius: "24px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                      padding: "20px"
-                    }}>
-                      <div style={{
-                        position: "absolute",
-                        inset: 0,
-                        backgroundImage: "radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)",
-                        backgroundSize: "20px 20px",
-                        opacity: 0.4
-                      }} />
+                  {product.pinout_images && product.pinout_images.length > 0 ? (
+                    product.pinout_images.map((rawUrl: string, idx: number) => {
+                      const parts = rawUrl.split("|");
+                      const pinoutUrl = parts[0];
+                      const customTitle = parts.length > 1 ? parts[1] : "";
+                      const displayTitle = customTitle || `${product.name} Bağlantı Şeması ${idx + 1}`;
                       
-                      {/* Image Layer */}
-                      <div className="absolute inset-0 p-8 flex items-center justify-center">
-                        <Image 
-                          src={product.pinout_images && product.pinout_images.length > 0 ? product.pinout_images[0] : `/img/diagrams/${id}-front.png`} 
-                          alt={`${product.name} Ön Yüz Bağlantı Şeması`}
-                          fill
-                          className="object-contain opacity-90 transition-opacity duration-300"
-                          style={{ padding: "32px" }}
-                        />
+                      return (
+                      <div key={idx} style={{ display: "flex", flexDirection: "column", gap: "16px", width: "100%" }}>
+                        <div style={{
+                          position: "relative",
+                          width: "100%",
+                          aspectRatio: "16/9",
+                          background: "rgba(255,255,255,0.02)",
+                          border: "1px solid rgba(255,255,255,0.05)",
+                          borderRadius: "24px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden",
+                          padding: "20px"
+                        }}>
+                          <div style={{
+                            position: "absolute",
+                            inset: 0,
+                            backgroundImage: "radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)",
+                            backgroundSize: "20px 20px",
+                            opacity: 0.4
+                          }} />
+                          
+                          {/* Image Layer */}
+                          <div className="absolute inset-0 p-4 md:p-8 flex items-center justify-center">
+                            <Image 
+                              src={pinoutUrl} 
+                              alt={displayTitle}
+                              fill
+                              className="object-contain opacity-90 transition-opacity duration-300"
+                              style={{ padding: "16px md:32px" }}
+                            />
+                          </div>
+                          
+                        </div>
+                        <p className="text-white/60 text-sm text-center font-medium mt-1">
+                          {displayTitle}
+                        </p>
                       </div>
-                      
+                    )})
+                  ) : (
+                    <div style={{ textAlign: "center", padding: "60px", color: "rgba(255,255,255,0.4)" }}>
+                      Bu ürün için bağlantı şeması eklenmemiş.
                     </div>
-                    <p className="text-white/60 text-sm text-center font-medium mt-1">
-                      {product.name} Ön Yüz Şeması
-                    </p>
-                  </div>
-
-                  {/* İkinci Resim Alanı (Arka Yüz / Pinout) */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                    <div style={{
-                      position: "relative",
-                      width: "100%",
-                      aspectRatio: "16/10",
-                      background: "rgba(255,255,255,0.02)",
-                      border: "1px solid rgba(255,255,255,0.05)",
-                      borderRadius: "24px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                      padding: "20px"
-                    }}>
-                      <div style={{
-                        position: "absolute",
-                        inset: 0,
-                        backgroundImage: "radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)",
-                        backgroundSize: "20px 20px",
-                        opacity: 0.4
-                      }} />
-                      
-                      {/* Image Layer */}
-                      <div className="absolute inset-0 p-8 flex items-center justify-center">
-                        <Image 
-                          src={product.pinout_images && product.pinout_images.length > 1 ? product.pinout_images[1] : `/img/diagrams/${id}-back.png`} 
-                          alt={`${product.name} Arka Yüz Pinout Şeması`}
-                          fill
-                          className="object-contain opacity-90 transition-opacity duration-300"
-                          style={{ padding: "32px" }}
-                        />
-                      </div>
-                      
-                    </div>
-                    <p className="text-white/60 text-sm text-center font-medium mt-1">
-                      {product.name} Arka Yüz Pinout Planı
-                    </p>
-                  </div>
+                  )}
                 </div>
               </motion.div>
             ) }
