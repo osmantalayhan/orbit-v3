@@ -1,9 +1,10 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import LiquidShowcase from "./LiquidShowcase";
 
 
@@ -23,16 +24,26 @@ export default function HeroSection() {
     dedupingInterval: 60000, // Aynı veriyi 1 dk içinde tekrar çekmez
   });
 
-  const products = (sliderData && sliderData.length > 0) 
-    ? sliderData.map((item: any) => ({
-        id: item.product_id || String(item.id),
-        model: item.model_code,
-        title: item.slide_title,
-        desc: item.slide_desc,
-        image: item.image_url,
-        productId: item.product_id
-      }))
-    : [];
+  const products = useMemo(() => {
+    return (sliderData && sliderData.length > 0) 
+      ? sliderData.map((item: any) => ({
+          id: item.product_id || String(item.id),
+          model: item.model_code,
+          title: item.slide_title,
+          desc: item.slide_desc,
+          image: item.image_url,
+          productId: item.product_id
+        }))
+      : [];
+  }, [sliderData]);
+
+  const handleNext = () => {
+    if (products.length > 0) setIndex((prev) => (prev + 1) % products.length);
+  };
+
+  const handlePrev = () => {
+    if (products.length > 0) setIndex((prev) => (prev - 1 + products.length) % products.length);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -41,7 +52,7 @@ export default function HeroSection() {
       }
     }, 5000); // Otomatik geçiş süresini 5 saniye yaptım
     return () => clearInterval(timer);
-  }, [products]);
+  }, [products, index]);
 
   // Veriler yükleniyorsa hiçbir şey gösterme
   const isLoading = sliderData === undefined && !error;
@@ -50,7 +61,7 @@ export default function HeroSection() {
   const current = displayProducts.length > 0 ? displayProducts[currentIndex] : null;
 
   return (
-    <section className="hero">
+    <section className="hero group/slider relative">
       <style>{`
         @media (max-width: 768px) {
           .hero-bg-text { font-size: 60vw !important; }
@@ -66,12 +77,34 @@ export default function HeroSection() {
         }
       `}</style>
       
+      {/* Sol Ok (Birden fazla slayt varsa ve üzerine gelince çıkar) */}
+      {products.length > 1 && (
+        <button 
+          onClick={handlePrev}
+          className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-[60] p-2 text-white/40 opacity-0 group-hover/slider:opacity-100 hover:text-white transition-all duration-500 hover:-translate-x-1 cursor-pointer pointer-events-auto"
+          aria-label="Önceki Slayt"
+        >
+          <ChevronLeft size={40} strokeWidth={1} />
+        </button>
+      )}
+
+      {/* Sağ Ok (Birden fazla slayt varsa ve üzerine gelince çıkar) */}
+      {products.length > 1 && (
+        <button 
+          onClick={handleNext}
+          className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-[60] p-2 text-white/40 opacity-0 group-hover/slider:opacity-100 hover:text-white transition-all duration-500 hover:translate-x-1 cursor-pointer pointer-events-auto"
+          aria-label="Sonraki Slayt"
+        >
+          <ChevronRight size={40} strokeWidth={1} />
+        </button>
+      )}
+
       {/* Background Technical Text (BEHIND EVERYTHING) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
         <AnimatePresence mode="wait">
           {current && (
             <motion.span
-              key={current.model}
+              key={`bg-${index}`}
               initial={{ opacity: 0, scale: 0.8, y: 20 }}
               animate={{ opacity: 0.4, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 1.1, y: -20 }}
@@ -80,7 +113,7 @@ export default function HeroSection() {
               style={{
                 color: "transparent",
                 WebkitTextStroke: "2px rgba(255, 255, 255, 0.5)",
-                textIndent: "-0.05em", // tracking-tighter'ın sebep olduğu sağ boşluğu soldan dengeler
+                textIndent: "-0.05em",
               }}
             >
               {current.model}
@@ -94,7 +127,7 @@ export default function HeroSection() {
         <AnimatePresence mode="wait">
           {current && (
             <motion.div
-              key={current.image}
+              key={`img-${index}`}
               initial={{ opacity: 0, y: 100, scale: 0.8 }}
               animate={{ opacity: 1, y: 20, scale: 1.0 }}
               exit={{ opacity: 0, y: -50, scale: 0.9 }}
@@ -120,31 +153,32 @@ export default function HeroSection() {
       <LiquidShowcase imageSrc="/img/hero-transparent.png" />
 
       <div className="hero-content-wrapper absolute bottom-[50px] left-1/2 -translate-x-1/2 w-[calc(100%-96px)] max-w-[1304px] z-20 pointer-events-none">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-10 pointer-events-auto">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-10">
           <AnimatePresence mode="wait">
             {current && (
-              <div className="max-w-4xl" key={`text-${current.id || current.title}`}>
-                <motion.h1
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                  className="hero-heading"
-                >
+              <motion.div
+                className="max-w-4xl pointer-events-auto"
+                key={`text-${index}`}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+              >
+                <h1 className="hero-heading">
                   <span>{current.title}</span>
                   <span>{current.desc}</span>
-                </motion.h1>
-              </div>
+                </h1>
+              </motion.div>
             )}
             
             {current && (
               <motion.div
-                key={`action-${current.id || current.title}`}
+                key={`action-${index}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
-                className="hero-actions"
+                className="hero-actions pointer-events-auto"
               >
                 <Link href={current.productId ? `/urunler/${current.productId}` : "#urunler"} className="btn-primary">
                   {current.productId ? "Ürünü İncele" : "Ürünleri İncele"}

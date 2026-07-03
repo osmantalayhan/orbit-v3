@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 import useSWR from "swr";
 
@@ -16,10 +18,18 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(-1);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Dropdown state
+  const [mounted, setMounted] = useState(false);
+  const [dropdownCoords, setDropdownCoords] = useState({ top: 0, left: 0 });
+  const linkRef = useRef<HTMLLIElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleHashClick = (e: React.MouseEvent<HTMLAnchorElement>, hash: string) => {
     setIsMobileMenuOpen(false);
@@ -50,6 +60,10 @@ export default function Navbar() {
   const swrConfig = { revalidateOnFocus: false, dedupingInterval: 60000 };
   const { data: settings } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/settings`, fetcher, swrConfig);
   const { data: productsData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`, fetcher, swrConfig);
+  
+  // Benzersiz kategorileri ürünler datasından çekiyoruz
+  const navCategories = Array.from(new Set((productsData || []).map((p: any) => p.category?.toLowerCase()).filter(Boolean)));
+
   const { data: blogsData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog`, fetcher, swrConfig);
   const { data: careersData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/careers`, fetcher, swrConfig);
 
@@ -164,12 +178,7 @@ export default function Navbar() {
         className="navbar" 
         role="navigation" 
         aria-label="Ana menü" 
-        style={{ 
-          zIndex: 100,
-          background: "rgba(15, 15, 15, 0.4)",
-          backdropFilter: "blur(16px) saturate(180%)",
-          WebkitBackdropFilter: "blur(16px) saturate(180%)"
-        }}
+        style={{ zIndex: 100 }}
       >
         <style>{`
           .custom-scrollbar::-webkit-scrollbar {
@@ -194,6 +203,19 @@ export default function Navbar() {
             }
           }
         `}</style>
+        
+        {/* Background Blur Sibling Layer (Avoids Stacking Context on Parent) */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            zIndex: -1,
+            borderRadius: "inherit",
+            background: "rgba(15, 15, 15, 0.4)",
+            backdropFilter: "blur(16px) saturate(180%)",
+            WebkitBackdropFilter: "blur(16px) saturate(180%)",
+          }}
+        />
+
         <div className="navbar-left">
           <Link href="/" className="navbar-logo">
             <Image
@@ -208,7 +230,65 @@ export default function Navbar() {
 
           <ul className="navbar-links">
             <li><Link href="/">Ana Sayfa</Link></li>
-            <li><Link href="/urunler">Ürünler</Link></li>
+            <li 
+              className="relative group"
+              onMouseEnter={() => setIsDropdownOpen(true)}
+              onMouseLeave={() => setIsDropdownOpen(false)}
+            >
+              <Link href="/urunler" className="flex items-center gap-1" onClick={(e) => {
+                if (isDropdownOpen) {
+                   setIsDropdownOpen(false);
+                }
+              }}>
+                Ürünler
+                <svg className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </Link>
+              
+              {isDropdownOpen && navCategories.length > 0 && (
+                <div
+                  className="absolute z-[100]"
+                  style={{
+                    top: "100%",
+                    left: "-16px",
+                    paddingTop: "24px", // Invisible hover bridge
+                  }}
+                >
+                      <div 
+                        className="w-48 rounded-xl overflow-hidden shadow-2xl"
+                        style={{
+                          backgroundColor: "rgba(15, 15, 15, 0.4)",
+                          backdropFilter: "blur(24px) saturate(180%)",
+                          WebkitBackdropFilter: "blur(24px) saturate(180%)",
+                          border: "1px solid rgba(255, 255, 255, 0.1)",
+                        }}
+                      >
+                        <div className="flex flex-col py-1.5">
+                          <Link 
+                            href="/urunler?kategori=tümü" 
+                            className="transition-colors hover:bg-white/10"
+                            style={{ display: "block", padding: "6px 16px", fontSize: "14px", color: "rgba(255,255,255,0.8)" }}
+                            onClick={() => setIsDropdownOpen(false)}
+                          >
+                            Tümü
+                          </Link>
+                          {(navCategories as string[]).map((cat, idx) => (
+                            <Link 
+                              key={idx} 
+                              href={`/urunler?kategori=${encodeURIComponent(cat)}`} 
+                              className="transition-colors hover:bg-white/10"
+                              style={{ display: "block", padding: "6px 16px", fontSize: "14px", color: "rgba(255,255,255,0.8)", textTransform: "capitalize" }}
+                              onClick={() => setIsDropdownOpen(false)}
+                            >
+                              {cat}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                </div>
+              )}
+            </li>
             <li>
               <Link href="/#satis-kanallari" onClick={(e) => handleHashClick(e, "#satis-kanallari")}>
                 Satış Kanalları
@@ -303,7 +383,7 @@ export default function Navbar() {
               {isSearchOpen && searchQuery.trim().length > 0 && (
                 <div
                   data-lenis-prevent
-                  className="custom-scrollbar"
+                  className="custom-scrollbar mobile-search-popover"
                   style={{
                     position: "absolute",
                     top: "calc(100% + 22px)",
@@ -478,13 +558,14 @@ export default function Navbar() {
                   gap: "8px",
                   color: "var(--accents-7)",
                   transition: "color 0.2s ease",
+                  flexShrink: 0
                 }}
                 onMouseOver={(e) => (e.currentTarget.style.color = "var(--fg)")}
                 onMouseOut={(e) => {
                   if (!isOpen) e.currentTarget.style.color = "var(--accents-7)";
                 }}
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: '18px', height: '18px', minWidth: '18px', minHeight: '18px', flexShrink: 0, display: 'block' }}>
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="2" y1="12" x2="22" y2="12"></line>
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -500,9 +581,10 @@ export default function Navbar() {
                     right: 0,
                     width: "175px",
                     whiteSpace: "nowrap",
-                    background: "linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%), rgba(10, 10, 10, 0.92)",
-                    backdropFilter: "blur(20px)",
-                    border: "0.5px solid rgba(255, 255, 255, 0.12)",
+                    backgroundColor: "rgba(15, 15, 15, 0.4)",
+                    backdropFilter: "blur(24px) saturate(180%)",
+                    WebkitBackdropFilter: "blur(24px) saturate(180%)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
                     borderRadius: "14px",
                     padding: "6px",
                     boxShadow: "0 15px 40px rgba(0,0,0,0.6)",

@@ -5,15 +5,34 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense } from "react";
 import { apiClient } from "@/lib/api";
 
 
 
 export default function UrunlerPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", backgroundColor: "#000" }} />}>
+      <UrunlerPageContent />
+    </Suspense>
+  );
+}
+
+function UrunlerPageContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [productsList, setProductsList] = useState<any[]>([]);
-  const [activeCategory, setActiveCategory] = useState("tümü");
+  const [activeCategory, setActiveCategory] = useState(searchParams.get("kategori") || "tümü");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  React.useEffect(() => {
+    const kategori = searchParams.get("kategori");
+    if (kategori) {
+      setActiveCategory(kategori);
+    }
+  }, [searchParams]);
 
   React.useEffect(() => {
     // Fetch products from backend API
@@ -189,7 +208,10 @@ export default function UrunlerPage() {
               return (
                 <button
                   key={cat}
-                  onClick={() => setActiveCategory(cat)}
+                  onClick={() => {
+                    setActiveCategory(cat);
+                    router.replace(`/urunler?kategori=${encodeURIComponent(cat)}`, { scroll: false });
+                  }}
                   style={{
                     height: "38px", padding: "0 18px",
                     borderRadius: "99px",

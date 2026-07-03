@@ -15,16 +15,16 @@ try {
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [
+    unoptimized: true,
+  },
+  async redirects() {
+    return [
       {
-        protocol: 'https',
-        hostname: '**',
+        source: '/uploads/:path*',
+        destination: 'http://192.168.14.102:8080/uploads/:path*',
+        permanent: false,
       },
-      {
-        protocol: 'http',
-        hostname: '**',
-      },
-    ],
+    ]
   },
 };
 

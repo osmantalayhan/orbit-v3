@@ -137,13 +137,13 @@ export default function ProductVitrin() {
                     style={{ padding: '40px' }}
                   >
                     {/* Card Header */}
-                    <div style={{ marginBottom: '32px' }}>
-                      <div className="product-vitrin-logo-box w-36 h-36 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
+                    <div style={{ marginBottom: '24px' }}>
+                      <div className="product-vitrin-logo-box w-40 h-40 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
                          <Image 
                            src={product.image} 
                            alt="icon" 
                            fill 
-                           sizes="144px"
+                           sizes="160px"
                            quality={85}
                            className="object-contain filter brightness-125 p-4" 
                          />
@@ -152,10 +152,10 @@ export default function ProductVitrin() {
 
                     {/* Title & Info */}
                     <div className="product-vitrin-text-container flex flex-col">
-                      <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '20px' }}>
+                      <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '14px' }}>
                         {product.name}
                       </h3>
-                      <div style={{ marginBottom: '40px' }}>
+                      <div style={{ marginBottom: '32px' }}>
                         <p className="text-white/90 text-xl font-medium">{product.role}</p>
                       </div>
                     </div>
