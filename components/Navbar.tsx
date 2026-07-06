@@ -235,13 +235,13 @@ export default function Navbar() {
               onMouseEnter={() => setIsDropdownOpen(true)}
               onMouseLeave={() => setIsDropdownOpen(false)}
             >
-              <Link href="/urunler" className="flex items-center gap-1" onClick={(e) => {
+              <Link href="/urunler" onClick={(e) => {
                 if (isDropdownOpen) {
                    setIsDropdownOpen(false);
                 }
               }}>
                 Ürünler
-                <svg className={`w-4 h-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className={`inline-block w-4 h-4 ml-1 mb-[2px] transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </Link>

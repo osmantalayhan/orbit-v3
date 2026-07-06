@@ -72,7 +72,7 @@ export default function HeroSection() {
             min-height: 130vh !important;
             flex-shrink: 0 !important;
             top: 0% !important;
-            margin-top: 0 !important;
+            margin-top: -15vh !important;
           }
         }
       `}</style>
