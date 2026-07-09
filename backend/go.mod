@@ -1,6 +1,6 @@
 module orbit-backend
 
-go 1.20
+go 1.25.0
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.0
@@ -26,7 +26,8 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
+	golang.org/x/image v0.39.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
 )

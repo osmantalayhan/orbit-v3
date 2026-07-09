@@ -8,21 +8,21 @@ const content = [
     id: "engineering",
     title: "Engineering",
     heading: "10+ Yıllık Teknik Miras",
-    description: "Türkiye'nin insansız sistemler ekosisteminde, uçuş kontrol kartlarından güç yönetimine kadar uçtan uca donanım mimarisi ve mühendislik çözümleri sunuyoruz.",
-    image: "/img/about/engineering.png",
+    description: "İHA ve robotik sistemler için uçuş kontrol kartları, ESC'ler ve elektronik donanımlar tasarlıyor ve geliştiriyoruz.",
+    image: "/img/about/engineering-kb.jpeg",
   },
   {
     id: "manufacturing",
     title: "Manufacturing",
     heading: "Yüksek Hassasiyetli Üretim",
-    description: "Kendi tesislerimizde, en zorlu koşullara dayanıklı ESC ve uçuş kontrol sistemlerini askeri standartlarda üretiyoruz.",
-    image: "/img/about/manufacturing.png",
+    description: "ESC ve uçuş kontrol kartları başta olmak üzere, geliştirdiğimiz elektronik donanımların PCB dizgi, montaj ve test süreçlerini kendi tesislerimizde gerçekleştiriyoruz.",
+    image: "/img/about/manufacturing-kb.png",
   },
   {
     id: "software",
     title: "Software",
     heading: "Akıllı Görev Yazılımları",
-    description: "Donanımımızla tam uyumlu çalışan, otonom uçuş ve görev planlama yeteneklerini maksimize eden özelleştirilmiş yazılım ekosistemi.",
+    description: "Gömülü yazılım ve insansız sistem yazılımları alanında çalışmalar yürütüyor, donanımlarımızla uyumlu yazılım çözümleri geliştirmeye odaklanıyoruz.",
     image: "/img/about/terminal.png",
   },
 ];
@@ -74,10 +74,6 @@ function ScrollItem({ item, setActiveId, isActive }: { item: typeof content[0], 
           >
             {item.description}
           </p>
-          <div className="flex items-center text-white font-bold text-sm" style={{ gap: '8px' }}>
-            <span>İncele</span>
-            <span className="translate-x-1">→</span>
-          </div>
         </div>
 
       </div>
@@ -130,10 +126,6 @@ export default function AboutScroll() {
                     <p className="text-white/50 text-base leading-relaxed my-6">
                       {item.description}
                     </p>
-                    <div className="flex items-center gap-2 text-white/80 hover:text-white transition-colors cursor-pointer group font-bold text-sm">
-                      <span>İncele</span>
-                      <span className="group-hover:translate-x-1 transition-transform">→</span>
-                    </div>
                   </motion.div>
                 )}
               </div>

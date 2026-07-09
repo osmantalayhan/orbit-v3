@@ -178,7 +178,13 @@ export default function AdminSliderPage() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setImageFile(e.target.files[0]);
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024) {
+        alert("Dosya boyutu 5MB'dan büyük olamaz!");
+        e.target.value = "";
+        return;
+      }
+      setImageFile(file);
     }
   };
 

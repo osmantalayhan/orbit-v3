@@ -12,6 +12,7 @@ import (
 
 	"orbit-backend/config"
 	"orbit-backend/models"
+	"orbit-backend/services"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -240,7 +241,7 @@ func CreateProduct(c *fiber.Ctx) error {
 	if files, ok := form.File["gallery"]; ok {
 		for _, file := range files {
 			filename := fmt.Sprintf("%s_gal_%d_%s", id, time.Now().UnixNano(), file.Filename)
-			if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+			if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
 				galleryImages = append(galleryImages, "/uploads/"+filename)
 			}
 		}
@@ -264,7 +265,7 @@ func CreateProduct(c *fiber.Ctx) error {
 					if files, ok := form.File["pinouts"]; ok && uploadedCount < len(files) {
 						file := files[uploadedCount]
 						filename := fmt.Sprintf("%s_pinout_%d_%s", id, time.Now().UnixNano(), file.Filename)
-						if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
 							finalPinouts = append(finalPinouts, "/uploads/"+filename+titleSuffix)
 						}
 						uploadedCount++
@@ -402,7 +403,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 					if files, ok := form.File["gallery"]; ok && uploadedCount < len(files) {
 						file := files[uploadedCount]
 						filename := fmt.Sprintf("%s_gal_%d_%s", id, time.Now().UnixNano(), file.Filename)
-						if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
 							finalGallery = append(finalGallery, "/uploads/"+filename)
 						}
 						uploadedCount++
@@ -420,7 +421,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 		if files, ok := form.File["gallery"]; ok {
 			for _, file := range files {
 				filename := fmt.Sprintf("%s_gal_%d_%s", id, time.Now().UnixNano(), file.Filename)
-				if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+				if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
 					finalGallery = append(finalGallery, "/uploads/"+filename)
 				}
 			}
@@ -445,7 +446,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 					if files, ok := form.File["pinouts"]; ok && uploadedCount < len(files) {
 						file := files[uploadedCount]
 						filename := fmt.Sprintf("%s_pinout_%d_%s", id, time.Now().UnixNano(), file.Filename)
-						if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
 							finalPinouts = append(finalPinouts, "/uploads/"+filename+titleSuffix)
 						}
 						uploadedCount++
@@ -601,7 +602,7 @@ func CreateSliderItem(c *fiber.Ctx) error {
 	var imageURL string
 	if file, err := c.FormFile("image_file"); err == nil {
 		filename := fmt.Sprintf("slider_%d_%s", time.Now().UnixNano(), file.Filename)
-		if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
 			imageURL = "/uploads/" + filename
 		}
 	} else {
@@ -666,7 +667,7 @@ func UpdateSliderItem(c *fiber.Ctx) error {
 	var imageURL = c.FormValue("image_url") // Eski URL
 	if file, err := c.FormFile("image_file"); err == nil {
 		filename := fmt.Sprintf("slider_%d_%s", time.Now().UnixNano(), file.Filename)
-		if err := c.SaveFile(file, filepath.Join(uploadDir, filename)); err == nil {
+		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
 			imageURL = "/uploads/" + filename
 		}
 	}

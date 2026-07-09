@@ -22,13 +22,28 @@ export default function UrunDetayPage() {
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const isDragging = useRef(false);
+  const hasDragged = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isLightboxOpen || !product?.images) return;
-      if (e.key === "Escape") setIsLightboxOpen(false);
-      if (e.key === "ArrowRight") setLightboxIndex((prev) => (prev + 1) % product.images.length);
-      if (e.key === "ArrowLeft") setLightboxIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+      if (!isLightboxOpen || lightboxImages.length === 0) return;
+      if (e.key === "Escape") {
+        setIsLightboxOpen(false);
+        setIsZoomed(false);
+      }
+      if (e.key === "ArrowRight") {
+        setLightboxIndex((prev) => (prev + 1) % lightboxImages.length);
+        setIsZoomed(false);
+      }
+      if (e.key === "ArrowLeft") {
+        setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
+        setIsZoomed(false);
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     if (isLightboxOpen) {
@@ -275,6 +290,7 @@ export default function UrunDetayPage() {
                   cursor: "zoom-in"
                 }}
                 onClick={() => {
+                  setLightboxImages(product.images);
                   setLightboxIndex(activeImage);
                   setIsLightboxOpen(true);
                 }}
@@ -533,15 +549,14 @@ export default function UrunDetayPage() {
                         <div style={{
                           position: "relative",
                           width: "100%",
-                          aspectRatio: "16/9",
+                          aspectRatio: "4/5",
                           background: "rgba(255,255,255,0.02)",
                           border: "1px solid rgba(255,255,255,0.05)",
                           borderRadius: "24px",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          overflow: "hidden",
-                          padding: "20px"
+                          overflow: "hidden"
                         }}>
                           <div style={{
                             position: "absolute",
@@ -552,13 +567,20 @@ export default function UrunDetayPage() {
                           }} />
                           
                           {/* Image Layer */}
-                          <div className="absolute inset-0 p-4 md:p-8 flex items-center justify-center">
+                          <div 
+                            className="absolute inset-0 p-4 md:p-6 flex items-center justify-center cursor-zoom-in"
+                            onClick={() => {
+                              const urls = product.pinout_images.map((p: string) => p.split("|")[0]);
+                              setLightboxImages(urls);
+                              setLightboxIndex(idx);
+                              setIsLightboxOpen(true);
+                            }}
+                          >
                             <Image 
                               src={pinoutUrl} 
                               alt={displayTitle}
                               fill
-                              className="object-contain opacity-90 transition-opacity duration-300"
-                              style={{ padding: "16px md:32px" }}
+                              className="object-contain opacity-100 transition-opacity duration-300"
                             />
                           </div>
                           
@@ -897,8 +919,11 @@ export default function UrunDetayPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center cursor-pointer"
-            onClick={() => setIsLightboxOpen(false)}
+            className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex flex-col items-center justify-center cursor-pointer overflow-hidden"
+            onClick={() => {
+              setIsLightboxOpen(false);
+              setIsZoomed(false);
+            }}
           >
             {/* Kapatma Butonu */}
             <button
@@ -914,11 +939,12 @@ export default function UrunDetayPage() {
             </button>
 
             {/* Sol Ok (Sadece 1'den fazla resim varsa) */}
-            {product.images.length > 1 && (
+            {lightboxImages.length > 1 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setLightboxIndex((prev) => (prev - 1 + product.images.length) % product.images.length);
+                  setLightboxIndex((prev) => (prev - 1 + lightboxImages.length) % lightboxImages.length);
+                  setIsZoomed(false);
                 }}
                 className="absolute left-4 md:left-12 z-50 p-3 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-all backdrop-blur-md"
               >
@@ -928,32 +954,60 @@ export default function UrunDetayPage() {
               </button>
             )}
 
-            {/* Resim Container */}
-            <motion.div 
-              key={lightboxIndex}
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="relative w-[90vw] h-[75vh] md:w-[80vw] md:h-[80vh] flex items-center justify-center cursor-default"
-              onClick={(e) => e.stopPropagation()}
+            {/* Resim Container (Wrapper for drag bounds) */}
+            <div 
+              className="relative w-[90vw] md:w-[80vw] flex items-center justify-center overflow-hidden"
+              style={{ height: "60vh", marginBottom: "120px" }}
+              onClick={(e) => {
+                if (hasDragged.current) return;
+                if (isZoomed) setIsZoomed(false);
+                else e.stopPropagation();
+              }}
             >
-              <Image
-                src={product.images[lightboxIndex]}
-                alt={`${product.name} Gallery Image`}
-                fill
-                className="object-contain"
-                quality={100}
-                priority
-              />
-            </motion.div>
+              <motion.div 
+                key={lightboxIndex}
+                initial={{ scale: 0.95, opacity: 0, x: 0, y: 0 }}
+                animate={isZoomed ? { scale: 2.5, opacity: 1 } : { scale: 1, opacity: 1, x: 0, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                drag={isZoomed}
+                dragMomentum={false}
+                dragConstraints={{ top: -600, bottom: 600, left: -800, right: 800 }}
+                dragElastic={0.1}
+                onDragStart={() => {
+                  hasDragged.current = true;
+                }}
+                onDragEnd={() => {
+                  setTimeout(() => {
+                    hasDragged.current = false;
+                  }, 150);
+                }}
+                className={`relative w-full h-full ${isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (hasDragged.current) return;
+                  setIsZoomed(!isZoomed);
+                }}
+              >
+                <Image
+                  src={lightboxImages[lightboxIndex]}
+                  alt="Gallery Image"
+                  fill
+                  className="object-contain"
+                  quality={100}
+                  priority
+                  draggable={false}
+                />
+              </motion.div>
+            </div>
 
             {/* Sağ Ok (Sadece 1'den fazla resim varsa) */}
-            {product.images.length > 1 && (
+            {lightboxImages.length > 1 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setLightboxIndex((prev) => (prev + 1) % product.images.length);
+                  setLightboxIndex((prev) => (prev + 1) % lightboxImages.length);
+                  setIsZoomed(false);
                 }}
                 className="absolute right-4 md:right-12 z-50 p-3 bg-white/5 hover:bg-white/10 rounded-full text-white/70 hover:text-white transition-all backdrop-blur-md"
               >
@@ -964,34 +1018,40 @@ export default function UrunDetayPage() {
             )}
 
             {/* Alt Önizlemeler (Küçük Thumbnail'lar) */}
-            {product.images.length > 1 && (
-              <div 
-                className="absolute bottom-4 md:bottom-8 z-50 flex items-center justify-center gap-3 w-full px-4 overflow-x-auto no-scrollbar cursor-default"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* CSS ile Scrollbar'ı gizlemek için head içine style ekliyoruz veya inline yapıyoruz. Webkit için global.css lazım ama Firefox/IE inline ile çözüldü */}
-                <style jsx>{`
-                  div::-webkit-scrollbar {
-                    display: none;
-                  }
-                `}</style>
-                {product.images.map((img: string, idx: number) => (
-                  <button
-                    key={idx}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLightboxIndex(idx);
-                    }}
-                    className={`relative flex-shrink-0 w-16 h-16 md:w-20 md:h-20 my-6 rounded-xl overflow-hidden border-2 transition-all duration-300 cursor-pointer ${
-                      idx === lightboxIndex 
-                        ? "border-white scale-110 shadow-[0_0_20px_rgba(255,255,255,0.3)] opacity-100" 
-                        : "border-transparent opacity-40 hover:opacity-80"
-                    }`}
-                  >
-                    <Image src={img} alt="" fill className="object-cover" />
-                  </button>
-                ))}
+            {lightboxImages.length > 1 && (
+              <div className="absolute bottom-4 md:bottom-8 z-50 w-full px-4">
+                <div 
+                  className="flex items-center justify-start md:justify-center w-full overflow-x-auto no-scrollbar py-4"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <style jsx>{`
+                    div::-webkit-scrollbar {
+                      display: none;
+                    }
+                  `}</style>
+                  {lightboxImages.map((img: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className={`transition-all duration-300 flex-shrink-0 m-3 rounded-xl border-2 ${
+                        idx === lightboxIndex 
+                          ? "scale-110 border-white" 
+                          : "scale-100 border-transparent opacity-40 hover:opacity-80"
+                      }`}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLightboxIndex(idx);
+                          setIsZoomed(false);
+                        }}
+                        className="relative block w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden cursor-pointer"
+                      >
+                        <Image src={img} alt="" fill className="object-cover" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </motion.div>

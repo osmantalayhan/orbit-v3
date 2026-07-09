@@ -78,3 +78,30 @@ func CreateCategory(c *fiber.Ctx) error {
 		"name":    req.Name,
 	})
 }
+
+// DeleteCategory, belirtilen kategoriyi siler
+func DeleteCategory(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	// Önce kategorinin adını almamız lazım ki ürünlerde kullanılıyor mu bakalım
+	var categoryName string
+	err := config.DB.QueryRow(context.Background(), "SELECT name FROM categories WHERE id = $1", id).Scan(&categoryName)
+	if err != nil {
+		return c.Status(404).JSON(fiber.Map{"error": "Kategori bulunamadı"})
+	}
+
+	// Bu kategori adına sahip ürün var mı kontrol et
+	var count int
+	checkQuery := `SELECT COUNT(*) FROM products WHERE category = $1`
+	if err := config.DB.QueryRow(context.Background(), checkQuery, categoryName).Scan(&count); err == nil && count > 0 {
+		return c.Status(400).JSON(fiber.Map{"error": fmt.Sprintf("Bu kategoride (%s) %d adet ürün bulunuyor. Lütfen önce o ürünlerin kategorisini değiştirin.", categoryName, count)})
+	}
+
+	// Kullanılmıyorsa sil
+	_, err = config.DB.Exec(context.Background(), "DELETE FROM categories WHERE id = $1", id)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Kategori silinirken hata oluştu", "details": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{"message": "Kategori başarıyla silindi"})
+}

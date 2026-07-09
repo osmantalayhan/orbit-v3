@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -74,8 +75,16 @@ func main() {
 		return c.Next()
 	})
 
+	// Dosyaların nerede olduğunu kesin olarak bul (çalıştırma dizinine göre)
+	cwd, _ := os.Getwd()
+	rootDir := cwd
+	if filepath.Base(cwd) == "backend" {
+		rootDir = filepath.Dir(cwd) // Eğer backend içindeyse bir üst dizine çık
+	}
+	
 	// Yüklenen dosyalara erişim için statik dizin
-	app.Static("/uploads", "./uploads")
+	app.Static("/uploads", filepath.Join(rootDir, "public", "uploads"))
+	app.Static("/uploads", filepath.Join(rootDir, "backend", "uploads"))
 
 	router.SetupRoutes(app)
 

@@ -172,6 +172,11 @@ export default function SettingsAdminPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "logo_url" | "favicon_url") => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Dosya boyutu 5MB'dan büyük olamaz!");
+      e.target.value = "";
+      return;
+    }
 
     const formData = new FormData();
     formData.append("image", file);

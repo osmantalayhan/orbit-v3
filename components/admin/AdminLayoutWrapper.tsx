@@ -15,6 +15,7 @@ import {
   MapPin,
   Image as ImageIcon,
   ShoppingCart,
+  Users,
 } from "lucide-react";
 import styles from "../../app/admin/admin.module.css";
 
@@ -24,6 +25,7 @@ const menuItems = [
   { title: "Ana Slider", url: "/admin/slider", icon: ImageIcon },
   { title: "Satış Kanalları", url: "/admin/sales-channels", icon: ShoppingCart },
   { title: "Blog", url: "/admin/blog", icon: FileText },
+  { title: "Yazarlar", url: "/admin/authors", icon: Users },
   { title: "Kariyer", url: "/admin/careers", icon: Briefcase },
   { title: "İletişim", url: "/admin/messages", icon: Mail },
   { title: "Sosyal & Harita", url: "/admin/social-map", icon: MapPin },

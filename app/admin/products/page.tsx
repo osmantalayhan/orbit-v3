@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import styles from "../admin.module.css";
 import { Package, Plus, Search, Edit2, Trash2, X, Trash, UploadCloud, GripVertical } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import Toast from "../../../components/Toast";
 
 interface Product {
   id: string;
@@ -79,6 +80,10 @@ export default function AdminProductsPage() {
 
   // Delete Confirm State
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
+  const [deletingCategoryName, setDeletingCategoryName] = useState<string | null>(null);
+
+  // Toast State
+  const [toast, setToast] = useState<{ isVisible: boolean, message: string, type: "success" | "error" }>({ isVisible: false, message: "", type: "success" });
 
   const getImageUrl = (url: string) => {
     if (!url) return "";
@@ -182,7 +187,7 @@ export default function AdminProductsPage() {
       });
       if (!res.ok) {
         const errorData = await res.json();
-        alert(`Hata: ${errorData.error} | Detay: ${errorData.details} | Raw: ${errorData.rawBody}`);
+        alert(`Hata: ${errorData.error} | Detay: ${errorData.details}`);
         return;
       }
       fetchCategories();
@@ -190,7 +195,49 @@ export default function AdminProductsPage() {
       setIsCategoryModalOpen(false);
     } catch (err) {
       console.error("Kategori ekleme hatası:", err);
-      alert("Bir hata oluştu.");
+      alert("Kategori eklenirken bir hata oluştu.");
+    }
+  };
+
+  const promptDeleteCategory = () => {
+    const selectedCatName = newProduct.category;
+    if (!selectedCatName) {
+      alert("Lütfen silmek için önce listeden bir kategori seçin.");
+      return;
+    }
+    setDeletingCategoryName(selectedCatName);
+  };
+
+  const confirmDeleteCategory = async () => {
+    if (!deletingCategoryName) return;
+    
+    const catObj = categories.find((c: any) => c.name === deletingCategoryName);
+    if (!catObj) {
+      alert("Seçili kategori sistemde bulunamadı.");
+      setDeletingCategoryName(null);
+      return;
+    }
+
+    try {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/categories/${catObj.id}`, {
+        method: "DELETE"
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        setToast({ isVisible: true, message: `Hata: ${errorData.error}`, type: "error" });
+        setTimeout(() => setToast(prev => ({ ...prev, isVisible: false })), 5000);
+        setDeletingCategoryName(null);
+        return;
+      }
+
+      setNewProduct({...newProduct, category: ""});
+      fetchCategories();
+      setDeletingCategoryName(null);
+    } catch (err) {
+      console.error(err);
+      alert("Kategori silinirken bir hata oluştu.");
+      setDeletingCategoryName(null);
     }
   };
 
@@ -394,12 +441,20 @@ export default function AdminProductsPage() {
   // --- Galeri & Sürükle Bırak Fonksiyonları ---
   const handleGallerySelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files).map(file => ({
+      const validFiles = Array.from(e.target.files).filter(file => {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`"${file.name}" boyutu 5MB'dan büyük olamaz!`);
+          return false;
+        }
+        return true;
+      });
+      const newFiles = validFiles.map(file => ({
         id: Math.random().toString(),
         type: 'new' as const,
         file
       }));
       setGalleryItems((prev) => [...prev, ...newFiles]);
+      e.target.value = ""; // Reset input
     }
   };
 
@@ -423,13 +478,21 @@ export default function AdminProductsPage() {
   // --- Pinout Fonksiyonları ---
   const handlePinoutSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files).map(file => ({
+      const validFiles = Array.from(e.target.files).filter(file => {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`"${file.name}" boyutu 5MB'dan büyük olamaz!`);
+          return false;
+        }
+        return true;
+      });
+      const newFiles = validFiles.map(file => ({
         id: Math.random().toString(),
         type: 'new' as const,
         file,
         title: truncateFileName(file.name)
       }));
       setPinoutItems((prev) => [...prev, ...newFiles]);
+      e.target.value = ""; // Reset input
     }
   };
 
@@ -519,6 +582,12 @@ export default function AdminProductsPage() {
 
   return (
     <div className={styles.dashboardContainer}>
+      <Toast 
+        message={toast.message} 
+        isVisible={toast.isVisible} 
+        type={toast.type} 
+        onClose={() => setToast(prev => ({ ...prev, isVisible: false }))} 
+      />
       
       {/* Üst Alan */}
       <div className={styles.dashboardHeader}>
@@ -726,8 +795,11 @@ export default function AdminProductsPage() {
                               <option key={cat.id} value={cat.name}>{cat.name}</option>
                             ))}
                           </select>
-                          <button type="button" onClick={handleAddCategory} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px' }}>
+                          <button type="button" onClick={handleAddCategory} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px' }} title="Yeni Kategori Ekle">
                             +
+                          </button>
+                          <button type="button" onClick={promptDeleteCategory} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Seçili Kategoriyi Sil">
+                            <Trash2 size={20} />
                           </button>
                         </div>
                       </div>
@@ -1084,6 +1156,54 @@ export default function AdminProductsPage() {
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
               >
                 Kategoriyi Ekle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Kategori Silme Onayı Modalı */}
+      {deletingCategoryName && (
+        <div className={styles.drawerOverlay} onClick={() => setDeletingCategoryName(null)} style={{ zIndex: 999 }}>
+          <div 
+            style={{
+              backgroundColor: '#121212',
+              border: '1px solid #27272a',
+              borderRadius: '16px',
+              padding: '32px',
+              width: '400px',
+              maxWidth: '90%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+              animation: 'popIn 0.3s forwards cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Trash2 size={20} color="#ef4444" />
+              Kategoriyi Sil
+            </h3>
+            <p style={{ fontSize: '14px', color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
+              <strong style={{ color: '#fff' }}>"{deletingCategoryName}"</strong> kategorisini silmek istediğinize emin misiniz? Eğer bu kategoriye ait ürün varsa silme işlemi gerçekleşmeyecektir.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+              <button 
+                onClick={() => setDeletingCategoryName(null)}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #27272a', backgroundColor: 'transparent', color: '#a1a1aa', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                İptal Et
+              </button>
+              <button 
+                onClick={confirmDeleteCategory}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#ef4444', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+              >
+                Evet, Sil
               </button>
             </div>
           </div>

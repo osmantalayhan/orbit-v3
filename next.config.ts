@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/uploads/:path*',
-        destination: 'http://192.168.14.102:8080/uploads/:path*',
+        destination: 'http://localhost:8080/uploads/:path*',
         permanent: false,
       },
     ]

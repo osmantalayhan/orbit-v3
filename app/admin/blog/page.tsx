@@ -1,9 +1,124 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import styles from "../admin.module.css";
-import { FileText, Search, Plus, X, Trash2, Edit, Save, Bold, Italic, Underline, List, ListOrdered, Quote, Table, Link as LinkIcon, Code, Image as ImageIcon } from "lucide-react";
+import { FileText, Search, Plus, X, Trash2, Edit, Save } from "lucide-react";
 import { apiClient } from "@/lib/api";
+import dynamic from "next/dynamic";
+
+const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
+
+const editorConfig = {
+  theme: 'dark',
+  placeholder: 'Makalenizi buraya yazmaya başlayın...',
+  askBeforePasteHTML: false,
+  askBeforePasteFromWord: false,
+  defaultActionOnPaste: 'insert_as_html',
+  cleanHTML: {
+    fillEmptyParagraph: false,
+    removeEmptyElements: false,
+    replaceNBSP: false,
+  },
+  beautifyHTML: false,
+  enter: 'P',
+  disablePlugins: 'beautifyHTML',
+  uploader: {
+    insertImageAsBase64URI: true,
+  },
+  resizer: {
+    showSize: true,
+    hideSizeTimeout: 1000,
+  },
+  popup: {
+    img: ['imgFullWidth', '|', 'imageProperties', '|', 'left', 'center', 'right', 'justify', '|', 'delete']
+  },
+  image: {
+    editSrc: true,
+    editTitle: true,
+    editAlt: true,
+    editLink: true,
+    editSize: true,
+    editMargins: true,
+    editClass: true,
+    editStyle: true,
+    editId: true,
+    editAlign: true,
+    showPreview: true,
+    useImageEditor: false
+  },
+  controls: {
+    grid2: {
+      name: '2li Grid',
+      tooltip: '2li Görsel / Yan Yana İçerik',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iNyIgaGVpZ2h0PSIxOCIgcng9IjEiLz48cmVjdCB4PSIxNCIgeT0iMyIgd2lkdGg9IjciIGhlaWdodD0iMTgiIHJ4PSIxIi8+PC9zdmc+',
+      exec: (editor: any) => {
+        editor.s.insertHTML(`
+          <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+          </div><p><br></p>
+        `);
+      }
+    },
+    grid3: {
+      name: '3lü Grid',
+      tooltip: '3lü Görsel Grubu',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSIzIiB3aWR0aD0iNSIgaGVpZ2h0PSIxOCIgcng9IjEiLz48cmVjdCB4PSI5LjUiIHk9IjMiIHdpZHRoPSI1IiBoZWlnaHQ9IjE4IiByeD0iMSIvPjxyZWN0IHg9IjE3IiB5PSIzIiB3aWR0aD0iNSIgaGVpZ2h0PSIxOCIgcng9IjEiLz48L3N2Zz4=',
+      exec: (editor: any) => {
+        editor.s.insertHTML(`
+          <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
+          </div><p><br></p>
+        `);
+      }
+    },
+    grid4: {
+      name: '4lü Grid',
+      tooltip: '4lü Görsel Grubu (2 Üst, 2 Alt)',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iNyIgaGVpZ2h0PSI3IiByeD0iMSIvPjxyZWN0IHg9IjE0IiB5PSIzIiB3aWR0aD0iNyIgaGVpZ2h0PSI3IiByeD0iMSIvPjxyZWN0IHg9IjE0IiB5PSIxNCIgd2lkdGg9IjciIGhlaWdodD0iNyIgaGVpZ2h0PSI3IiByeD0iMSIvPjxyZWN0IHg9IjMiIHk9IjE0IiB3aWR0aD0iNyIgaGVpZ2h0PSI3IiByeD0iMSIvPjwvc3ZnPg==',
+      exec: (editor: any) => {
+        editor.s.insertHTML(`
+          <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+          </div><p><br></p>
+        `);
+      }
+    },
+    imgFullWidth: {
+      name: 'Tam Boyut',
+      tooltip: 'Resmi Tam Boyut (100%) Yap',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTUgM2g2djZNOSAzSDN2Nm0xMiAxMmg2di02TTkgMjFIM3YtNiIvPjwvc3ZnPg==',
+      exec: (editor: any) => {
+        let current = editor.s.current();
+        if (!current) return;
+        
+        if (current.nodeType === 3) {
+          current = current.parentNode;
+        }
+        
+        let image = null;
+        if (current.nodeName === 'IMG') {
+          image = current;
+        } else if (current && typeof current.querySelector === 'function') {
+          image = current.querySelector('img') || (typeof current.closest === 'function' ? current.closest('img') : null);
+        }
+
+        if (image) {
+          image.style.width = '100%';
+          image.style.height = 'auto';
+          image.style.display = 'block';
+          image.style.margin = '16px auto';
+        }
+      }
+    }
+  },
+  buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'image', 'table', 'link', '|', 'grid2', 'grid3', 'grid4', '|', 'align', 'undo', 'redo', '|', 'hr', 'eraser', 'fullsize']
+};
 
 interface BlogPost {
   id: string | number;
@@ -14,6 +129,7 @@ interface BlogPost {
   cover_image: string;
   lead_paragraph: string;
   body_content: any;
+  author_id: number | string | null;
   author_name: string;
   author_role: string;
   author_avatar: string;
@@ -22,6 +138,7 @@ interface BlogPost {
 
 export default function AdminBlogPage() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [authors, setAuthors] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -39,6 +156,7 @@ export default function AdminBlogPage() {
     date_published: "",
     read_time: "",
     lead_paragraph: "",
+    author_id: "",
     author_name: "",
     author_role: "",
     active: true
@@ -53,293 +171,26 @@ export default function AdminBlogPage() {
   const [blocks, setBlocks] = useState<{ type: string; content: any }[]>([]);
 
   const [editorContent, setEditorContent] = useState("");
-  const editorRef = useRef<HTMLDivElement>(null);
-
-  const [showLinkInput, setShowLinkInput] = useState(false);
-  const [linkUrl, setLinkUrl] = useState("");
-  const [savedSelection, setSavedSelection] = useState<any>(null);
-
-  const [showTableInput, setShowTableInput] = useState(false);
-  const [tableRows, setTableRows] = useState(2);
-  const [tableCols, setTableCols] = useState(2);
-
-  const [activeFormats, setActiveFormats] = useState({
-    bold: false, italic: false, underline: false, h2: false, h3: false, blockquote: false, ul: false, ol: false
-  });
-
-  const updateActiveFormats = () => {
-    if (!editorRef.current) return;
-    const bold = document.queryCommandState('bold');
-    const italic = document.queryCommandState('italic');
-    const underline = document.queryCommandState('underline');
-    const ul = document.queryCommandState('insertUnorderedList');
-    const ol = document.queryCommandState('insertOrderedList');
-    
-    let blockquote = false; let h2 = false; let h3 = false;
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      let node = selection.getRangeAt(0).commonAncestorContainer as Node | null;
-      while (node && node !== editorRef.current) {
-        if (node.nodeName === 'BLOCKQUOTE') blockquote = true;
-        if (node.nodeName === 'H2') h2 = true;
-        if (node.nodeName === 'H3') h3 = true;
-        node = node.parentNode;
-      }
-    }
-    setActiveFormats({ bold, italic, underline, h2, h3, blockquote, ul, ol });
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === 'Enter') {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      const range = selection.getRangeAt(0);
-      const container = range.commonAncestorContainer;
-      
-      const getClosest = (element: Node | null, tagName: string): HTMLElement | null => {
-        let current = element?.nodeType === 1 ? element as HTMLElement : element?.parentElement;
-        while (current && current !== editorRef.current) {
-          if (current.tagName === tagName.toUpperCase()) return current;
-          current = current.parentElement;
-        }
-        return null;
-      };
-
-      // Tablo (TD) İçinde Enter
-      const tdNode = getClosest(container, 'td');
-      if (tdNode) {
-        if (!e.shiftKey) {
-          e.preventDefault(); // Varsayılanı engelle
-          const trNode = getClosest(tdNode, 'tr') as HTMLTableRowElement;
-          if (trNode && trNode.parentNode) {
-            const newTr = document.createElement('tr');
-            for (let i = 0; i < trNode.cells.length; i++) {
-              const newTd = document.createElement('td');
-              newTd.style.cssText = trNode.cells[i].style.cssText;
-              newTd.innerHTML = '<br>';
-              newTr.appendChild(newTd);
-            }
-            trNode.parentNode.insertBefore(newTr, trNode.nextSibling);
-            
-            const newRange = document.createRange();
-            newRange.selectNodeContents(newTr.cells[0]);
-            newRange.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-            
-            if (editorRef.current) setEditorContent(editorRef.current.innerHTML);
-          }
-        }
-        return; // Eğer shift+enter ise varsayılan davranış (alt satır) çalışsın
-      }
-
-      // Alıntı (Blockquote) İçinde Enter
-      const blockquoteNode = getClosest(container, 'blockquote');
-      if (blockquoteNode && !e.shiftKey) {
-        // Eğer bulunduğumuz element boşsa (yani iki kere enter yapılmışsa) alıntıdan çık
-        const text = container.textContent || "";
-        if (text.trim() === "") {
-          e.preventDefault();
-          const p = document.createElement('p');
-          p.innerHTML = '<br>';
-          
-          if (blockquoteNode.nextSibling) {
-            blockquoteNode.parentNode?.insertBefore(p, blockquoteNode.nextSibling);
-          } else {
-            blockquoteNode.parentNode?.appendChild(p);
-          }
-          
-          const newRange = document.createRange();
-          newRange.selectNodeContents(p);
-          newRange.collapse(true);
-          selection.removeAllRanges();
-          selection.addRange(newRange);
-          
-          // Boş elementi sil (blockquote içinde çöp kalmasın)
-          let nodeToRemove: Node | null = container;
-          while (nodeToRemove && nodeToRemove.parentNode !== blockquoteNode) {
-            nodeToRemove = nodeToRemove.parentNode;
-          }
-          if (nodeToRemove && nodeToRemove !== blockquoteNode) {
-             blockquoteNode.removeChild(nodeToRemove);
-          } else if (nodeToRemove === blockquoteNode && container.nodeType === 3) {
-             blockquoteNode.removeChild(container);
-          }
-          
-          if (blockquoteNode.textContent?.trim() === "") {
-             blockquoteNode.remove();
-          }
-          
-          if (editorRef.current) setEditorContent(editorRef.current.innerHTML);
-          setTimeout(updateActiveFormats, 10);
-          return;
-        }
-      }
-
-      // Liste (UL/OL) İçinde Enter (Çıkış)
-      const liNode = getClosest(container, 'li');
-      if (liNode && !e.shiftKey) {
-        const text = liNode.textContent || "";
-        if (text.trim() === "") {
-          e.preventDefault();
-          const listNode = getClosest(liNode, 'ul') || getClosest(liNode, 'ol');
-          if (listNode) {
-            const p = document.createElement('p');
-            p.innerHTML = '<br>';
-            
-            if (listNode.nextSibling) {
-              listNode.parentNode?.insertBefore(p, listNode.nextSibling);
-            } else {
-              listNode.parentNode?.appendChild(p);
-            }
-            
-            const newRange = document.createRange();
-            newRange.selectNodeContents(p);
-            newRange.collapse(true);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
-            
-            liNode.remove();
-            if (listNode.children.length === 0) {
-              listNode.remove();
-            }
-            
-            // Chrome'un arta kalan font renklerini sıfırla
-            document.execCommand('removeFormat', false, '');
-            if (editorRef.current) setEditorContent(editorRef.current.innerHTML);
-            setTimeout(updateActiveFormats, 10);
-            return;
-          }
-        }
-      }
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const html = e.clipboardData.getData('text/html');
-    const text = e.clipboardData.getData('text/plain');
-
-    if (html) {
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-
-      // Tüm elementlerdeki gereksiz stilleri temizle
-      const elements = tempDiv.querySelectorAll('*');
-      elements.forEach((el) => {
-        el.removeAttribute('style');
-        el.removeAttribute('class');
-        el.removeAttribute('id');
-        el.removeAttribute('font');
-        el.removeAttribute('dir');
-        el.removeAttribute('align');
-        
-        // Sadece renk/font taşıyan span ve font etiketlerini yok et ama içindeki metni koru
-        if (el.tagName === 'SPAN' || el.tagName === 'FONT') {
-          const parent = el.parentNode;
-          if (parent) {
-            while (el.firstChild) {
-              parent.insertBefore(el.firstChild, el);
-            }
-            parent.removeChild(el);
-          }
-        }
-      });
-
-      document.execCommand('insertHTML', false, tempDiv.innerHTML);
-    } else if (text) {
-      // Eğer HTML yoksa sadece düz metni yapıştır (satır atlamalarını korumak için replace eklenebilir ama insertText çözer)
-      document.execCommand('insertText', false, text);
-    }
-  };
-
-  const handleFormat = (command: string, value?: string) => {
-    if (command === 'formatBlock') {
-      const isAlreadyActive = 
-        (value === 'BLOCKQUOTE' && activeFormats.blockquote) ||
-        (value === 'H2' && activeFormats.h2) ||
-        (value === 'H3' && activeFormats.h3);
-        
-      if (isAlreadyActive) {
-        document.execCommand('formatBlock', false, 'P');
-      } else {
-        document.execCommand(command, false, value);
-      }
-    } else {
-      document.execCommand(command, false, value);
-    }
-    
-    editorRef.current?.focus();
-    if (editorRef.current) {
-      setEditorContent(editorRef.current.innerHTML);
-    }
-    setTimeout(updateActiveFormats, 10);
-  };
-
-  const handleTableClick = () => {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      setSavedSelection(selection.getRangeAt(0));
-    }
-    setShowTableInput(true);
-    setShowLinkInput(false); // Link açıksa kapat
-  };
-
-  const confirmTable = () => {
-    if (savedSelection) {
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(savedSelection);
-
-      const rows = Math.max(1, tableRows);
-      const cols = Math.max(1, tableCols);
-
-      let tableHTML = `<table style="width: 100%; border-collapse: collapse; margin: 24px 0; border: 1px solid rgba(255,255,255,0.2);"><tbody>`;
-      for (let i = 0; i < rows; i++) {
-        tableHTML += `<tr>`;
-        for (let j = 0; j < cols; j++) {
-           const isHeader = i === 0;
-           const fw = isHeader ? 'bold' : 'normal';
-           tableHTML += `<td style="border: 1px solid rgba(255,255,255,0.2); padding: 12px; font-weight: ${fw};">Hücre</td>`;
-        }
-        tableHTML += `</tr>`;
-      }
-      tableHTML += `</tbody></table><p><br></p>`;
-      
-      handleFormat('insertHTML', tableHTML);
-    }
-    setShowTableInput(false);
-  };
-
-  const insertLink = () => {
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
-      setSavedSelection(selection.getRangeAt(0));
-      setShowLinkInput(true);
-      setShowTableInput(false); // Tablo açıksa kapat
-    } else {
-      alert("Lütfen link eklemek için bir metin seçin.");
-    }
-  };
-
-  const confirmLink = () => {
-    if (savedSelection) {
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(savedSelection);
-      handleFormat('createLink', linkUrl);
-    }
-    setShowLinkInput(false);
-    setLinkUrl("");
-  };
 
   // Deletion Modal
   const [deletingPostId, setDeletingPostId] = useState<string | number | null>(null);
 
   useEffect(() => {
     fetchPosts();
+    fetchAuthors();
   }, []);
+
+  const fetchAuthors = async () => {
+    try {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/authors`);
+      if (res.ok) {
+        const data = await res.json();
+        setAuthors(data || []);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchPosts = async () => {
     try {
@@ -371,6 +222,7 @@ export default function AdminBlogPage() {
       date_published: new Date().toISOString().split("T")[0],
       read_time: "5 dk okuma",
       lead_paragraph: "",
+      author_id: "",
       author_name: "",
       author_role: "",
       active: true
@@ -391,6 +243,7 @@ export default function AdminBlogPage() {
       date_published: post.date_published || "",
       read_time: post.read_time || "",
       lead_paragraph: post.lead_paragraph || "",
+      author_id: post.author_id || "",
       author_name: post.author_name || "",
       author_role: post.author_role || "",
       active: post.active !== undefined ? post.active : true
@@ -413,11 +266,6 @@ export default function AdminBlogPage() {
       }).join("");
     }
     setEditorContent(htmlContent);
-    setTimeout(() => {
-      if (editorRef.current) {
-        editorRef.current.innerHTML = htmlContent;
-      }
-    }, 100);
     
     setIsDrawerOpen(true);
   };
@@ -430,17 +278,15 @@ export default function AdminBlogPage() {
       formData.append("date_published", newPost.date_published);
       formData.append("read_time", newPost.read_time);
       formData.append("lead_paragraph", newPost.lead_paragraph);
-      formData.append("author_name", newPost.author_name);
-      formData.append("author_role", newPost.author_role);
+      if (newPost.author_id) {
+        formData.append("author_id", newPost.author_id.toString());
+      }
       formData.append("active", newPost.active ? "true" : "false");
 
       formData.append("body_content", JSON.stringify(editorContent));
 
       if (coverImage) formData.append("cover_image", coverImage);
       else if (existingCoverImage) formData.append("existing_cover_image", existingCoverImage);
-
-      if (authorAvatar) formData.append("author_avatar", authorAvatar);
-      else if (existingAuthorAvatar) formData.append("existing_author_avatar", existingAuthorAvatar);
 
       const url = editingPostId ? `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog/${editingPostId}` : `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/blog`;
       const method = editingPostId ? "PUT" : "POST";
@@ -488,8 +334,9 @@ export default function AdminBlogPage() {
       formData.append("date_published", post.date_published || "");
       formData.append("read_time", post.read_time || "");
       formData.append("lead_paragraph", post.lead_paragraph || "");
-      formData.append("author_name", post.author_name || "");
-      formData.append("author_role", post.author_role || "");
+      if (post.author_id) {
+        formData.append("author_id", post.author_id.toString());
+      }
       formData.append("active", post.active ? "false" : "true");
       formData.append("body_content", JSON.stringify(post.body_content || ""));
       if (post.cover_image) formData.append("existing_cover_image", post.cover_image);
@@ -649,7 +496,7 @@ export default function AdminBlogPage() {
 
       {/* --- YENİ YAZI MODAL (GENİŞ POPUP) --- */}
       {isDrawerOpen && (
-        <div className={styles.drawerOverlay} onClick={() => setIsDrawerOpen(false)}>
+        <div className={styles.drawerOverlay}>
           <div className={styles.drawerContent} onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
@@ -699,14 +546,17 @@ export default function AdminBlogPage() {
                     <h4 className={styles.formSectionTitle}>Görsel ve Yazar</h4>
                     <div className={styles.formGrid}>
                       <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Yazar Adı</label>
-                        <input type="text" className={styles.formInput} placeholder="Örn: Ahmet Yılmaz" 
-                               value={newPost.author_name} onChange={e => setNewPost({...newPost, author_name: e.target.value})} />
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Yazar Ünvanı</label>
-                        <input type="text" className={styles.formInput} placeholder="Örn: Yazılım Mühendisi" 
-                               value={newPost.author_role} onChange={e => setNewPost({...newPost, author_role: e.target.value})} />
+                        <label className={styles.formLabel}>Yazar Seçiniz</label>
+                        <select 
+                          className={styles.formInput} 
+                          value={newPost.author_id || ""} 
+                          onChange={e => setNewPost({...newPost, author_id: e.target.value})}
+                        >
+                          <option value="">Yazar Seçiniz</option>
+                          {authors.map(a => (
+                            <option key={a.id} value={a.id}>{a.name} ({a.role})</option>
+                          ))}
+                        </select>
                       </div>
                     </div>
 
@@ -720,21 +570,17 @@ export default function AdminBlogPage() {
                         <span style={{ fontSize: '13px', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {coverImage ? coverImage.name : existingCoverImage ? "Mevcut Görsel Yüklü" : "Resim Seçin..."}
                         </span>
-                        <input type="file" accept="image/*" hidden onChange={(e) => { if(e.target.files) setCoverImage(e.target.files[0]) }} />
-                      </label>
-                    </div>
-
-                    <div className={styles.formGroup} style={{ marginTop: '16px' }}>
-                      <label className={styles.formLabel}>Yazar Avatarı</label>
-                      <label style={{
-                        display: 'flex', alignItems: 'center', gap: '12px', padding: '16px',
-                        border: '1px dashed #3f3f46', borderRadius: '8px', cursor: 'pointer',
-                        backgroundColor: '#1a1a1a', transition: 'all 0.2s', color: '#a1a1aa'
-                      }} onMouseOver={e => e.currentTarget.style.borderColor = '#52525b'} onMouseOut={e => e.currentTarget.style.borderColor = '#3f3f46'}>
-                        <span style={{ fontSize: '13px', flex: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {authorAvatar ? authorAvatar.name : existingAuthorAvatar ? "Mevcut Avatar Yüklü" : "Resim Seçin..."}
-                        </span>
-                        <input type="file" accept="image/*" hidden onChange={(e) => { if(e.target.files) setAuthorAvatar(e.target.files[0]) }} />
+                        <input type="file" accept="image/*" hidden onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            const file = e.target.files[0];
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert("Dosya boyutu 5MB'dan büyük olamaz!");
+                              e.target.value = "";
+                              return;
+                            }
+                            setCoverImage(file);
+                          }
+                        }} />
                       </label>
                     </div>
                   </div>
@@ -751,136 +597,116 @@ export default function AdminBlogPage() {
                                 value={newPost.lead_paragraph} onChange={e => setNewPost({...newPost, lead_paragraph: e.target.value})} />
                     </div>
 
-                    <div style={{ border: '1px solid #3f3f46', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div style={{ border: '1px solid #3f3f46', borderRadius: '8px' }}>
                       <style>{`
-                        .admin-editor-content { color: rgba(255,255,255,0.6); font-size: 18px; line-height: 1.7; font-family: inherit; }
-                        .admin-editor-content p:first-of-type { font-size: 20px; line-height: 1.6; color: rgba(255,255,255,0.9); margin-bottom: 32px; font-weight: 400; }
-                        .admin-editor-content p { font-size: 18px; color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 24px; }
-                        .admin-editor-content h2 { font-size: 28px; font-weight: 700; color: #fff; letter-spacing: -0.025em; margin-top: 32px; margin-bottom: 16px; }
-                        .admin-editor-content h3 { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.025em; margin-top: 24px; margin-bottom: 16px; }
-                        .admin-editor-content blockquote { font-size: 20px; font-style: italic; color: rgba(255,255,255,0.8); border-left: 3px solid #3f3f46; padding-left: 24px; margin: 32px 0; }
-                        .admin-editor-content ul { list-style-type: disc; padding-left: 24px; margin-bottom: 24px; font-size: 18px; color: rgba(255,255,255,0.6); line-height: 1.7; }
-                        .admin-editor-content ol { list-style-type: decimal; padding-left: 24px; margin-bottom: 24px; font-size: 18px; color: rgba(255,255,255,0.6); line-height: 1.7; }
-                        .admin-editor-content a { color: #60a5fa; text-decoration: underline; text-underline-offset: 4px; }
+                        /* Jodit için Dark Mode ek stilleri */
+                        .jodit-container {
+                          font-family: inherit !important;
+                        }
+                        .jodit-wysiwyg {
+                          background-color: #09090b !important;
+                          color: rgba(255,255,255,0.8) !important;
+                          font-size: 16px !important;
+                          line-height: 1.7 !important;
+                        }
                         
-                        .admin-editor-content table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; margin: 40px 0 !important; background-color: rgba(255, 255, 255, 0.02) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 16px !important; overflow: hidden !important; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5) !important; }
-                        .admin-editor-content td { border: none !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; border-right: 1px solid rgba(255,255,255,0.05) !important; padding: 20px 24px !important; font-size: 16px !important; color: rgba(255,255,255,0.8) !important; line-height: 1.6 !important; transition: background-color 0.2s ease !important; }
-                        .admin-editor-content tr:first-child td { background-color: rgba(255,255,255,0.05) !important; font-weight: 600 !important; color: #fff !important; font-size: 15px !important; letter-spacing: 0.03em !important; text-transform: uppercase; }
-                        .admin-editor-content tr:last-child td { border-bottom: none !important; }
-                        .admin-editor-content td:last-child { border-right: none !important; }
-                        .admin-editor-content tr:not(:first-child):hover td { background-color: rgba(255, 255, 255, 0.04) !important; color: #fff !important; }
+                        /* Resim boyutlandırma Tailwind ve Global CSS çakışması düzeltmesi */
+                        .jodit-wysiwyg img {
+                          display: inline-block !important;
+                          pointer-events: auto !important;
+                          user-select: auto !important;
+                          -webkit-user-drag: auto !important;
+                          -webkit-user-select: auto !important;
+                          -moz-user-select: auto !important;
+                          -ms-user-select: auto !important;
+                        }
+                        
+                        /* Sadece Editörde Gözükecek Grid Çizgileri */
+                        .jodit-wysiwyg .editor-grid-col {
+                          border: 1px dashed #52525b !important;
+                          min-height: 120px !important;
+                          border-radius: 8px;
+                          background-color: rgba(255,255,255,0.02);
+                          transition: all 0.2s;
+                        }
+                        .jodit-wysiwyg .editor-grid-col:hover {
+                          background-color: rgba(255,255,255,0.05);
+                        }
+                        
+                        .jodit-resizer {
+                          z-index: 1000 !important;
+                          pointer-events: auto !important;
+                        }
+                        .jodit-resizer svg {
+                          display: block !important;
+                        }
+                        /* Çift tıklama ipucunu vurgulamak için aktif resme mavi çerçeve */
+                        .jodit-wysiwyg img.jodit_active {
+                          outline: 2px solid #3b82f6 !important;
+                          outline-offset: 2px;
+                        }
+                        
+                        /* Tailwind Reset İptali - Jodit İçeriği İçin */
+                        .jodit-wysiwyg h1 { font-size: 2.25em !important; font-weight: 700 !important; color: #fff !important; margin: 0.67em 0 !important; }
+                        .jodit-wysiwyg h2 { font-size: 1.75em !important; font-weight: 700 !important; color: #fff !important; margin: 0.83em 0 !important; }
+                        .jodit-wysiwyg h3 { font-size: 1.5em !important; font-weight: 700 !important; color: #fff !important; margin: 1em 0 !important; }
+                        .jodit-wysiwyg h4 { font-size: 1.25em !important; font-weight: 700 !important; color: #fff !important; margin: 1.33em 0 !important; }
+                        .jodit-wysiwyg h5 { font-size: 1em !important; font-weight: 700 !important; color: #fff !important; margin: 1.67em 0 !important; }
+                        .jodit-wysiwyg h6 { font-size: 0.875em !important; font-weight: 700 !important; color: #fff !important; margin: 2.33em 0 !important; }
+                        
+                        .jodit-wysiwyg ul { list-style-type: disc !important; padding-left: 2.5em !important; margin: 1em 0 !important; }
+                        .jodit-wysiwyg ol { list-style-type: decimal !important; padding-left: 2.5em !important; margin: 1em 0 !important; }
+                        .jodit-wysiwyg li { display: list-item !important; margin-bottom: 0.25em !important; }
+                        
+                        .jodit-wysiwyg strong, .jodit-wysiwyg b { font-weight: 700 !important; color: #fff !important; }
+                        .jodit-wysiwyg em, .jodit-wysiwyg i { font-style: italic !important; }
+                        .jodit-wysiwyg u { text-decoration: underline !important; }
+                        .jodit-wysiwyg blockquote { border-left: 4px solid #3f3f46 !important; padding-left: 1em !important; font-style: italic !important; margin: 1.5em 0 !important; color: rgba(255,255,255,0.6) !important; }
+
+                        /* Tam ekran düzeltmeleri (CSS :has() ile) */
+                        div[class*="drawerOverlay"]:has(.jodit_fullsize) {
+                          backdrop-filter: none !important;
+                          background: #000 !important;
+                        }
+                        div[class*="drawerContent"]:has(.jodit_fullsize) {
+                          transform: none !important;
+                          animation: none !important;
+                          overflow: visible !important;
+                        }
+                        
+                        /* Jodit'in kendi hatalı tam ekran hesaplamasını ezip Flexbox ile kusursuz yapıyoruz */
+                        .jodit-container.jodit_fullsize {
+                          position: fixed !important;
+                          top: 0 !important;
+                          left: 0 !important;
+                          width: 100vw !important;
+                          height: 100vh !important;
+                          z-index: 999999 !important;
+                          border-radius: 0 !important;
+                          display: flex !important;
+                          flex-direction: column !important;
+                          background-color: #09090b !important;
+                        }
+                        .jodit-container.jodit_fullsize .jodit-toolbar__box {
+                          position: static !important;
+                          flex-shrink: 0 !important;
+                          width: 100% !important;
+                          z-index: 10 !important;
+                        }
+                        .jodit-container.jodit_fullsize .jodit-workplace {
+                          flex: 1 !important;
+                          height: auto !important;
+                          min-height: 0 !important;
+                        }
+                        .jodit-container.jodit_fullsize .jodit-wysiwyg {
+                          height: 100% !important;
+                        }
                       `}</style>
-                      
-                      <div style={{ padding: '8px', backgroundColor: '#18181b', borderBottom: '1px solid #3f3f46', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                        <button type="button" onClick={() => handleFormat('bold')} style={{ padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', backgroundColor: activeFormats.bold ? '#fff' : '#27272a', color: activeFormats.bold ? '#000' : '#fff' }}><Bold size={16}/></button>
-                        <button type="button" onClick={() => handleFormat('italic')} style={{ padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', backgroundColor: activeFormats.italic ? '#fff' : '#27272a', color: activeFormats.italic ? '#000' : '#fff' }}><Italic size={16}/></button>
-                        <button type="button" onClick={() => handleFormat('underline')} style={{ padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', backgroundColor: activeFormats.underline ? '#fff' : '#27272a', color: activeFormats.underline ? '#000' : '#fff' }}><Underline size={16}/></button>
-                        <span style={{ width: '1px', backgroundColor: '#3f3f46', margin: '0 4px' }}></span>
-                        <button type="button" onClick={() => handleFormat('formatBlock', 'H2')} style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', backgroundColor: activeFormats.h2 ? '#fff' : '#27272a', color: activeFormats.h2 ? '#000' : '#fff' }}>H2</button>
-                        <button type="button" onClick={() => handleFormat('formatBlock', 'H3')} style={{ padding: '6px 10px', borderRadius: '6px', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', backgroundColor: activeFormats.h3 ? '#fff' : '#27272a', color: activeFormats.h3 ? '#000' : '#fff' }}>H3</button>
-                        <span style={{ width: '1px', backgroundColor: '#3f3f46', margin: '0 4px' }}></span>
-                        <button type="button" onClick={() => handleFormat('insertUnorderedList')} style={{ padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', backgroundColor: activeFormats.ul ? '#fff' : '#27272a', color: activeFormats.ul ? '#000' : '#fff' }} title="Madde İşaretli Liste"><List size={16}/></button>
-                        <button type="button" onClick={() => handleFormat('insertOrderedList')} style={{ padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', backgroundColor: activeFormats.ol ? '#fff' : '#27272a', color: activeFormats.ol ? '#000' : '#fff' }} title="Numaralı Liste"><ListOrdered size={16}/></button>
-                        <span style={{ width: '1px', backgroundColor: '#3f3f46', margin: '0 4px' }}></span>
-                        <button type="button" onClick={() => handleFormat('formatBlock', 'BLOCKQUOTE')} style={{ padding: '6px 10px', borderRadius: '6px', cursor: 'pointer', backgroundColor: activeFormats.blockquote ? '#fff' : '#27272a', color: activeFormats.blockquote ? '#000' : '#fff' }} title="Alıntı"><Quote size={16}/></button>
-                        <button type="button" onClick={insertLink} style={{ padding: '6px 10px', color: '#fff', backgroundColor: '#27272a', borderRadius: '6px', cursor: 'pointer' }} title="Bağlantı Ekle"><LinkIcon size={16}/></button>
-                        <button type="button" onClick={handleTableClick} style={{ padding: '6px 10px', color: '#fff', backgroundColor: '#27272a', borderRadius: '6px', cursor: 'pointer' }} title="Tablo Ekle"><Table size={16}/></button>
-                        
-                        <span style={{ width: '1px', backgroundColor: '#3f3f46', margin: '0 4px' }}></span>
-                        
-                        <button type="button" onClick={() => {
-                          const selection = window.getSelection();
-                          if (selection && selection.rangeCount > 0) {
-                            setSavedSelection(selection.getRangeAt(0));
-                          }
-                          document.getElementById('editor-image-upload')?.click();
-                        }} style={{ padding: '6px 10px', color: '#fff', backgroundColor: '#27272a', borderRadius: '6px', cursor: 'pointer' }} title="Resim Ekle"><ImageIcon size={16}/></button>
-                        <input 
-                          type="file" 
-                          id="editor-image-upload" 
-                          hidden 
-                          accept="image/*" 
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onload = (event) => {
-                                const base64 = event.target?.result;
-                                if (base64) {
-                                  if (savedSelection) {
-                                    const sel = window.getSelection();
-                                    sel?.removeAllRanges();
-                                    sel?.addRange(savedSelection);
-                                  }
-                                  const imgHtml = `<img src="${base64}" style="max-width: 100%; border-radius: 12px; margin: 24px 0; border: 1px solid rgba(255,255,255,0.1);" alt="Blog Görseli" />`;
-                                  document.execCommand('insertHTML', false, imgHtml);
-                                  
-                                  if (editorRef.current) {
-                                    setEditorContent(editorRef.current.innerHTML);
-                                  }
-                                }
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                            e.target.value = '';
-                          }} 
-                        />
-                      </div>
-
-                      {showTableInput && (
-                        <div style={{ padding: '8px 12px', backgroundColor: '#27272a', borderBottom: '1px solid #3f3f46', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <label style={{ fontSize: '13px', color: '#a1a1aa' }}>Satır:</label>
-                          <input 
-                            type="number" 
-                            min="1"
-                            value={tableRows} 
-                            onChange={(e) => setTableRows(parseInt(e.target.value) || 1)}
-                            style={{ width: '60px', padding: '6px', borderRadius: '4px', border: '1px solid #3f3f46', backgroundColor: '#18181b', color: '#fff', fontSize: '13px', outline: 'none' }}
-                          />
-                          <label style={{ fontSize: '13px', color: '#a1a1aa', marginLeft: '8px' }}>Sütun:</label>
-                          <input 
-                            type="number" 
-                            min="1"
-                            value={tableCols} 
-                            onChange={(e) => setTableCols(parseInt(e.target.value) || 1)}
-                            style={{ width: '60px', padding: '6px', borderRadius: '4px', border: '1px solid #3f3f46', backgroundColor: '#18181b', color: '#fff', fontSize: '13px', outline: 'none' }}
-                          />
-                          <button type="button" onClick={confirmTable} style={{ marginLeft: 'auto', padding: '6px 12px', backgroundColor: '#3b82f6', color: '#fff', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', border: 'none', fontWeight: '600' }}>Ekle</button>
-                          <button type="button" onClick={() => setShowTableInput(false)} style={{ padding: '6px 12px', backgroundColor: 'transparent', color: '#a1a1aa', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', border: 'none' }}>İptal</button>
-                        </div>
-                      )}
-
-                      {showLinkInput && (
-                        <div style={{ padding: '8px 12px', backgroundColor: '#27272a', borderBottom: '1px solid #3f3f46', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <input 
-                            type="url" 
-                            placeholder="https://..." 
-                            value={linkUrl} 
-                            onChange={(e) => setLinkUrl(e.target.value)}
-                            style={{ flex: 1, padding: '6px 12px', borderRadius: '4px', border: '1px solid #3f3f46', backgroundColor: '#18181b', color: '#fff', fontSize: '13px', outline: 'none' }}
-                            onKeyDown={(e) => {
-                              if(e.key === 'Enter') {
-                                e.preventDefault();
-                                confirmLink();
-                              }
-                            }}
-                          />
-                          <button type="button" onClick={confirmLink} style={{ padding: '6px 12px', backgroundColor: '#3b82f6', color: '#fff', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', border: 'none', fontWeight: '600' }}>Ekle</button>
-                          <button type="button" onClick={() => setShowLinkInput(false)} style={{ padding: '6px 12px', backgroundColor: 'transparent', color: '#a1a1aa', borderRadius: '4px', fontSize: '13px', cursor: 'pointer', border: 'none' }}>İptal</button>
-                        </div>
-                      )}
-
-                      <div 
-                        ref={editorRef}
-                        className="admin-editor-content"
-                        contentEditable 
-                        style={{ minHeight: '300px', padding: '20px', outline: 'none', backgroundColor: '#09090b' }}
-                        onInput={(e) => setEditorContent(e.currentTarget.innerHTML)}
-                        onKeyDown={handleKeyDown}
-                        onKeyUp={updateActiveFormats}
-                        onMouseUp={updateActiveFormats}
-                        onPaste={handlePaste}
-                        suppressContentEditableWarning={true}
+                      <JoditEditor
+                        value={editorContent}
+                        config={editorConfig}
+                        onBlur={newContent => setEditorContent(newContent)}
+                        onChange={() => {}}
                       />
                     </div>
                   </div>

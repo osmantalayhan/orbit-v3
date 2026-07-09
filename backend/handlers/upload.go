@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"orbit-backend/services"
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -57,7 +59,7 @@ func UploadImage(c *fiber.Ctx) error {
 	filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), cleanFilename)
 	savePath := filepath.Join(uploadDir, filename)
 
-	if err := c.SaveFile(file, savePath); err != nil {
+	if err := services.OptimizeAndSaveImage(file, savePath); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Dosya kaydedilemedi: " + err.Error(),
 		})

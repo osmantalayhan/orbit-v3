@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 export default function CookieBanner() {
   const [isVisible, setIsVisible] = useState(false);
@@ -28,15 +29,16 @@ export default function CookieBanner() {
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="cookie-banner"
+          style={{ left: '32px', right: 'auto', bottom: '32px' }}
           role="dialog"
           aria-label="Çerez Politikası"
         >
           <div className="cookie-content">
             <p className="cookie-text">
               Daha iyi bir deneyim sunabilmek için çerezleri kullanıyoruz.{" "}
-              <a href="#gizlilik" className="cookie-link">
+              <Link href="/gizlilik-politikasi" className="cookie-link">
                 Gizlilik Politikası
-              </a>
+              </Link>
               .
             </p>
           </div>

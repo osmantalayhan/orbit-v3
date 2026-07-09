@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 
 import { apiClient } from "@/lib/api";
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const id = params.id;
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
   
   try {
     const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/blog/${id}`, { next: { revalidate: 60 } });

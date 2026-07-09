@@ -67,7 +67,6 @@ func SetupRoutes(app *fiber.App) {
 	// 📂 Kategoriler (Categories) Rotaları
 	// ==========================================
 	api.Get("/categories", handlers.GetAllCategories)
-	api.Post("/admin/categories", handlers.CreateCategory)
 
 	// ==========================================
 	// ==========================================
@@ -99,6 +98,16 @@ func SetupRoutes(app *fiber.App) {
 	adminGroup.Post("/blog", handlers.CreateBlogPost)
 	adminGroup.Put("/blog/:id", handlers.UpdateBlogPost)
 	adminGroup.Delete("/blog/:id", handlers.DeleteBlogPost)
+
+	// Admin: Kategori Yönetimi
+	adminGroup.Post("/categories", handlers.CreateCategory)
+	adminGroup.Delete("/categories/:id", handlers.DeleteCategory)
+
+	// Admin: Yazar (Author) Yönetimi
+	adminGroup.Get("/authors", handlers.GetAuthors)
+	adminGroup.Post("/authors", handlers.CreateAuthor)
+	adminGroup.Put("/authors/:id", handlers.UpdateAuthor)
+	adminGroup.Delete("/authors/:id", handlers.DeleteAuthor)
 
 	// Admin: Kariyer / İş İlanları Yönetimi
 	adminGroup.Get("/careers", handlers.GetAdminJobPositions)
