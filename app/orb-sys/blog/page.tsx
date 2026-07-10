@@ -281,7 +281,7 @@ export default function AdminBlogPage() {
       date_published: post.date_published || "",
       read_time: post.read_time || "",
       lead_paragraph: post.lead_paragraph || "",
-      author_id: post.author_id || "",
+      author_id: post.author_id ? String(post.author_id) : "",
       author_name: post.author_name || "",
       author_role: post.author_role || "",
       active: post.active !== undefined ? post.active : true
