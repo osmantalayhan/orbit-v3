@@ -48,30 +48,25 @@ func UploadImage(c *fiber.Ctx) error {
 		})
 	}
 
-	// Yükleme dizini kontrolü
-	uploadDir := "./uploads/images"
+	// Yükleme dizini kontrolü (Next.js public diziniyle aynı olmalı)
+	uploadDir := filepath.Join("..", "public", "uploads")
 	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		os.MkdirAll(uploadDir, 0755)
+		os.MkdirAll(uploadDir, os.ModePerm)
 	}
 
 	// Dosya ismini dizin atlatma (path traversal) saldırılarına karşı temizle
 	cleanFilename := filepath.Base(file.Filename)
-	filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), cleanFilename)
+	filename := fmt.Sprintf("blog_editor_%d_%s", time.Now().UnixNano(), cleanFilename)
 	savePath := filepath.Join(uploadDir, filename)
 
-	if err := services.OptimizeAndSaveImage(file, savePath); err != nil {
+	if err := services.OptimizeAndSaveImage(file, savePath, false, false); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Dosya kaydedilemedi: " + err.Error(),
 		})
 	}
 
-	baseURL := os.Getenv("API_URL")
-	if baseURL == "" {
-		baseURL = "http://127.0.0.1:8080"
-	}
-
-	// URL formatında döndür (Frontend'in kullanacağı tam veya relative URL)
-	fileURL := fmt.Sprintf("%s/uploads/images/%s", baseURL, filename)
+	// URL formatında döndür (Frontend'in public dizininden okuyacağı relative URL)
+	fileURL := "/uploads/" + filename
 
 	return c.JSON(fiber.Map{
 		"message": "Dosya başarıyla yüklendi",
@@ -114,13 +109,14 @@ func UploadDocument(c *fiber.Ctx) error {
 		})
 	}
 
-	uploadDir := "./uploads/docs"
+	// Yükleme dizini kontrolü (Next.js public dizini)
+	uploadDir := filepath.Join("..", "public", "uploads")
 	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 		os.MkdirAll(uploadDir, 0755)
 	}
 
 	cleanFilename := filepath.Base(file.Filename)
-	filename := fmt.Sprintf("%d_%s", time.Now().UnixNano(), cleanFilename)
+	filename := fmt.Sprintf("doc_%d_%s", time.Now().UnixNano(), cleanFilename)
 	savePath := filepath.Join(uploadDir, filename)
 
 	if err := c.SaveFile(file, savePath); err != nil {
@@ -129,12 +125,7 @@ func UploadDocument(c *fiber.Ctx) error {
 		})
 	}
 
-	baseURL := os.Getenv("API_URL")
-	if baseURL == "" {
-		baseURL = "http://127.0.0.1:8080"
-	}
-
-	fileURL := fmt.Sprintf("%s/uploads/docs/%s", baseURL, filename)
+	fileURL := "/uploads/" + filename
 
 	return c.JSON(fiber.Map{
 		"message": "Belge başarıyla yüklendi",

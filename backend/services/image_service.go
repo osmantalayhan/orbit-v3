@@ -8,14 +8,15 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
+	"path/filepath"
 
 	"golang.org/x/image/draw"
 )
 
 const MaxImageSize = 5 * 1024 * 1024 // 5MB
 
-// OptimizeAndSaveImage checks file size, decodes, resizes if too large, and saves it.
-func OptimizeAndSaveImage(fileHeader *multipart.FileHeader, savePath string) error {
+// OptimizeAndSaveImage checks file size, decodes, resizes if too large, and saves it. Optionally generates a thumbnail.
+func OptimizeAndSaveImage(fileHeader *multipart.FileHeader, savePath string, generateThumb bool, isSlider bool) error {
 	// 1. 5MB Sınırı Kontrolü
 	if fileHeader.Size > MaxImageSize {
 		return errors.New("Dosya boyutu 5MB sınırını aşıyor")
@@ -52,7 +53,7 @@ func OptimizeAndSaveImage(fileHeader *multipart.FileHeader, savePath string) err
 	const maxWidth = 1920
 	var finalImg image.Image = img
 
-	if width > maxWidth {
+	if !isSlider && width > maxWidth {
 		// En-boy oranını koruyarak yeni yüksekliği hesapla
 		ratio := float64(maxWidth) / float64(width)
 		newHeight := int(float64(height) * ratio)
@@ -74,12 +75,70 @@ func OptimizeAndSaveImage(fileHeader *multipart.FileHeader, savePath string) err
 
 	// 6. Formatına göre yüksek kalitede kaydet
 	if format == "png" {
-		// PNG'ler şeffaflığı korumak için yine PNG olarak kaydedilir
-		err = png.Encode(out, finalImg)
+		if isSlider {
+			// Slider için standart kaydet
+			err = png.Encode(out, finalImg)
+		} else {
+			// Ürün ve Blog PNG'leri için Maksimum Sıkıştırma (Kayıpsız)
+			encoder := png.Encoder{CompressionLevel: png.BestCompression}
+			err = encoder.Encode(out, finalImg)
+		}
 	} else {
-		// Diğerleri (JPEG vs.) kalite kaybı olmadan %90 kalitede sıkıştırılıp kaydedilir
-		err = jpeg.Encode(out, finalImg, &jpeg.Options{Quality: 90})
+		if isSlider {
+			// Slider JPEG'leri için maksimum kalite
+			err = jpeg.Encode(out, finalImg, &jpeg.Options{Quality: 100})
+		} else {
+			// Diğer JPEG'ler (ürün, blog) kalite kaybı göze batmadan %85 ile iyice sıkıştırılır
+			err = jpeg.Encode(out, finalImg, &jpeg.Options{Quality: 85})
+		}
+	}
+
+	// 7. Thumbnail oluştur (Eğer istenmişse ve sadece ana kapak vs ise)
+	if err == nil && generateThumb {
+		GenerateThumbnail(finalImg, savePath, format)
 	}
 
 	return err
+}
+
+// GenerateThumbnail creates a small thumbnail for admin panels
+func GenerateThumbnail(img image.Image, savePath string, format string) {
+	bounds := img.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	// 128px max size
+	const maxSize = 128
+	var newWidth, newHeight int
+
+	if width == 0 || height == 0 {
+		return
+	}
+
+	if width > height {
+		newWidth = maxSize
+		newHeight = int(float64(height) * (float64(maxSize) / float64(width)))
+	} else {
+		newHeight = maxSize
+		newWidth = int(float64(width) * (float64(maxSize) / float64(height)))
+	}
+
+	dst := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
+	draw.BiLinear.Scale(dst, dst.Bounds(), img, bounds, draw.Over, nil)
+
+	dir := filepath.Dir(savePath)
+	base := filepath.Base(savePath)
+	thumbPath := filepath.Join(dir, "thumb_"+base)
+
+	out, err := os.Create(thumbPath)
+	if err != nil {
+		return
+	}
+	defer out.Close()
+
+	if format == "png" {
+		png.Encode(out, dst)
+	} else {
+		jpeg.Encode(out, dst, &jpeg.Options{Quality: 80})
+	}
 }

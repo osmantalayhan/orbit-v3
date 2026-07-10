@@ -15,7 +15,7 @@ export default function ClientLayoutManager({
   const pathname = usePathname();
   
   // Eğer /admin rotasındaysak, ana site menülerini GÖSTERME
-  const isAdminRoute = pathname?.startsWith("/admin");
+  const isAdminRoute = pathname?.startsWith("/orb-sys");
 
   return (
     <>

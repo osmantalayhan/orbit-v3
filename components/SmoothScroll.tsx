@@ -9,7 +9,7 @@ export default function SmoothScroll() {
 
   useEffect(() => {
     // Admin panelinde Lenis'i devre dışı bırakıyoruz (native scroll ve overflow sorunlarını engellemek için)
-    if (pathname?.startsWith("/admin")) return;
+    if (pathname?.startsWith("/orb-sys")) return;
     // Lenis pürüzsüz kaydırma motorunu başlatıyoruz
     const lenis = new Lenis({
       duration: 1.2,

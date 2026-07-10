@@ -81,7 +81,7 @@ func SetupRoutes(app *fiber.App) {
 	// ==========================================
 	// 🛡️ ADMIN API & Yetkilendirme
 	// ==========================================
-	adminGroup := api.Group("/admin")
+	adminGroup := api.Group("/orb-sys")
 	adminGroup.Post("/login", loginLimiter, handlers.AdminLogin)
 
 	// Bundan sonraki tüm adminGroup rotalarını Middleware ile koru
@@ -144,7 +144,7 @@ func SetupRoutes(app *fiber.App) {
 	// ✍️ Blog Rotaları
 	// ==========================================
 	api.Get("/blog", handlers.GetBlogPosts)
-	api.Get("/blog/:id", handlers.GetBlogPostByID)
+	api.Get("/blog/:id", handlers.GetBlogPostBySlug)
 
 	// ==========================================
 	// 💼 Kariyer/İş İlanı (Career) Rotaları

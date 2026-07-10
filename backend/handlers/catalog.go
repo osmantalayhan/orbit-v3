@@ -239,9 +239,10 @@ func CreateProduct(c *fiber.Ctx) error {
 
 	var galleryImages = []string{}
 	if files, ok := form.File["gallery"]; ok {
-		for _, file := range files {
+		for i, file := range files {
 			filename := fmt.Sprintf("%s_gal_%d_%s", id, time.Now().UnixNano(), file.Filename)
-			if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+			generateThumb := (i == 0) // Sadece ilk resim "Ana Kapak"tır
+			if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), generateThumb, false); err == nil {
 				galleryImages = append(galleryImages, "/uploads/"+filename)
 			}
 		}
@@ -265,7 +266,8 @@ func CreateProduct(c *fiber.Ctx) error {
 					if files, ok := form.File["pinouts"]; ok && uploadedCount < len(files) {
 						file := files[uploadedCount]
 						filename := fmt.Sprintf("%s_pinout_%d_%s", id, time.Now().UnixNano(), file.Filename)
-						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+						// İç bağlantı şemaları sekmesi, thumbnail'e gerek yok
+						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), false, false); err == nil {
 							finalPinouts = append(finalPinouts, "/uploads/"+filename+titleSuffix)
 						}
 						uploadedCount++
@@ -403,7 +405,8 @@ func UpdateProduct(c *fiber.Ctx) error {
 					if files, ok := form.File["gallery"]; ok && uploadedCount < len(files) {
 						file := files[uploadedCount]
 						filename := fmt.Sprintf("%s_gal_%d_%s", id, time.Now().UnixNano(), file.Filename)
-						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+						generateThumb := (len(finalGallery) == 0) // Eğer liste boşsa, bu ilk eklenen resimdir (Ana Kapaktır)
+						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), generateThumb, false); err == nil {
 							finalGallery = append(finalGallery, "/uploads/"+filename)
 						}
 						uploadedCount++
@@ -419,9 +422,10 @@ func UpdateProduct(c *fiber.Ctx) error {
 			json.Unmarshal([]byte(existingRaw), &finalGallery)
 		}
 		if files, ok := form.File["gallery"]; ok {
-			for _, file := range files {
+			for i, file := range files {
 				filename := fmt.Sprintf("%s_gal_%d_%s", id, time.Now().UnixNano(), file.Filename)
-				if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+				generateThumb := (len(finalGallery) == 0 && i == 0) // Eğer liste boşsa ve bu ilk dosyaysa ana kapaktır
+				if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), generateThumb, false); err == nil {
 					finalGallery = append(finalGallery, "/uploads/"+filename)
 				}
 			}
@@ -446,7 +450,8 @@ func UpdateProduct(c *fiber.Ctx) error {
 					if files, ok := form.File["pinouts"]; ok && uploadedCount < len(files) {
 						file := files[uploadedCount]
 						filename := fmt.Sprintf("%s_pinout_%d_%s", id, time.Now().UnixNano(), file.Filename)
-						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+						// Sekme detay resmi thumbnail üretilmez
+						if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), false, false); err == nil {
 							finalPinouts = append(finalPinouts, "/uploads/"+filename+titleSuffix)
 						}
 						uploadedCount++
@@ -602,7 +607,7 @@ func CreateSliderItem(c *fiber.Ctx) error {
 	var imageURL string
 	if file, err := c.FormFile("image_file"); err == nil {
 		filename := fmt.Sprintf("slider_%d_%s", time.Now().UnixNano(), file.Filename)
-		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), true, true); err == nil {
 			imageURL = "/uploads/" + filename
 		}
 	} else {
@@ -667,7 +672,7 @@ func UpdateSliderItem(c *fiber.Ctx) error {
 	var imageURL = c.FormValue("image_url") // Eski URL
 	if file, err := c.FormFile("image_file"); err == nil {
 		filename := fmt.Sprintf("slider_%d_%s", time.Now().UnixNano(), file.Filename)
-		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), true, true); err == nil {
 			imageURL = "/uploads/" + filename
 		}
 	}

@@ -17,19 +17,19 @@ import {
   ShoppingCart,
   Users,
 } from "lucide-react";
-import styles from "../../app/admin/admin.module.css";
+import styles from "../../app/orb-sys/orb-sys.module.css";
 
 const menuItems = [
-  { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Katalog", url: "/admin/products", icon: Package },
-  { title: "Ana Slider", url: "/admin/slider", icon: ImageIcon },
-  { title: "Satış Kanalları", url: "/admin/sales-channels", icon: ShoppingCart },
-  { title: "Blog", url: "/admin/blog", icon: FileText },
-  { title: "Yazarlar", url: "/admin/authors", icon: Users },
-  { title: "Kariyer", url: "/admin/careers", icon: Briefcase },
-  { title: "İletişim", url: "/admin/messages", icon: Mail },
-  { title: "Sosyal & Harita", url: "/admin/social-map", icon: MapPin },
-  { title: "Ayarlar", url: "/admin/settings", icon: Settings },
+  { title: "Dashboard", url: "/orb-sys", icon: LayoutDashboard },
+  { title: "Katalog", url: "/orb-sys/products", icon: Package },
+  { title: "Ana Slider", url: "/orb-sys/slider", icon: ImageIcon },
+  { title: "Satış Kanalları", url: "/orb-sys/sales-channels", icon: ShoppingCart },
+  { title: "Blog", url: "/orb-sys/blog", icon: FileText },
+  { title: "Yazarlar", url: "/orb-sys/authors", icon: Users },
+  { title: "Kariyer", url: "/orb-sys/careers", icon: Briefcase },
+  { title: "İletişim", url: "/orb-sys/messages", icon: Mail },
+  { title: "Sosyal & Harita", url: "/orb-sys/social-map", icon: MapPin },
+  { title: "Ayarlar", url: "/orb-sys/settings", icon: Settings },
 ];
 
 export default function AdminLayoutWrapper({
@@ -38,7 +38,7 @@ export default function AdminLayoutWrapper({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/admin/login";
+  const isLoginPage = pathname === "/orb-sys/login";
   const [user, setUser] = useState<any>(null);
   const [isClient, setIsClient] = useState(false);
   
@@ -57,19 +57,19 @@ export default function AdminLayoutWrapper({
       return;
     }
 
-    const token = localStorage.getItem("admin_token");
-    const storedUser = localStorage.getItem("admin_user");
+    const token = localStorage.getItem("orb_sys_token");
+    const storedUser = localStorage.getItem("orb_sys_user");
 
     if (!token || !storedUser) {
-      window.location.href = "/admin/login";
+      window.location.href = "/orb-sys/login";
     } else {
       try {
         setUser(JSON.parse(storedUser));
         setIsAuthenticated(true);
       } catch (e) {
-        localStorage.removeItem("admin_token");
-        localStorage.removeItem("admin_user");
-        window.location.href = "/admin/login";
+        localStorage.removeItem("orb_sys_token");
+        localStorage.removeItem("orb_sys_user");
+        window.location.href = "/orb-sys/login";
       }
     }
 
@@ -80,7 +80,7 @@ export default function AdminLayoutWrapper({
       
       // Sadece kendi API'mize giden istekleri yakala
       if (typeof resource === 'string' && resource.includes('/api/v1/')) {
-        const currentToken = localStorage.getItem('admin_token');
+        const currentToken = localStorage.getItem('orb_sys_token');
         if (currentToken) {
           config = config || {};
           config.headers = {
@@ -93,11 +93,11 @@ export default function AdminLayoutWrapper({
       const response = await originalFetch(resource, config);
       
       // Eğer Backend JWT Middleware "401 Unauthorized" verirse
-      const isAlreadyLoginPage = window.location.pathname === "/admin/login";
+      const isAlreadyLoginPage = window.location.pathname === "/orb-sys/login";
       if (response.status === 401 && !isLoginPage && !isAlreadyLoginPage) {
-        localStorage.removeItem("admin_token");
-        localStorage.removeItem("admin_user");
-        window.location.href = "/admin/login";
+        localStorage.removeItem("orb_sys_token");
+        localStorage.removeItem("orb_sys_user");
+        window.location.href = "/orb-sys/login";
       }
       
       return response;
@@ -114,7 +114,7 @@ export default function AdminLayoutWrapper({
       const fetchUnreadCount = async () => {
         try {
           const [appsRes, msgsRes] = await Promise.all([
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/applications/unread-count?t=${new Date().getTime()}`, { cache: 'no-store' }),
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/orb-sys/applications/unread-count?t=${new Date().getTime()}`, { cache: 'no-store' }),
             fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/messages/unread-count?t=${new Date().getTime()}`, { cache: 'no-store' })
           ]);
           
@@ -168,7 +168,7 @@ export default function AdminLayoutWrapper({
       <aside className={styles.sidebar}>
         
         {/* Logo Alanı */}
-        <Link href="/admin" className={styles.logoArea}>
+        <Link href="/orb-sys" className={styles.logoArea}>
           <img src="/img/logo.png" alt="Orbit Logo" style={{ width: '110px', objectFit: 'contain' }} />
         </Link>
 
@@ -225,9 +225,9 @@ export default function AdminLayoutWrapper({
         {/* Alt Kısım - Çıkış */}
         <div className={styles.sidebarFooter}>
           <button onClick={() => {
-            localStorage.removeItem("admin_token");
-            localStorage.removeItem("admin_user");
-            window.location.href = "/admin/login";
+            localStorage.removeItem("orb_sys_token");
+            localStorage.removeItem("orb_sys_user");
+            window.location.href = "/orb-sys/login";
           }} className={styles.logoutBtn}>
             <LogOut size={18} />
             Oturumu Kapat

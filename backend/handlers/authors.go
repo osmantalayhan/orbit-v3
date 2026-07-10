@@ -53,7 +53,7 @@ func CreateAuthor(c *fiber.Ctx) error {
 	avatarUrl := ""
 	if file, err := c.FormFile("avatar"); err == nil {
 		filename := fmt.Sprintf("author_avatar_%d_%s", time.Now().UnixNano(), file.Filename)
-		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), true, false); err == nil {
 			avatarUrl = "/uploads/" + filename
 		}
 	} else {
@@ -85,7 +85,7 @@ func UpdateAuthor(c *fiber.Ctx) error {
 	avatarUrl := ""
 	if file, err := c.FormFile("avatar"); err == nil {
 		filename := fmt.Sprintf("author_avatar_%d_%s", time.Now().UnixNano(), file.Filename)
-		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), true, false); err == nil {
 			avatarUrl = "/uploads/" + filename
 		}
 	} else {

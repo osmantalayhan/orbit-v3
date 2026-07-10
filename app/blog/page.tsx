@@ -31,6 +31,7 @@ function BlogListSection() {
           
           const mapped = activeData.map((b: any) => ({
             id: b.id,
+            slug: b.slug,
             title: b.title,
             excerpt: b.lead_paragraph || b.category,
             date: b.date_published,
@@ -186,7 +187,7 @@ function BlogListSection() {
         ) : paginatedBlogs.length > 0 ? (
           paginatedBlogs.map((blog, index) => (
             <Link 
-              href={`/blog/${blog.id}`} 
+              href={`/blog/${blog.slug}`} 
               key={blog.id} 
               style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', color: 'inherit' }}
             >

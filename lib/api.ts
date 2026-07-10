@@ -12,7 +12,7 @@ export async function apiClient(endpoint: string, options: RequestInit = {}) {
 
   // Tarayıcı ortamındaysak ve token varsa ekle
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("admin_token");
+    const token = localStorage.getItem("orb_sys_token");
     if (token) {
       headers.set("Authorization", `Bearer ${token}`);
     }
@@ -39,13 +39,13 @@ export async function apiClient(endpoint: string, options: RequestInit = {}) {
   if (response.status === 401) {
     if (typeof window !== "undefined") {
       // Sadece admin panelindeyse login'e at (Kullanıcı tarafındaki sorgular 401 döndüyse login'e atma)
-      const isAdminRoute = window.location.pathname.startsWith("/admin");
-      const isAlreadyLoginPage = window.location.pathname === "/admin/login";
+      const isAdminRoute = window.location.pathname.startsWith("/orb-sys");
+      const isAlreadyLoginPage = window.location.pathname === "/orb-sys/login";
       if (isAdminRoute && !isAlreadyLoginPage) {
         console.warn("Token süresi dolmuş veya geçersiz! Çıkış yapılıyor...");
-        localStorage.removeItem("admin_token");
-        localStorage.removeItem("admin_user");
-        window.location.href = "/admin/login";
+        localStorage.removeItem("orb_sys_token");
+        localStorage.removeItem("orb_sys_user");
+        window.location.href = "/orb-sys/login";
       }
     }
   }

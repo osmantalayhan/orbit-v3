@@ -7,6 +7,7 @@ import (
 
 type BlogPost struct {
 	ID            int             `json:"id"`
+	Slug          string          `json:"slug"`
 	Title         string          `json:"title"`
 	Category      string          `json:"category"`
 	DatePublished string          `json:"date_published"`

@@ -94,7 +94,7 @@ func CreateSalesChannel(c *fiber.Ctx) error {
 	var imageURL string
 	if file, err := c.FormFile("image_file"); err == nil {
 		filename := fmt.Sprintf("sc_%d_%s", time.Now().UnixNano(), file.Filename)
-		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), true, false); err == nil {
 			imageURL = "/uploads/" + filename
 		}
 	} else {
@@ -141,7 +141,7 @@ func UpdateSalesChannel(c *fiber.Ctx) error {
 	imageURL := c.FormValue("image_url")
 	if file, err := c.FormFile("image_file"); err == nil {
 		filename := fmt.Sprintf("sc_%d_%s", time.Now().UnixNano(), file.Filename)
-		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename)); err == nil {
+		if err := services.OptimizeAndSaveImage(file, filepath.Join(uploadDir, filename), true, false); err == nil {
 			imageURL = "/uploads/" + filename
 		}
 	}

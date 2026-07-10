@@ -24,6 +24,7 @@ export default function BlogSection() {
   const blogs = (apiBlogs && Array.isArray(apiBlogs) && apiBlogs.length > 0)
     ? apiBlogs.slice(0, 6).map((b: any) => ({
         id: b.id,
+        slug: b.slug,
         title: b.title,
         excerpt: b.lead_paragraph || b.category,
         date: b.date_published,
@@ -108,7 +109,7 @@ export default function BlogSection() {
                 }}
                 className="flex-[0_0_100%] md:flex-[0_0_calc((100%-64px)/3)] min-w-0"
               >
-                <Link href={`/blog/${blog.id}`} className="group cursor-pointer block no-underline h-full">
+                <Link href={`/blog/${blog.slug}`} className="group cursor-pointer block no-underline h-full">
                 <div 
                   className="bg-[#0d0d0d] border border-white/5 rounded-[32px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111] h-full flex flex-col"
                 >
