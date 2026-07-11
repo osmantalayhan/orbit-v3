@@ -16,7 +16,7 @@ const content = [
     title: "Manufacturing",
     heading: "Yüksek Hassasiyetli Üretim",
     description: "ESC ve uçuş kontrol kartları başta olmak üzere, geliştirdiğimiz elektronik donanımların PCB dizgi, montaj ve test süreçlerini kendi tesislerimizde gerçekleştiriyoruz.",
-    image: "/img/about/Manufacturing-kb.png",
+    image: "/img/about/manufacturing-kb.png",
   },
   {
     id: "software",
