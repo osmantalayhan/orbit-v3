@@ -280,7 +280,8 @@ export default function AdminProductsPage() {
     try {
       const formData = new FormData();
       
-      const slug = newProduct.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const trMap: { [key: string]: string } = { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', 'Ç': 'c', 'Ğ': 'g', 'İ': 'i', 'Ö': 'o', 'Ş': 's', 'Ü': 'u' };
+      const slug = newProduct.name.replace(/[çğışöüÇĞİŞÖÜ]/g, m => trMap[m]).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
       formData.append("id", slug || "prod_" + Date.now());
       formData.append("name", newProduct.name);
       formData.append("role", newProduct.role);
