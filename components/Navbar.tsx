@@ -81,7 +81,7 @@ export default function Navbar() {
         id: b.id,
         title: b.title,
         desc: b.lead_paragraph || b.category,
-        url: `/blog/${b.id}`
+        url: `/blog/${b.slug || b.id}`
       })) : prev.blog,
       careers: careersData && Array.isArray(careersData) && careersData.length > 0 ? careersData.map((c: any) => ({
         id: c.id,
