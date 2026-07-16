@@ -10,7 +10,7 @@ const TileLayer = dynamic(() => import("react-leaflet").then((mod) => mod.TileLa
 const Marker = dynamic(() => import("react-leaflet").then((mod) => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), { ssr: false });
 
-const MapComponent = ({ center, city, address, name }: { center: [number, number], city: string, address: string, name: string }) => {
+const MapComponent = ({ center, city, address, name, isSingle }: { center: [number, number], city: string, address: string, name: string, isSingle?: boolean }) => {
   const [L, setL] = React.useState<any>(null);
 
   React.useEffect(() => {
@@ -31,7 +31,7 @@ const MapComponent = ({ center, city, address, name }: { center: [number, number
   return (
     <div className="map-container-box" style={{
       width: '100%',
-      aspectRatio: '1/1',
+      aspectRatio: isSingle ? '21/9' : '1/1',
       borderRadius: '24px',
       overflow: 'hidden',
       border: '1px solid rgba(255,255,255,0.05)',
@@ -127,6 +127,7 @@ export default function MapSection({ offices }: { offices?: Array<{ name: string
           city={office.city}
           name={office.name}
           address={office.address}
+          isSingle={displayOffices.length === 1}
         />
       ))}
     </div>
