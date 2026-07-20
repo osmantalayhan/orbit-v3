@@ -14,7 +14,7 @@ const baseEditorConfig = {
   placeholder: 'Ürün detaylarını buraya yazın...',
   askBeforePasteHTML: false,
   askBeforePasteFromWord: false,
-  defaultActionOnPaste: 'insert_as_html' as any,
+  defaultActionOnPaste: 'insert_clear_html' as any,
   cleanHTML: {
     fillEmptyParagraph: false,
     removeEmptyElements: false,
@@ -728,6 +728,45 @@ export default function AdminProductsPage() {
         .jodit-wysiwyg td:last-child { border-right: none !important; }
         .jodit-wysiwyg tr:not(:first-child):hover td { background-color: rgba(255, 255, 255, 0.04) !important; color: #fff !important; }
         .jodit-wysiwyg img, .jodit-container img { width: 100% !important; height: auto !important; border-radius: 12px !important; margin: 24px 0 !important; object-fit: contain !important; }
+
+        /* Tam ekran düzeltmeleri (CSS :has() ile) */
+        div[class*="drawerOverlay"]:has(.jodit_fullsize) {
+          backdrop-filter: none !important;
+          background: #000 !important;
+        }
+        div[class*="drawerContent"]:has(.jodit_fullsize) {
+          transform: none !important;
+          animation: none !important;
+          overflow: visible !important;
+        }
+        
+        /* Jodit'in kendi hatalı tam ekran hesaplamasını ezip Flexbox ile kusursuz yapıyoruz */
+        .jodit-container.jodit_fullsize {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          z-index: 999999 !important;
+          border-radius: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          background-color: #09090b !important;
+        }
+        .jodit-container.jodit_fullsize .jodit-toolbar__box {
+          position: static !important;
+          flex-shrink: 0 !important;
+          width: 100% !important;
+          z-index: 10 !important;
+        }
+        .jodit-container.jodit_fullsize .jodit-workplace {
+          flex: 1 !important;
+          height: auto !important;
+          min-height: 0 !important;
+        }
+        .jodit-container.jodit_fullsize .jodit-wysiwyg {
+          height: 100% !important;
+        }
       `}</style>
       <Toast 
         message={toast.message} 
