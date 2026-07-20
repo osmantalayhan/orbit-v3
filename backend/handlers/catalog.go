@@ -27,7 +27,7 @@ func GetProducts(c *fiber.Ctx) error {
 	offset := (page - 1) * limit
 
 	query := `
-		SELECT id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, sort_order, active, created_at
+		SELECT id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, sort_order, active, details, created_at
 		FROM products
 		WHERE active = true
 		ORDER BY sort_order ASC
@@ -47,7 +47,7 @@ func GetProducts(c *fiber.Ctx) error {
 		var p models.Product
 		var teknofestDiscount *string // Nullable olduğu için
 		err := rows.Scan(
-			&p.ID, &p.Name, &p.Role, &p.Category, &p.Tagline, &p.Description, &p.Images, &p.Specs, &p.Channels, &p.PinoutImages, &p.Downloads, &p.IsTeknofestActive, &teknofestDiscount, &p.Badge, &p.SortOrder, &p.Active, &p.CreatedAt,
+			&p.ID, &p.Name, &p.Role, &p.Category, &p.Tagline, &p.Description, &p.Images, &p.Specs, &p.Channels, &p.PinoutImages, &p.Downloads, &p.IsTeknofestActive, &teknofestDiscount, &p.Badge, &p.SortOrder, &p.Active, &p.Details, &p.CreatedAt,
 		)
 		if err != nil {
 			log.Println("Scan error:", err)
@@ -71,11 +71,11 @@ func GetProductByID(c *fiber.Ctx) error {
 	var teknofestDiscount *string
 
 	err := config.DB.QueryRow(context.Background(), `
-		SELECT id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, sort_order, active, created_at
+		SELECT id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, sort_order, active, details, created_at
 		FROM products
 		WHERE id = $1 AND active = true
 	`, id).Scan(
-		&p.ID, &p.Name, &p.Role, &p.Category, &p.Tagline, &p.Description, &p.Images, &p.Specs, &p.Channels, &p.PinoutImages, &p.Downloads, &p.IsTeknofestActive, &teknofestDiscount, &p.Badge, &p.SortOrder, &p.Active, &p.CreatedAt,
+		&p.ID, &p.Name, &p.Role, &p.Category, &p.Tagline, &p.Description, &p.Images, &p.Specs, &p.Channels, &p.PinoutImages, &p.Downloads, &p.IsTeknofestActive, &teknofestDiscount, &p.Badge, &p.SortOrder, &p.Active, &p.Details, &p.CreatedAt,
 	)
 
 	if err != nil {
@@ -169,6 +169,11 @@ func CreateProduct(c *fiber.Ctx) error {
 	badge := c.FormValue("badge")
 	isTeknofestActive := c.FormValue("is_teknofest_active") == "true"
 	teknofestDiscount := c.FormValue("teknofest_discount")
+
+	detailsRaw := c.FormValue("details")
+	if detailsRaw == "" {
+		detailsRaw = `""`
+	}
 
 	specsRaw := c.FormValue("specs")
 	if specsRaw == "" {
@@ -283,14 +288,14 @@ func CreateProduct(c *fiber.Ctx) error {
 	insertQuery := `
 		INSERT INTO products (
 			id, name, role, category, tagline, description, images, specs, channels, 
-			pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, active
+			pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, details, active
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, true)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, true)
 	`
 	
 	_, dbErr := config.DB.Exec(context.Background(), insertQuery,
 		id, name, role, category, tagline, description, galleryImages, specsRaw, channelsRaw,
-		finalPinouts, downloadsRaw, isTeknofestActive, teknofestDiscount, badge,
+		finalPinouts, downloadsRaw, isTeknofestActive, teknofestDiscount, badge, detailsRaw,
 	)
 
 	if dbErr != nil {
@@ -327,6 +332,11 @@ func UpdateProduct(c *fiber.Ctx) error {
 	badge := c.FormValue("badge")
 	isTeknofestActive := c.FormValue("is_teknofest_active") == "true"
 	teknofestDiscount := c.FormValue("teknofest_discount")
+
+	detailsRaw := c.FormValue("details")
+	if detailsRaw == "" {
+		detailsRaw = `""`
+	}
 
 	specsRaw := c.FormValue("specs")
 	if specsRaw == "" {
@@ -466,13 +476,13 @@ func UpdateProduct(c *fiber.Ctx) error {
 	updateQuery := `
 		UPDATE products 
 		SET name = $1, role = $2, category = $3, tagline = $4, description = $5, images = $6, specs = $7, channels = $8, 
-			pinout_images = $9, downloads = $10, is_teknofest_active = $11, teknofest_discount = $12, badge = $13
-		WHERE id = $14
+			pinout_images = $9, downloads = $10, is_teknofest_active = $11, teknofest_discount = $12, badge = $13, details = $14
+		WHERE id = $15
 	`
 	
 	_, dbErr := config.DB.Exec(context.Background(), updateQuery,
 		name, role, category, tagline, description, finalGallery, specsRaw, channelsRaw,
-		finalPinouts, downloadsRaw, isTeknofestActive, teknofestDiscount, badge, id,
+		finalPinouts, downloadsRaw, isTeknofestActive, teknofestDiscount, badge, detailsRaw, id,
 	)
 
 	if dbErr != nil {

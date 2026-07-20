@@ -64,9 +64,8 @@ export default function EcosystemSlider() {
           {[...LOGOS, ...LOGOS].map((logo, index) => (
             <div
               key={index}
-              className="flex-shrink-0"
+              className="flex-shrink-0 h-[30px] md:h-[50px]"
               style={{
-                height: '50px',
                 paddingRight: `${gap}px`,
                 display: 'flex',
                 alignItems: 'center'

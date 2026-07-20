@@ -80,7 +80,7 @@ export default function ProductVitrin() {
           <motion.div 
             initial={{ opacity: 0, x: 10 }}
             whileInView={{ opacity: 1, x: 0 }}
-            className="mt-8 md:mt-0 flex items-center justify-center md:justify-end gap-4"
+            className="mobile-button-group md:mt-0 flex flex-col sm:flex-row w-full md:w-auto items-start sm:items-center justify-start md:justify-end md:gap-4"
           >
             {/* Dinamik Katalog İndirme Butonu */}
             {siteSettings?.catalog_url && (
@@ -88,7 +88,7 @@ export default function ProductVitrin() {
                 href={siteSettings.catalog_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group/dl inline-flex items-center justify-center gap-2 h-10 bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-sm no-underline whitespace-nowrap"
+                className="group/dl flex md:inline-flex items-center justify-center gap-2 h-10 w-full md:w-auto bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-[14px] md:text-sm no-underline whitespace-nowrap"
                 style={{ paddingLeft: '20px', paddingRight: '20px' }}
               >
                 <svg className="w-4 h-4 transition-transform group-hover/dl:-translate-y-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,7 +100,7 @@ export default function ProductVitrin() {
 
             <Link 
               href="/urunler" 
-              className="group/all inline-flex items-center justify-center gap-2 h-10 bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-sm no-underline whitespace-nowrap"
+              className="group/all flex md:inline-flex items-center justify-center gap-2 h-10 w-full md:w-auto bg-transparent hover:bg-white/5 border border-white/10 rounded-lg text-white font-semibold transition-all text-[14px] md:text-sm no-underline whitespace-nowrap"
               style={{ paddingLeft: '30px', paddingRight: '30px' }}
             >
               Tüm Ürünler

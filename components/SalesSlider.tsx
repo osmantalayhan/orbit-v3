@@ -129,9 +129,8 @@ export default function SalesSlider() {
                 href={channel.url || undefined}
                 target={channel.url ? "_blank" : undefined}
                 rel={channel.url ? "noopener noreferrer" : undefined}
-                className="flex-shrink-0 transition-transform duration-300 hover:scale-105"
+                className="flex-shrink-0 transition-transform duration-300 hover:scale-105 h-[30px] md:h-[50px]"
                 style={{
-                  height: '50px',
                   paddingRight: `${gap}px`,
                   display: 'flex',
                   alignItems: 'center',

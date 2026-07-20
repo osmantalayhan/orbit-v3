@@ -105,6 +105,8 @@ function UrunlerPageContent() {
           }
           .urunler-hero-right img {
             object-position: center center !important;
+            transform-origin: center center !important;
+            margin-left: 0 !important;
           }
           .urunler-filter-row {
             gap: 16px !important;
@@ -186,7 +188,9 @@ function UrunlerPageContent() {
               className="object-contain"
               style={{
                 objectPosition: "right center",
-                filter: "brightness(1.1)",
+                filter: "grayscale(1) brightness(1.2) contrast(1.1)",
+                transform: "scale(1.15)",
+                transformOrigin: "right center"
               }}
               priority
             />

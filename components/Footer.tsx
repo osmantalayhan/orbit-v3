@@ -19,6 +19,13 @@ export default function Footer() {
     dedupingInterval: 60000,
   });
 
+  const { data: productsData } = useSWR(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`, fetcher, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
+
+  const footerCategories = Array.from(new Set((productsData || []).map((p: any) => p.category?.toLowerCase()).filter(Boolean)));
+
   return (
     <footer
       className="w-full bg-black relative overflow-hidden flex flex-col items-center"
@@ -46,6 +53,8 @@ export default function Footer() {
           }
           .footer-bg-text h1 {
             font-size: 100px !important;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2) !important;
+            letter-spacing: 0em !important;
           }
           .footer-title {
             font-size: 32px !important;
@@ -122,11 +131,25 @@ export default function Footer() {
         >
           <div className="flex flex-col gap-6">
             <h4 style={{ color: 'white', fontSize: '17px', fontWeight: 'bold', letterSpacing: '-0.02em' }}>
-              Sistemler
+              Ürünler
             </h4>
             <div className="flex flex-col gap-3">
-              {["Uçuş Kontrol", "ESC Serisi", "LRS Sistemleri", "GPS Modülleri"].map(item => (
-                <a key={item} href="#" className="text-white/40 hover:text-white transition-colors no-underline font-medium" style={{ fontSize: "15px" }}>{item}</a>
+              <Link 
+                href="/urunler?kategori=tümü" 
+                className="text-white/40 hover:text-white transition-colors no-underline font-medium capitalize" 
+                style={{ fontSize: "15px" }}
+              >
+                Tümü
+              </Link>
+              {(footerCategories as string[]).slice(0, 8).map((cat, idx) => (
+                <Link 
+                  key={idx} 
+                  href={`/urunler?kategori=${encodeURIComponent(cat)}`} 
+                  className="text-white/40 hover:text-white transition-colors no-underline font-medium capitalize" 
+                  style={{ fontSize: "15px" }}
+                >
+                  {cat}
+                </Link>
               ))}
             </div>
           </div>

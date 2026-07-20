@@ -5,6 +5,121 @@ import styles from "../orb-sys.module.css";
 import { Package, Plus, Search, Edit2, Trash2, X, Trash, UploadCloud, GripVertical } from "lucide-react";
 import { apiClient } from "@/lib/api";
 import Toast from "../../../components/Toast";
+import dynamic from "next/dynamic";
+
+const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
+
+const baseEditorConfig = {
+  theme: 'dark',
+  placeholder: 'Ürün detaylarını buraya yazın...',
+  askBeforePasteHTML: false,
+  askBeforePasteFromWord: false,
+  defaultActionOnPaste: 'insert_as_html' as any,
+  cleanHTML: {
+    fillEmptyParagraph: false,
+    removeEmptyElements: false,
+    replaceNBSP: false,
+  },
+  beautifyHTML: false,
+  enter: 'P',
+  disablePlugins: 'beautifyHTML',
+  uploader: {
+    insertImageAsBase64URI: true,
+  },
+  resizer: {
+    showSize: true,
+    hideSizeTimeout: 1000,
+  },
+  popup: {
+    img: ['imgFullWidth', '|', 'imageProperties', '|', 'left', 'center', 'right', 'justify', '|', 'delete']
+  },
+  image: {
+    editSrc: true,
+    editTitle: true,
+    editAlt: true,
+    editLink: true,
+    editSize: true,
+    editMargins: true,
+    editClass: true,
+    editStyle: true,
+    editId: true,
+    editAlign: true,
+    showPreview: true,
+    useImageEditor: false
+  },
+  controls: {
+    grid2: {
+      name: '2li Grid',
+      tooltip: '2li Görsel / Yan Yana İçerik',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iNyIgaGVpZ2h0PSIxOCIgcng9IjEiLz48cmVjdCB4PSIxNCIgeT0iMyIgd2lkdGg9IjciIGhlaWdodD0iMTgiIHJ4PSIxIi8+PC9zdmc+',
+      exec: (editor: any) => {
+        editor.s.insertHTML(`
+          <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+          </div><p><br></p>
+        `);
+      }
+    },
+    grid3: {
+      name: '3lü Grid',
+      tooltip: '3lü Görsel Grubu',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIyIiB5PSIzIiB3aWR0aD0iNSIgaGVpZ2h0PSIxOCIgcng9IjEiLz48cmVjdCB4PSI5LjUiIHk9IjMiIHdpZHRoPSI1IiBoZWlnaHQ9IjE4IiByeD0iMSIvPjxyZWN0IHg9IjE3IiB5PSIzIiB3aWR0aD0iNSIgaGVpZ2h0PSIxOCIgcng9IjEiLz48L3N2Zz4=',
+      exec: (editor: any) => {
+        editor.s.insertHTML(`
+          <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
+          </div><p><br></p>
+        `);
+      }
+    },
+    grid4: {
+      name: '4lü Grid',
+      tooltip: '4lü Görsel Grubu (2 Üst, 2 Alt)',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iNyIgaGVpZ2h0PSI3IiByeD0iMSIvPjxyZWN0IHg9IjE0IiB5PSIzIiB3aWR0aD0iNyIgaGVpZ2h0PSI3IiByeD0iMSIvPjxyZWN0IHg9IjE0IiB5PSIxNCIgd2lkdGg9IjciIGhlaWdodD0iNyIgaGVpZ2h0PSI3IiByeD0iMSIvPjxyZWN0IHg9IjMiIHk9IjE0IiB3aWR0aD0iNyIgaGVpZ2h0PSI3IiByeD0iMSIvPjwvc3ZnPg==',
+      exec: (editor: any) => {
+        editor.s.insertHTML(`
+          <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+          </div><p><br></p>
+        `);
+      }
+    },
+    imgFullWidth: {
+      name: 'Tam Boyut',
+      tooltip: 'Resmi Tam Boyut (100%) Yap',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTUgM2g2djZNOSAzSDN2Nm0xMiAxMmg2di02TTkgMjFIM3YtNiIvPjwvc3ZnPg==',
+      exec: (editor: any) => {
+        let current = editor.s.current();
+        if (!current) return;
+        
+        if (current.nodeType === 3) {
+          current = current.parentNode;
+        }
+        
+        let image = null;
+        if (current.nodeName === 'IMG') {
+          image = current;
+        } else if (current && typeof current.querySelector === 'function') {
+          image = current.querySelector('img') || (typeof current.closest === 'function' ? current.closest('img') : null);
+        }
+
+        if (image) {
+          image.style.width = '100%';
+          image.style.height = 'auto';
+          image.style.display = 'block';
+          image.style.margin = '16px auto';
+        }
+      }
+    }
+  },
+  buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'image', 'table', 'link', '|', 'grid2', 'grid3', 'grid4', '|', 'align', 'undo', 'redo', '|', 'hr', 'eraser', 'fullsize']
+};
 
 interface Product {
   id: string;
@@ -21,6 +136,7 @@ interface Product {
   is_teknofest_active: boolean;
   teknofest_discount: string;
   badge: string | null;
+  details?: any;
 }
 
 type GalleryItem = {
@@ -70,6 +186,7 @@ export default function AdminProductsPage() {
     description: "",
     isTeknofestActive: false,
     teknofestDiscount: "",
+    details: "",
     specs: [{ label: "", value: "" }],
     channels: [{ name: "", url: "" }],
     downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
@@ -112,7 +229,7 @@ export default function AdminProductsPage() {
     setEditingProductId(null);
     setNewProduct({
       name: "", role: "", category: "OTOPİLOT", badge: "", tagline: "", description: "",
-      isTeknofestActive: false, teknofestDiscount: "",
+      isTeknofestActive: false, teknofestDiscount: "", details: "",
       specs: [{ label: "", value: "" }], channels: [{ name: "", url: "" }],
       downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
     });
@@ -145,6 +262,7 @@ export default function AdminProductsPage() {
       badge: product.badge || "",
       tagline: product.tagline || "",
       description: product.description || "",
+      details: product.details || "",
       isTeknofestActive: product.is_teknofest_active || false,
       teknofestDiscount: product.teknofest_discount || "",
       specs: parsedSpecs.length > 0 ? parsedSpecs : [{ label: "", value: "" }],
@@ -291,6 +409,7 @@ export default function AdminProductsPage() {
       formData.append("description", newProduct.description);
       formData.append("is_teknofest_active", newProduct.isTeknofestActive ? "true" : "false");
       formData.append("teknofest_discount", newProduct.teknofestDiscount);
+      formData.append("details", JSON.stringify(newProduct.details || ""));
 
       // JSON'a çevrilen tablolar
       formData.append("specs", JSON.stringify(newProduct.specs));
@@ -359,6 +478,7 @@ export default function AdminProductsPage() {
         description: "",
         isTeknofestActive: false,
         teknofestDiscount: "",
+        details: "",
         specs: [{ label: "", value: "" }],
         channels: [{ name: "", url: "" }],
         downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
@@ -592,6 +712,23 @@ export default function AdminProductsPage() {
 
   return (
     <div className={styles.dashboardContainer}>
+      <style>{`
+        .jodit-wysiwyg h1, .jodit-container h1 { font-size: 2.25rem !important; font-weight: 800 !important; margin: 1em 0 0.5em 0 !important; color: #fff !important; }
+        .jodit-wysiwyg h2, .jodit-container h2 { font-size: 1.875rem !important; font-weight: 700 !important; margin: 1em 0 0.5em 0 !important; color: #fff !important; }
+        .jodit-wysiwyg h3, .jodit-container h3 { font-size: 1.5rem !important; font-weight: 600 !important; margin: 1em 0 0.5em 0 !important; color: #fff !important; }
+        .jodit-wysiwyg h4, .jodit-container h4 { font-size: 1.25rem !important; font-weight: 600 !important; margin: 1em 0 0.5em 0 !important; color: #fff !important; }
+        .jodit-wysiwyg p, .jodit-container p { margin-bottom: 1em !important; font-size: 1rem !important; line-height: 1.6 !important; }
+        .jodit-wysiwyg ul, .jodit-container ul { list-style-type: disc !important; padding-left: 2rem !important; margin-bottom: 1em !important; }
+        .jodit-wysiwyg ol, .jodit-container ol { list-style-type: decimal !important; padding-left: 2rem !important; margin-bottom: 1em !important; }
+        .jodit-wysiwyg blockquote, .jodit-container blockquote { border-left: 4px solid #3f3f46 !important; padding-left: 1rem !important; margin: 1em 0 !important; font-style: italic !important; color: #a1a1aa !important; }
+        .jodit-wysiwyg table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; margin: 40px 0 !important; background-color: rgba(255, 255, 255, 0.02) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 16px !important; overflow: hidden !important; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5) !important; }
+        .jodit-wysiwyg td { border: none !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; border-right: 1px solid rgba(255,255,255,0.05) !important; padding: 20px 24px !important; font-size: 16px !important; color: rgba(255,255,255,0.8) !important; line-height: 1.6 !important; transition: background-color 0.2s ease !important; }
+        .jodit-wysiwyg tr:first-child td { background-color: rgba(255,255,255,0.05) !important; font-weight: 600 !important; color: #fff !important; font-size: 15px !important; letter-spacing: 0.03em !important; text-transform: uppercase; }
+        .jodit-wysiwyg tr:last-child td { border-bottom: none !important; }
+        .jodit-wysiwyg td:last-child { border-right: none !important; }
+        .jodit-wysiwyg tr:not(:first-child):hover td { background-color: rgba(255, 255, 255, 0.04) !important; color: #fff !important; }
+        .jodit-wysiwyg img, .jodit-container img { width: 100% !important; height: auto !important; border-radius: 12px !important; margin: 24px 0 !important; object-fit: contain !important; }
+      `}</style>
       <Toast 
         message={toast.message} 
         isVisible={toast.isVisible} 
@@ -769,7 +906,7 @@ export default function AdminProductsPage() {
 
       {/* --- YENİ ÜRÜN MODAL (GENİŞ POPUP) --- */}
       {isDrawerOpen && (
-        <div className={styles.drawerOverlay} onClick={() => setIsDrawerOpen(false)}>
+        <div className={styles.drawerOverlay}>
           <div className={styles.drawerContent} onClick={(e) => e.stopPropagation()}>
             
             {/* Header */}
@@ -1043,6 +1180,19 @@ export default function AdminProductsPage() {
                 </div>
 
               </div>
+
+              {/* Ayrıntılar (Jodit Editor) - Tam Genişlik */}
+              <div className={styles.formSection} style={{ marginTop: "32px", width: "100%" }}>
+                <h4 className={styles.formSectionTitle}>Ayrıntılar (Gelişmiş Açıklama)</h4>
+                <div style={{ color: "#000" }}>
+                  <JoditEditor
+                    value={typeof newProduct.details === "string" ? newProduct.details : ""}
+                    config={baseEditorConfig as any}
+                    onBlur={(newContent) => setNewProduct({ ...newProduct, details: newContent })}
+                  />
+                </div>
+              </div>
+
             </div>
 
             {/* Footer / Kaydet Butonu */}

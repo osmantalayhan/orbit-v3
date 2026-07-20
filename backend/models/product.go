@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Product struct {
 	ID          string                 `json:"id"`
@@ -12,6 +15,7 @@ type Product struct {
 	Images       []string                 `json:"images"`   // Postgres TEXT[] dizisi
 	Specs        interface{}              `json:"specs"`    // Postgres JSONB alanı (Eski Object veya Yeni Array)
 	Channels     interface{}              `json:"channels"` // Postgres JSONB alanı (Eski Object veya Yeni Array)
+	Details      json.RawMessage          `json:"details"`  // Postgres JSONB alanı (Rich Text)
 	PinoutImages []string                 `json:"pinout_images"` // Postgres TEXT[] dizisi
 	Downloads         []map[string]interface{} `json:"downloads"`     // Postgres JSONB (Array of objects)
 	IsTeknofestActive bool                     `json:"is_teknofest_active"`

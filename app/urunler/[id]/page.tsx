@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { apiClient } from "@/lib/api";
+import DOMPurify from "isomorphic-dompurify";
 
 export default function UrunDetayPage() {
   const params = useParams();
@@ -81,6 +82,7 @@ export default function UrunDetayPage() {
           role: data.role,
           tagline: data.tagline,
           description: data.description,
+          details: data.details,
           images: data.images && data.images.length > 0 ? data.images : ["/img/flight-control.png"],
           specs: Array.isArray(data.specs) ? data.specs : (data.specs ? Object.entries(data.specs).map(([label, value]) => ({ label, value: String(value) })) : []),
           channels: Array.isArray(data.channels) ? data.channels : (data.channels ? Object.entries(data.channels).map(([name, url]) => ({ name, url: String(url) })) : []),
@@ -144,6 +146,49 @@ export default function UrunDetayPage() {
   return (
     <main style={{ minHeight: "100vh", backgroundColor: "#000", color: "#fff", overflow: "hidden" }}>
       <style>{`
+        .product-detail-html-content img {
+          width: 100% !important;
+          height: auto !important;
+          border-radius: 12px !important;
+          margin: 24px 0 !important;
+        }
+        .product-detail-html-content p {
+          font-size: 16px;
+          line-height: 1.7;
+          margin-bottom: 24px;
+          color: rgba(255,255,255,0.7);
+        }
+        .product-detail-html-content h2 {
+          font-size: 24px;
+          margin-top: 32px;
+          margin-bottom: 16px;
+          color: #fff;
+          font-weight: 700;
+        }
+        .product-detail-html-content h3 {
+          font-size: 20px;
+          margin-top: 24px;
+          margin-bottom: 12px;
+          color: #fff;
+          font-weight: 600;
+        }
+        .product-detail-html-content ul {
+          list-style-type: disc;
+          padding-left: 24px;
+          margin-bottom: 24px;
+          color: rgba(255,255,255,0.7);
+        }
+        .product-detail-html-content li {
+          margin-bottom: 8px;
+        }
+        .product-detail-html-content table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; margin: 40px 0 !important; background-color: rgba(255, 255, 255, 0.02) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 16px !important; overflow: hidden !important; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5) !important; }
+        .product-detail-html-content td { border: none !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; border-right: 1px solid rgba(255,255,255,0.05) !important; padding: 20px 24px !important; font-size: 16px !important; color: rgba(255,255,255,0.8) !important; line-height: 1.6 !important; transition: background-color 0.2s ease !important; }
+        .product-detail-html-content tr:first-child td { background-color: rgba(255,255,255,0.05) !important; font-weight: 600 !important; color: #fff !important; font-size: 15px !important; letter-spacing: 0.03em !important; text-transform: uppercase; }
+        .product-detail-html-content tr:last-child td { border-bottom: none !important; }
+        .product-detail-html-content td:last-child { border-right: none !important; }
+        .product-detail-html-content tr:not(:first-child):hover td { background-color: rgba(255, 255, 255, 0.04) !important; color: #fff !important; }
+          margin-bottom: 8px;
+        }
         @media (max-width: 1024px) {
           .product-main-grid {
             gap: 40px !important;
@@ -444,6 +489,7 @@ export default function UrunDetayPage() {
           }} className="product-tabs-bar">
             {[
               { id: "specs", label: "Teknik Parametreler" },
+              ...(product.details && product.details !== '""' && product.details !== '"{}"' && product.details !== '[]' && product.details !== '<p><br></p>' ? [{ id: "details", label: "Ayrıntılar" }] : []),
               { id: "diagram", label: "Bağlantı Şeması & Pinout" },
               { id: "docs", label: "Belgeler & İndirmeler" }
             ].map((tab) => (
@@ -691,6 +737,28 @@ export default function UrunDetayPage() {
                     </div>
                   ))}
                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === "details" && (
+              <motion.div
+                key="details"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div 
+                  className="product-detail-html-content"
+                  style={{ padding: "20px 0" }}
+                  dangerouslySetInnerHTML={{ 
+                    __html: DOMPurify.sanitize(
+                      typeof product.details === 'string' 
+                        ? product.details.replace(/^"|"$/g, '').replace(/\\"/g, '"') 
+                        : product.details
+                    ) 
+                  }}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -956,8 +1024,8 @@ export default function UrunDetayPage() {
 
             {/* Resim Container (Wrapper for drag bounds) */}
             <div 
-              className="relative w-[90vw] md:w-[80vw] flex items-center justify-center overflow-hidden"
-              style={{ height: "60vh", marginBottom: "120px" }}
+              className="relative w-[90vw] md:w-[80vw] flex items-center justify-center"
+              style={{ height: "75vh", marginBottom: "80px", overflow: "visible" }}
               onClick={(e) => {
                 if (hasDragged.current) return;
                 if (isZoomed) setIsZoomed(false);
@@ -1021,8 +1089,8 @@ export default function UrunDetayPage() {
             {lightboxImages.length > 1 && (
               <div className="absolute bottom-4 md:bottom-8 z-50 w-full px-4">
                 <div 
-                  className="flex items-center justify-start md:justify-center w-full overflow-x-auto no-scrollbar py-4"
-                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  className="flex items-center justify-start md:justify-center w-full overflow-x-auto no-scrollbar"
+                  style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', paddingTop: '24px', paddingBottom: '24px' }}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <style jsx>{`
@@ -1045,7 +1113,7 @@ export default function UrunDetayPage() {
                           setLightboxIndex(idx);
                           setIsZoomed(false);
                         }}
-                        className="relative block w-16 h-16 md:w-20 md:h-20 rounded-lg overflow-hidden cursor-pointer"
+                        className="relative block w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden cursor-pointer"
                       >
                         <Image src={img} alt="" fill className="object-cover" />
                       </button>
