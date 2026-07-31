@@ -41,6 +41,10 @@ func main() {
 		if err3 != nil {
 			log.Printf("Uyarı: social_links_json auto-migration hatası: %v", err3)
 		}
+		_, err4 := config.DB.Exec(context.Background(), "ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS favicon_dark_url TEXT DEFAULT '';")
+		if err4 != nil {
+			log.Printf("Uyarı: favicon_dark_url auto-migration hatası: %v", err4)
+		}
 	}
 	app := fiber.New(fiber.Config{
 		AppName:                 "Orbit - Unified Modular Monolith Backend",
