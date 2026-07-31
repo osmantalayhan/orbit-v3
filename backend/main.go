@@ -29,13 +29,17 @@ func main() {
 
 	// Otomatik Veritabanı Güncellemesi: offices_json sütunu yoksa ekler
 	if config.DB != nil {
-		_, err := config.DB.Exec(context.Background(), "ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS offices_json JSONB DEFAULT '[]'::jsonb;")
+		_, err := config.DB.Exec(context.Background(), "ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS catalog_url TEXT DEFAULT '';")
 		if err != nil {
-			log.Printf("Uyarı: offices_json auto-migration hatası: %v", err)
+			log.Printf("Uyarı: catalog_url auto-migration hatası: %v", err)
 		}
-		_, err2 := config.DB.Exec(context.Background(), "ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS social_links_json JSONB DEFAULT '[]'::jsonb;")
+		_, err2 := config.DB.Exec(context.Background(), "ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS offices_json JSONB DEFAULT '[]'::jsonb;")
 		if err2 != nil {
-			log.Printf("Uyarı: social_links_json auto-migration hatası: %v", err2)
+			log.Printf("Uyarı: offices_json auto-migration hatası: %v", err2)
+		}
+		_, err3 := config.DB.Exec(context.Background(), "ALTER TABLE site_settings ADD COLUMN IF NOT EXISTS social_links_json JSONB DEFAULT '[]'::jsonb;")
+		if err3 != nil {
+			log.Printf("Uyarı: social_links_json auto-migration hatası: %v", err3)
 		}
 	}
 	app := fiber.New(fiber.Config{

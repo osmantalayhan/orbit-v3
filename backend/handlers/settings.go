@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"orbit-backend/config"
 	"orbit-backend/models"
 
@@ -41,6 +42,7 @@ func GetSettings(c *fiber.Ctx) error {
 	)
 
 	if err != nil {
+		fmt.Printf("GetSettings SQL Error: %v\n", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch site settings",
 		})
