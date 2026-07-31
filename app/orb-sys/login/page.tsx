@@ -66,8 +66,8 @@ export default function AdminLoginPage() {
 
       <div className={styles.loginBox}>
         <div className={styles.headerArea}>
-          <h1 className={styles.title}>Orbit Yönetim</h1>
-          <p className={styles.subtitle}>Devam etmek için giriş yapın</p>
+          <h1 className={styles.title}>Orbit Management</h1>
+          <p className={styles.subtitle}>Log in to continue</p>
         </div>
 
         {error && (
@@ -78,19 +78,19 @@ export default function AdminLoginPage() {
 
         <form onSubmit={handleLogin} className={styles.loginForm}>
           <div className={styles.inputGroup}>
-            <label className={styles.inputLabel}>E-posta</label>
+            <label className={styles.inputLabel}>Username</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               className={styles.inputField}
-              placeholder="admin@orbitteknoloji.com"
+              placeholder="username"
             />
           </div>
 
           <div className={styles.inputGroup}>
-            <label className={styles.inputLabel}>Şifre</label>
+            <label className={styles.inputLabel}>Password</label>
             <input
               type="password"
               value={password}
@@ -106,7 +106,7 @@ export default function AdminLoginPage() {
             disabled={loading}
             className={styles.submitBtn}
           >
-            {loading ? "Giriş Yapılıyor..." : "Giriş Yap"}
+            {loading ? "Logging in..." : "Log in"}
           </button>
         </form>
       </div>

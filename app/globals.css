@@ -181,8 +181,8 @@ body {
 }
 
 .navbar-logo img {
-  height: 32px;
-  width: auto;
+  height: 38px !important;
+  width: auto !important;
   filter: brightness(0) invert(1);
 }
 

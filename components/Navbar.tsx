@@ -221,8 +221,8 @@ export default function Navbar() {
             <Image
               src={settings?.logo_url || "/img/logo.png"}
               alt="Orbit Teknoloji"
-              width={110}
-              height={33}
+              width={140}
+              height={42}
               priority
               unoptimized
             />

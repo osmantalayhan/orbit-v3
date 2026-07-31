@@ -157,7 +157,7 @@ export default function HeroSection() {
           <AnimatePresence mode="wait">
             {current && (
               <motion.div
-                className="max-w-4xl pointer-events-auto"
+                className="max-w-4xl pointer-events-none"
                 key={`text-${index}`}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}

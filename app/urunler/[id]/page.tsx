@@ -97,6 +97,12 @@ export default function UrunDetayPage() {
         } else {
           setShowPromo(false);
         }
+        
+        if (data.details && data.details !== '""' && data.details !== '"{}"' && data.details !== '[]' && data.details !== '<p><br></p>') {
+          setActiveTab("details");
+        } else {
+          setActiveTab("specs");
+        }
       })
       .catch(err => {
         console.error("Error loading product:", err);
@@ -418,11 +424,12 @@ export default function UrunDetayPage() {
                 {product.tagline}
               </h2>
               <p style={{
-                fontSize: "15px",
+                fontSize: "17px",
                 color: "rgba(255,255,255,0.5)",
                 lineHeight: "1.75",
                 fontWeight: "400",
-                margin: 0
+                margin: 0,
+                whiteSpace: "pre-wrap"
               }}>
                 {product.description}
               </p>
@@ -488,8 +495,8 @@ export default function UrunDetayPage() {
             overflowX: "auto"
           }} className="product-tabs-bar">
             {[
-              { id: "specs", label: "Teknik Parametreler" },
               ...(product.details && product.details !== '""' && product.details !== '"{}"' && product.details !== '[]' && product.details !== '<p><br></p>' ? [{ id: "details", label: "Ayrıntılar" }] : []),
+              { id: "specs", label: "Teknik Parametreler" },
               { id: "diagram", label: "Bağlantı Şeması & Pinout" },
               { id: "docs", label: "Belgeler & İndirmeler" }
             ].map((tab) => (
@@ -580,7 +587,7 @@ export default function UrunDetayPage() {
                 transition={{ duration: 0.25 }}
               >
                 <div 
-                  className="grid grid-cols-1 md:grid-cols-2 gap-8" 
+                  className="grid grid-cols-1 gap-8" 
                   style={{ padding: "20px 0" }}
                 >
                   {product.pinout_images && product.pinout_images.length > 0 ? (
@@ -804,42 +811,44 @@ export default function UrunDetayPage() {
                   ease: [0.16, 1, 0.3, 1]
                 }}
                 onClick={() => router.push(`/urunler/${item.id}`)}
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", display: "flex", flexDirection: "column", height: "100%" }}
                 className="group/card"
               >
                 <div
-                  className="bg-[#0d0d0d] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111] h-full"
+                  className="bg-[#0d0d0d] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111]"
+                  style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1 }}
                 >
                   <div
-                    className="flex flex-col h-full w-full"
-                    style={{ padding: '40px' }}
+                    style={{ padding: '40px', display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, justifyContent: 'space-between' }}
                   >
-                    {/* Kart Logosu */}
-                    <div style={{ marginBottom: '24px' }}>
-                      <div className="product-card-logo-box w-40 h-40 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          sizes="160px"
-                          quality={85}
-                          className="object-contain filter brightness-125 p-4"
-                        />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {/* Kart Logosu */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <div className="product-card-logo-box w-40 h-40 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            fill
+                            sizes="160px"
+                            quality={85}
+                            className="object-contain filter brightness-125 p-4"
+                          />
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Bilgiler */}
-                    <div className="product-card-text-container flex flex-col">
-                      <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '14px' }}>
-                        {item.name}
-                      </h3>
-                      <div style={{ marginBottom: '32px' }}>
-                        <p className="text-white/90 text-xl font-medium">{item.role}</p>
+                      {/* Bilgiler */}
+                      <div className="product-card-text-container flex flex-col">
+                        <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '14px' }}>
+                          {item.name}
+                        </h3>
+                        <div style={{ marginBottom: '32px' }}>
+                          <p className="text-white/90 text-xl font-medium">{item.role}</p>
+                        </div>
                       </div>
                     </div>
 
                     {/* Buton */}
-                    <div className="mt-auto">
+                    <div style={{ marginTop: 'auto' }}>
                       <button className="w-full h-16 bg-white/5 group-hover/card:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/5 flex items-center justify-center gap-3 text-lg">
                         Detayları Görüntüle
                         <svg className="w-5 h-5 transition-transform group-hover/card:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

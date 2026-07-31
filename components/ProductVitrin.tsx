@@ -115,7 +115,7 @@ export default function ProductVitrin() {
       {/* Carousel Area */}
       <div className="vitrin-carousel-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="w-full overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-8">
+          <div className="flex gap-8 items-stretch">
             {productsList.map((product: any, index: number) => (
               <motion.div
                 key={product.id}
@@ -127,41 +127,43 @@ export default function ProductVitrin() {
                   delay: index * 0.15,
                   ease: [0.16, 1, 0.3, 1]
                 }}
-                className="flex-[0_0_100%] md:flex-[0_0_calc((100%-64px)/3)] min-w-0"
+                className="flex-[0_0_100%] md:flex-[0_0_calc((100%-64px)/3)] min-w-0 flex flex-col"
               >
                 <div 
-                  className="bg-[#0d0d0d] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111] h-full"
+                  className="bg-[#0d0d0d] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111]"
+                  style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1 }}
                 >
                   <div 
-                    className="flex flex-col h-full w-full"
-                    style={{ padding: '40px' }}
+                    style={{ padding: '40px', display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, justifyContent: 'space-between' }}
                   >
-                    {/* Card Header */}
-                    <div style={{ marginBottom: '24px' }}>
-                      <div className="product-vitrin-logo-box w-40 h-40 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
-                         <Image 
-                           src={product.image} 
-                           alt="icon" 
-                           fill 
-                           sizes="160px"
-                           quality={85}
-                           className="object-contain filter brightness-125 p-4" 
-                         />
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      {/* Card Header */}
+                      <div style={{ marginBottom: '24px' }}>
+                        <div className="product-vitrin-logo-box w-40 h-40 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
+                           <Image 
+                             src={product.image} 
+                             alt="icon" 
+                             fill 
+                             sizes="160px"
+                             quality={85}
+                             className="object-contain filter brightness-125 p-4" 
+                           />
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Title & Info */}
-                    <div className="product-vitrin-text-container flex flex-col">
-                      <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '14px' }}>
-                        {product.name}
-                      </h3>
-                      <div style={{ marginBottom: '32px' }}>
-                        <p className="text-white/90 text-xl font-medium">{product.role}</p>
+                      {/* Title & Info */}
+                      <div className="product-vitrin-text-container flex flex-col">
+                        <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '14px' }}>
+                          {product.name}
+                        </h3>
+                        <div style={{ marginBottom: '32px' }}>
+                          <p className="text-white/90 text-xl font-medium">{product.role}</p>
+                        </div>
                       </div>
                     </div>
 
                     {/* Action */}
-                    <div className="mt-auto">
+                    <div style={{ marginTop: 'auto' }}>
                       <Link href={`/urunler/${product.id}`} className="w-full h-16 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/5 flex items-center justify-center gap-3 group/btn text-lg no-underline cursor-pointer">
                         Detayları Görüntüle
                         <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
