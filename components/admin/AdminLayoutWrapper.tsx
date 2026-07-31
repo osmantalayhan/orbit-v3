@@ -169,7 +169,7 @@ export default function AdminLayoutWrapper({
         
         {/* Logo Alanı */}
         <Link href="/orb-sys" className={styles.logoArea}>
-          <img src="/img/logo.png" alt="Orbit Logo" style={{ width: '110px', objectFit: 'contain' }} />
+          <img src="/img/orbit-admin-logo.png" alt="Orbit Admin Logo" style={{ width: '110px', objectFit: 'contain' }} />
         </Link>
 
         {/* Menü */}

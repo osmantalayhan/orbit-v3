@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	"net/url"
 
 	"orbit-backend/config"
 	"orbit-backend/models"
@@ -27,7 +28,7 @@ func GetProducts(c *fiber.Ctx) error {
 	offset := (page - 1) * limit
 
 	query := `
-		SELECT id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, sort_order, active, details, created_at
+		SELECT id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, is_campaign_active, campaign_discount_rate, campaign_title, campaign_description, campaign_button_text, campaign_button_url, badge, sort_order, active, details, created_at
 		FROM products
 		WHERE active = true
 		ORDER BY sort_order ASC
@@ -45,9 +46,10 @@ func GetProducts(c *fiber.Ctx) error {
 	products := []models.Product{}
 	for rows.Next() {
 		var p models.Product
-		var teknofestDiscount *string // Nullable olduğu için
+		var campaignDiscount *string // Nullable olduğu için
+		var campaignTitle, campaignDesc, campaignBtnText, campaignBtnURL *string
 		err := rows.Scan(
-			&p.ID, &p.Name, &p.Role, &p.Category, &p.Tagline, &p.Description, &p.Images, &p.Specs, &p.Channels, &p.PinoutImages, &p.Downloads, &p.IsTeknofestActive, &teknofestDiscount, &p.Badge, &p.SortOrder, &p.Active, &p.Details, &p.CreatedAt,
+			&p.ID, &p.Name, &p.Role, &p.Category, &p.Tagline, &p.Description, &p.Images, &p.Specs, &p.Channels, &p.PinoutImages, &p.Downloads, &p.IsCampaignActive, &campaignDiscount, &campaignTitle, &campaignDesc, &campaignBtnText, &campaignBtnURL, &p.Badge, &p.SortOrder, &p.Active, &p.Details, &p.CreatedAt,
 		)
 		if err != nil {
 			log.Println("Scan error:", err)
@@ -55,9 +57,11 @@ func GetProducts(c *fiber.Ctx) error {
 				"error": "Failed to parse product",
 			})
 		}
-		if teknofestDiscount != nil {
-			p.TeknofestDiscount = *teknofestDiscount
-		}
+		if campaignDiscount != nil { p.CampaignDiscountRate = *campaignDiscount }
+		if campaignTitle != nil { p.CampaignTitle = *campaignTitle }
+		if campaignDesc != nil { p.CampaignDescription = *campaignDesc }
+		if campaignBtnText != nil { p.CampaignButtonText = *campaignBtnText }
+		if campaignBtnURL != nil { p.CampaignButtonURL = *campaignBtnURL }
 		products = append(products, p)
 	}
 
@@ -67,15 +71,18 @@ func GetProducts(c *fiber.Ctx) error {
 // GetProductByID tek bir ürün detayı getirir
 func GetProductByID(c *fiber.Ctx) error {
 	id := c.Params("id")
+	if unescaped, err := url.PathUnescape(id); err == nil {
+		id = unescaped
+	}
 	var p models.Product
-	var teknofestDiscount *string
+	var campaignDiscount, campaignTitle, campaignDesc, campaignBtnText, campaignBtnURL *string
 
 	err := config.DB.QueryRow(context.Background(), `
-		SELECT id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, sort_order, active, details, created_at
+		SELECT id, name, role, category, tagline, description, images, specs, channels, pinout_images, downloads, is_campaign_active, campaign_discount_rate, campaign_title, campaign_description, campaign_button_text, campaign_button_url, badge, sort_order, active, details, created_at
 		FROM products
 		WHERE id = $1 AND active = true
 	`, id).Scan(
-		&p.ID, &p.Name, &p.Role, &p.Category, &p.Tagline, &p.Description, &p.Images, &p.Specs, &p.Channels, &p.PinoutImages, &p.Downloads, &p.IsTeknofestActive, &teknofestDiscount, &p.Badge, &p.SortOrder, &p.Active, &p.Details, &p.CreatedAt,
+		&p.ID, &p.Name, &p.Role, &p.Category, &p.Tagline, &p.Description, &p.Images, &p.Specs, &p.Channels, &p.PinoutImages, &p.Downloads, &p.IsCampaignActive, &campaignDiscount, &campaignTitle, &campaignDesc, &campaignBtnText, &campaignBtnURL, &p.Badge, &p.SortOrder, &p.Active, &p.Details, &p.CreatedAt,
 	)
 
 	if err != nil {
@@ -84,9 +91,11 @@ func GetProductByID(c *fiber.Ctx) error {
 		})
 	}
 
-	if teknofestDiscount != nil {
-		p.TeknofestDiscount = *teknofestDiscount
-	}
+	if campaignDiscount != nil { p.CampaignDiscountRate = *campaignDiscount }
+	if campaignTitle != nil { p.CampaignTitle = *campaignTitle }
+	if campaignDesc != nil { p.CampaignDescription = *campaignDesc }
+	if campaignBtnText != nil { p.CampaignButtonText = *campaignBtnText }
+	if campaignBtnURL != nil { p.CampaignButtonURL = *campaignBtnURL }
 
 	return c.JSON(p)
 }
@@ -167,8 +176,12 @@ func CreateProduct(c *fiber.Ctx) error {
 	tagline := c.FormValue("tagline")
 	description := c.FormValue("description")
 	badge := c.FormValue("badge")
-	isTeknofestActive := c.FormValue("is_teknofest_active") == "true"
-	teknofestDiscount := c.FormValue("teknofest_discount")
+	isCampaignActive := c.FormValue("is_campaign_active") == "true"
+	campaignDiscountRate := c.FormValue("campaign_discount_rate")
+	campaignTitle := c.FormValue("campaign_title")
+	campaignDescription := c.FormValue("campaign_description")
+	campaignButtonText := c.FormValue("campaign_button_text")
+	campaignButtonURL := c.FormValue("campaign_button_url")
 
 	detailsRaw := c.FormValue("details")
 	if detailsRaw == "" {
@@ -288,14 +301,14 @@ func CreateProduct(c *fiber.Ctx) error {
 	insertQuery := `
 		INSERT INTO products (
 			id, name, role, category, tagline, description, images, specs, channels, 
-			pinout_images, downloads, is_teknofest_active, teknofest_discount, badge, details, active
+			pinout_images, downloads, is_campaign_active, campaign_discount_rate, campaign_title, campaign_description, campaign_button_text, campaign_button_url, badge, details, active
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, true)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, true)
 	`
 	
 	_, dbErr := config.DB.Exec(context.Background(), insertQuery,
 		id, name, role, category, tagline, description, galleryImages, specsRaw, channelsRaw,
-		finalPinouts, downloadsRaw, isTeknofestActive, teknofestDiscount, badge, detailsRaw,
+		finalPinouts, downloadsRaw, isCampaignActive, campaignDiscountRate, campaignTitle, campaignDescription, campaignButtonText, campaignButtonURL, badge, detailsRaw,
 	)
 
 	if dbErr != nil {
@@ -309,9 +322,19 @@ func CreateProduct(c *fiber.Ctx) error {
 // UpdateProduct mevcut ürünü günceller
 func UpdateProduct(c *fiber.Ctx) error {
 	id := c.Params("id")
+	if unescaped, err := url.PathUnescape(id); err == nil {
+		id = unescaped
+	}
 	if id == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Product ID required"})
 	}
+	
+	newID := c.FormValue("new_id")
+	if newID == "" {
+		newID = id
+	}
+
+	log.Printf("UpdateProduct: oldID='%s', newID='%s'", id, newID)
 
 	// Eski dosyaları çöpe atmak üzere mevcut durumu veritabanından okuyalım
 	var oldImages, oldPinouts []string
@@ -330,8 +353,12 @@ func UpdateProduct(c *fiber.Ctx) error {
 	tagline := c.FormValue("tagline")
 	description := c.FormValue("description")
 	badge := c.FormValue("badge")
-	isTeknofestActive := c.FormValue("is_teknofest_active") == "true"
-	teknofestDiscount := c.FormValue("teknofest_discount")
+	isCampaignActive := c.FormValue("is_campaign_active") == "true"
+	campaignDiscountRate := c.FormValue("campaign_discount_rate")
+	campaignTitle := c.FormValue("campaign_title")
+	campaignDescription := c.FormValue("campaign_description")
+	campaignButtonText := c.FormValue("campaign_button_text")
+	campaignButtonURL := c.FormValue("campaign_button_url")
 
 	detailsRaw := c.FormValue("details")
 	if detailsRaw == "" {
@@ -475,14 +502,14 @@ func UpdateProduct(c *fiber.Ctx) error {
 
 	updateQuery := `
 		UPDATE products 
-		SET name = $1, role = $2, category = $3, tagline = $4, description = $5, images = $6, specs = $7, channels = $8, 
-			pinout_images = $9, downloads = $10, is_teknofest_active = $11, teknofest_discount = $12, badge = $13, details = $14
-		WHERE id = $15
+		SET id = $1, name = $2, role = $3, category = $4, tagline = $5, description = $6, images = $7, specs = $8, channels = $9, 
+			pinout_images = $10, downloads = $11, is_campaign_active = $12, campaign_discount_rate = $13, campaign_title = $14, campaign_description = $15, campaign_button_text = $16, campaign_button_url = $17, badge = $18, details = $19
+		WHERE id = $20
 	`
 	
 	_, dbErr := config.DB.Exec(context.Background(), updateQuery,
-		name, role, category, tagline, description, finalGallery, specsRaw, channelsRaw,
-		finalPinouts, downloadsRaw, isTeknofestActive, teknofestDiscount, badge, detailsRaw, id,
+		newID, name, role, category, tagline, description, finalGallery, specsRaw, channelsRaw,
+		finalPinouts, downloadsRaw, isCampaignActive, campaignDiscountRate, campaignTitle, campaignDescription, campaignButtonText, campaignButtonURL, badge, detailsRaw, id,
 	)
 
 	if dbErr != nil {

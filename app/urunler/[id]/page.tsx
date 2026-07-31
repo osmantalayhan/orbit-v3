@@ -88,11 +88,15 @@ export default function UrunDetayPage() {
           channels: Array.isArray(data.channels) ? data.channels : (data.channels ? Object.entries(data.channels).map(([name, url]) => ({ name, url: String(url) })) : []),
           pinout_images: data.pinout_images || [],
           downloads: data.downloads || [],
-          is_teknofest_active: data.is_teknofest_active || false,
-          teknofest_discount: data.teknofest_discount || "15"
+          is_campaign_active: data.is_campaign_active || false,
+          campaign_discount_rate: data.campaign_discount_rate || "",
+          campaign_title: data.campaign_title || "",
+          campaign_description: data.campaign_description || "",
+          campaign_button_text: data.campaign_button_text || "",
+          campaign_button_url: data.campaign_button_url || "",
         };
         setProduct(mappedProduct);
-        if (data.is_teknofest_active) {
+        if (data.is_campaign_active) {
           setShowPromo(true);
         } else {
           setShowPromo(false);
@@ -934,20 +938,46 @@ export default function UrunDetayPage() {
               </svg>
             </button>
 
-            {/* Büyük Teknofest Logosu */}
-            <div style={{ marginTop: "8px", marginBottom: "20px", display: "flex", justifyContent: "center" }}>
-              <img
-                src="/img/tekno.png"
-                alt="Teknofest"
+            {/* Kampanya İndirim Oranı */}
+            <div style={{ marginTop: "12px", marginBottom: "24px", display: "flex", justifyContent: "center" }}>
+              <motion.div 
                 style={{
-                  height: "60px",
-                  objectFit: "contain",
-                  filter: "brightness(1.15)",
+                  display: "inline-block",
+                  transform: "skew(-10deg)",
+                  fontSize: "64px",
+                  fontWeight: "900",
+                  letterSpacing: "-2px",
+                  lineHeight: "1",
+                  WebkitTextStroke: "1.5px #ffffff", // Daha kalın görünmesi için
+                  
+                  // Parlama efekti için arkaplan ayarları
+                  backgroundImage: "linear-gradient(120deg, #ffffff 40%, rgba(255,255,255,0.4) 50%, #ffffff 60%)",
+                  backgroundSize: "200% auto",
+                  color: "transparent",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  
+                  filter: "drop-shadow(0 4px 15px rgba(255,255,255,0.2))"
                 }}
-              />
+                animate={{ backgroundPosition: ["150% center", "-50% center"] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut", repeatDelay: 2 }}
+              >
+                {product.campaign_discount_rate?.startsWith("%") ? product.campaign_discount_rate : `%${product.campaign_discount_rate}`}
+              </motion.div>
             </div>
 
-            {/* Açıklama */}
+            {/* Kampanya Başlığı & Açıklaması */}
+            {product.campaign_title && (
+              <h4 style={{
+                fontSize: "16px",
+                fontWeight: "700",
+                color: "#fff",
+                margin: "0 0 8px 0"
+              }}>
+                {product.campaign_title}
+              </h4>
+            )}
+            
             <p style={{
               fontSize: "13px",
               fontWeight: "500",
@@ -955,12 +985,20 @@ export default function UrunDetayPage() {
               lineHeight: "1.6",
               margin: "0 0 20px 0",
             }}>
-              Teknofest dönemine özel, <strong>{product.name}</strong> ve tüm uçuş donanımlarımızda sepette <strong style={{ color: "#fff", fontWeight: "800" }}>%{product.teknofest_discount} indirim</strong> fırsatını kaçırmayın!
+              {product.campaign_description || `${product.name} için sepette özel fırsatı kaçırmayın!`}
             </p>
 
-            {/* Mini Buton */}
-            <button
-              onClick={() => setShowPromo(false)}
+            {/* Aksiyon Butonu */}
+            <a
+              href={product.campaign_button_url || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (!product.campaign_button_url) {
+                  e.preventDefault();
+                  setShowPromo(false);
+                }
+              }}
               style={{
                 width: "100%",
                 height: "44px",
@@ -973,6 +1011,10 @@ export default function UrunDetayPage() {
                 cursor: "pointer",
                 transition: "all 0.2s ease",
                 boxShadow: "0 4px 15px rgba(64,96,255,0.3)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                textDecoration: "none"
               }}
               onMouseOver={(e) => {
                 e.currentTarget.style.background = "#2a4bff";
@@ -983,8 +1025,8 @@ export default function UrunDetayPage() {
                 e.currentTarget.style.boxShadow = "0 4px 15px rgba(64,96,255,0.3)";
               }}
             >
-              Kapat
-            </button>
+              {product.campaign_button_text || "İncele"}
+            </a>
           </motion.div>
         )}
       </AnimatePresence>

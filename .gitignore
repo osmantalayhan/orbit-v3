@@ -42,3 +42,6 @@ next-env.d.ts
 
 backend/orbit-backend
 backend/orbit-backend.exe
+/public/uploads/
+products.json
+/backend/tmp.exe

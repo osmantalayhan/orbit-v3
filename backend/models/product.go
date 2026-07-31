@@ -18,8 +18,12 @@ type Product struct {
 	Details      json.RawMessage          `json:"details"`  // Postgres JSONB alanı (Rich Text)
 	PinoutImages []string                 `json:"pinout_images"` // Postgres TEXT[] dizisi
 	Downloads         []map[string]interface{} `json:"downloads"`     // Postgres JSONB (Array of objects)
-	IsTeknofestActive bool                     `json:"is_teknofest_active"`
-	TeknofestDiscount string                   `json:"teknofest_discount"`
+	IsCampaignActive     bool                     `json:"is_campaign_active"`
+	CampaignDiscountRate string                   `json:"campaign_discount_rate"`
+	CampaignTitle        string                   `json:"campaign_title"`
+	CampaignDescription  string                   `json:"campaign_description"`
+	CampaignButtonText   string                   `json:"campaign_button_text"`
+	CampaignButtonURL    string                   `json:"campaign_button_url"`
 	Badge             string                   `json:"badge,omitempty"`
 	SortOrder         int                      `json:"sort_order"`
 	Active            bool                     `json:"active"`

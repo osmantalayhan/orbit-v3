@@ -733,3 +733,5 @@ img {
 .jodit-wysiwyg ul { list-style-type: disc !important; padding-left: 40px !important; margin: 1em 0 !important; }
 .jodit-wysiwyg ol { list-style-type: decimal !important; padding-left: 40px !important; margin: 1em 0 !important; }
 .jodit-wysiwyg blockquote { border-left: 4px solid #3f3f46 !important; padding-left: 16px !important; margin: 1em 0 !important; font-style: italic !important; }
+.jodit-wysiwyg table, .jodit-wysiwyg table * { font-size: 14px !important; }
+.jodit-wysiwyg tr:first-child td, .jodit-wysiwyg tr:first-child td * { font-size: 15px !important; }

@@ -31,6 +31,10 @@ export async function generateMetadata(): Promise<Metadata> {
     const faviconUrl = settings.favicon_url
       ? `${settings.favicon_url}?v=${Date.now()}`
       : "/favicon.ico";
+      
+    const faviconDarkUrl = settings.favicon_dark_url
+      ? `${settings.favicon_dark_url}?v=${Date.now()}`
+      : faviconUrl;
     
     return {
       title: {
@@ -40,9 +44,10 @@ export async function generateMetadata(): Promise<Metadata> {
       description: settings.site_description || defaultMetadata.description,
       keywords: settings.site_keywords || "",
       icons: {
-        icon: faviconUrl,
-        shortcut: faviconUrl,
-        apple: faviconUrl,
+        icon: [
+          { url: faviconUrl, media: '(prefers-color-scheme: light)' },
+          { url: faviconDarkUrl, media: '(prefers-color-scheme: dark)' }
+        ]
       }
     };
   } catch (err) {

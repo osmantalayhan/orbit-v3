@@ -345,11 +345,14 @@ export default function BlogDetailPage() {
             .blog-detail-html-content a { color: #60a5fa; text-decoration: underline; text-underline-offset: 4px; }
             
             .blog-detail-html-content table { width: 100% !important; border-collapse: separate !important; border-spacing: 0 !important; margin: 40px 0 !important; background-color: rgba(255, 255, 255, 0.02) !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 16px !important; overflow: hidden !important; box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5) !important; }
-            .blog-detail-html-content td { border: none !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; border-right: 1px solid rgba(255,255,255,0.05) !important; padding: 20px 24px !important; font-size: 16px !important; color: rgba(255,255,255,0.8) !important; line-height: 1.6 !important; transition: background-color 0.2s ease !important; }
-            .blog-detail-html-content tr:first-child td { background-color: rgba(255,255,255,0.05) !important; font-weight: 600 !important; color: #fff !important; font-size: 15px !important; letter-spacing: 0.03em !important; text-transform: uppercase; }
+            .blog-detail-html-content table, .blog-detail-html-content table * { font-size: 14px !important; }
+            .blog-detail-html-content td { border: none !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; border-right: 1px solid rgba(255,255,255,0.05) !important; padding: 20px 24px !important; color: rgba(255,255,255,0.8) !important; line-height: 1.6 !important; transition: background-color 0.2s ease !important; vertical-align: middle !important; }
+            .blog-detail-html-content tr:first-child td, .blog-detail-html-content tr:first-child td * { font-size: 15px !important; }
+            .blog-detail-html-content tr:first-child td { background-color: rgba(255,255,255,0.05) !important; font-weight: 600 !important; color: #fff !important; letter-spacing: 0.03em !important; text-transform: uppercase; }
             .blog-detail-html-content tr:last-child td { border-bottom: none !important; }
             .blog-detail-html-content td:last-child { border-right: none !important; }
             .blog-detail-html-content tr:not(:first-child):hover td { background-color: rgba(255, 255, 255, 0.04) !important; color: #fff !important; }
+            .blog-detail-html-content table p { margin: 0 !important; padding: 0 !important; }
           `}</style>
           <div 
             className="blog-detail-html-content" 

@@ -77,25 +77,25 @@ export default function HeroSection() {
         }
       `}</style>
       
-      {/* Sol Ok (Birden fazla slayt varsa ve üzerine gelince çıkar) */}
+      {/* Sol Ok (Birden fazla slayt varsa ve üzerine gelince/mobilde çıkar) */}
       {products.length > 1 && (
         <button 
           onClick={handlePrev}
-          className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-[60] p-2 text-white/40 opacity-0 group-hover/slider:opacity-100 hover:text-white transition-all duration-500 hover:-translate-x-1 cursor-pointer pointer-events-auto"
+          className="absolute left-1 md:left-6 top-1/2 -translate-y-1/2 z-[60] p-2 text-white/50 md:text-white/40 opacity-80 md:opacity-0 group-hover/slider:opacity-100 hover:text-white transition-all duration-500 hover:-translate-x-1 cursor-pointer pointer-events-auto"
           aria-label="Önceki Slayt"
         >
-          <ChevronLeft size={40} strokeWidth={1} />
+          <ChevronLeft className="w-8 h-8 md:w-10 md:h-10" strokeWidth={1} />
         </button>
       )}
 
-      {/* Sağ Ok (Birden fazla slayt varsa ve üzerine gelince çıkar) */}
+      {/* Sağ Ok (Birden fazla slayt varsa ve üzerine gelince/mobilde çıkar) */}
       {products.length > 1 && (
         <button 
           onClick={handleNext}
-          className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-[60] p-2 text-white/40 opacity-0 group-hover/slider:opacity-100 hover:text-white transition-all duration-500 hover:translate-x-1 cursor-pointer pointer-events-auto"
+          className="absolute right-1 md:right-6 top-1/2 -translate-y-1/2 z-[60] p-2 text-white/50 md:text-white/40 opacity-80 md:opacity-0 group-hover/slider:opacity-100 hover:text-white transition-all duration-500 hover:translate-x-1 cursor-pointer pointer-events-auto"
           aria-label="Sonraki Slayt"
         >
-          <ChevronRight size={40} strokeWidth={1} />
+          <ChevronRight className="w-8 h-8 md:w-10 md:h-10" strokeWidth={1} />
         </button>
       )}
 

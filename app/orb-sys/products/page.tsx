@@ -133,8 +133,12 @@ interface Product {
   channels: any[];
   pinout_images: string[];
   downloads: any[];
-  is_teknofest_active: boolean;
-  teknofest_discount: string;
+  is_campaign_active: boolean;
+  campaign_discount_rate: string;
+  campaign_title: string;
+  campaign_description: string;
+  campaign_button_text: string;
+  campaign_button_url: string;
   badge: string | null;
   details?: any;
 }
@@ -184,8 +188,13 @@ export default function AdminProductsPage() {
     badge: "",
     tagline: "",
     description: "",
-    isTeknofestActive: false,
-    teknofestDiscount: "",
+    isCampaignActive: false,
+    campaignDiscountRate: "",
+    campaignTitle: "",
+    campaignDescription: "",
+    campaignButtonText: "",
+    campaignButtonURL: "",
+    slug: "",
     details: "",
     specs: [{ label: "", value: "" }],
     channels: [{ name: "", url: "" }],
@@ -198,6 +207,9 @@ export default function AdminProductsPage() {
   
   const [pinoutItems, setPinoutItems] = useState<GalleryItem[]>([]);
   const [draggedPinoutIndex, setDraggedPinoutIndex] = useState<number | null>(null);
+
+  const [draggedSpecIndex, setDraggedSpecIndex] = useState<number | null>(null);
+  const [draggedChannelIndex, setDraggedChannelIndex] = useState<number | null>(null);
 
   const [downloadFiles, setDownloadFiles] = useState<(File | null)[]>([null]);
 
@@ -229,7 +241,7 @@ export default function AdminProductsPage() {
     setEditingProductId(null);
     setNewProduct({
       name: "", role: "", category: "OTOPİLOT", badge: "", tagline: "", description: "",
-      isTeknofestActive: false, teknofestDiscount: "", details: "",
+      isCampaignActive: false, campaignDiscountRate: "", campaignTitle: "", campaignDescription: "", campaignButtonText: "", campaignButtonURL: "", slug: "", details: "",
       specs: [{ label: "", value: "" }], channels: [{ name: "", url: "" }],
       downloads: [{ title: "", type: "", size: "", desc: "", file_name: "" }]
     });
@@ -262,9 +274,14 @@ export default function AdminProductsPage() {
       badge: product.badge || "",
       tagline: product.tagline || "",
       description: product.description || "",
+      slug: product.id || "",
       details: product.details || "",
-      isTeknofestActive: product.is_teknofest_active || false,
-      teknofestDiscount: product.teknofest_discount || "",
+      isCampaignActive: product.is_campaign_active || false,
+      campaignDiscountRate: product.campaign_discount_rate || "",
+      campaignTitle: product.campaign_title || "",
+      campaignDescription: product.campaign_description || "",
+      campaignButtonText: product.campaign_button_text || "",
+      campaignButtonURL: product.campaign_button_url || "",
       specs: parsedSpecs.length > 0 ? parsedSpecs : [{ label: "", value: "" }],
       channels: parsedChannels.length > 0 ? parsedChannels : [{ name: "", url: "" }],
       downloads: product.downloads && product.downloads.length > 0 ? product.downloads : [{ title: "", type: "", size: "", desc: "" }]
@@ -399,16 +416,28 @@ export default function AdminProductsPage() {
       const formData = new FormData();
       
       const trMap: { [key: string]: string } = { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', 'Ç': 'c', 'Ğ': 'g', 'İ': 'i', 'Ö': 'o', 'Ş': 's', 'Ü': 'u' };
-      const slug = newProduct.name.replace(/[çğışöüÇĞİŞÖÜ]/g, m => trMap[m]).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      formData.append("id", slug || "prod_" + Date.now());
+      
+      let finalId = newProduct.slug;
+      if (!finalId) {
+        finalId = newProduct.name.replace(/[çğışöüÇĞİŞÖÜ]/g, m => trMap[m]).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+      } else {
+        finalId = finalId.replace(/[çğışöüÇĞİŞÖÜ]/g, m => trMap[m]).toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '');
+      }
+      
+      formData.append("id", finalId || "prod_" + Date.now());
+      formData.append("new_id", finalId || "prod_" + Date.now());
       formData.append("name", newProduct.name);
       formData.append("role", newProduct.role);
       formData.append("category", newProduct.category);
       formData.append("badge", newProduct.badge || "");
       formData.append("tagline", newProduct.tagline);
       formData.append("description", newProduct.description);
-      formData.append("is_teknofest_active", newProduct.isTeknofestActive ? "true" : "false");
-      formData.append("teknofest_discount", newProduct.teknofestDiscount);
+      formData.append("is_campaign_active", newProduct.isCampaignActive ? "true" : "false");
+      formData.append("campaign_discount_rate", newProduct.campaignDiscountRate);
+      formData.append("campaign_title", newProduct.campaignTitle);
+      formData.append("campaign_description", newProduct.campaignDescription);
+      formData.append("campaign_button_text", newProduct.campaignButtonText);
+      formData.append("campaign_button_url", newProduct.campaignButtonURL);
       formData.append("details", JSON.stringify(newProduct.details || ""));
 
       // JSON'a çevrilen tablolar
@@ -476,8 +505,13 @@ export default function AdminProductsPage() {
         badge: "",
         tagline: "",
         description: "",
-        isTeknofestActive: false,
-        teknofestDiscount: "",
+        isCampaignActive: false,
+        campaignDiscountRate: "",
+        campaignTitle: "",
+        campaignDescription: "",
+        campaignButtonText: "",
+        campaignButtonURL: "",
+        slug: "",
         details: "",
         specs: [{ label: "", value: "" }],
         channels: [{ name: "", url: "" }],
@@ -673,6 +707,34 @@ export default function AdminProductsPage() {
     const updated = [...newProduct.channels];
     updated[index][field] = val;
     setNewProduct({ ...newProduct, channels: updated });
+  };
+
+  // Specs Drag & Drop Handlers
+  const handleDragStartSpec = (e: React.DragEvent, index: number) => setDraggedSpecIndex(index);
+  const handleDragOverSpec = (e: React.DragEvent) => e.preventDefault();
+  const handleDropSpec = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedSpecIndex === null) return;
+    const items = [...newProduct.specs];
+    const draggedItem = items[draggedSpecIndex];
+    items.splice(draggedSpecIndex, 1);
+    items.splice(targetIndex, 0, draggedItem);
+    setNewProduct({ ...newProduct, specs: items });
+    setDraggedSpecIndex(null);
+  };
+
+  // Channels Drag & Drop Handlers
+  const handleDragStartChannel = (e: React.DragEvent, index: number) => setDraggedChannelIndex(index);
+  const handleDragOverChannel = (e: React.DragEvent) => e.preventDefault();
+  const handleDropChannel = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedChannelIndex === null) return;
+    const items = [...newProduct.channels];
+    const draggedItem = items[draggedChannelIndex];
+    items.splice(draggedChannelIndex, 1);
+    items.splice(targetIndex, 0, draggedItem);
+    setNewProduct({ ...newProduct, channels: items });
+    setDraggedChannelIndex(null);
   };
 
   const handleAddDownload = () => {
@@ -967,41 +1029,55 @@ export default function AdminProductsPage() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
                   <div className={styles.formSection}>
                     <h4 className={styles.formSectionTitle}>Kimlik Bilgileri</h4>
-                    <div className={styles.formGrid}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                       <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Ürün Adı</label>
                         <input type="text" className={styles.formInput} placeholder="Örn: Yeni Ürün" 
                                value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} />
                       </div>
                       <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Slug (URL)</label>
+                        <input type="text" className={styles.formInput} placeholder="Örn: orbit-f435" 
+                               value={newProduct.slug || ""} 
+                               onChange={e => {
+                                 const trMap: { [key: string]: string } = { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', 'Ç': 'c', 'Ğ': 'g', 'İ': 'i', 'Ö': 'o', 'Ş': 's', 'Ü': 'u' };
+                                 const val = e.target.value;
+                                 const sanitized = val.replace(/[çğışöüÇĞİŞÖÜ]/g, m => trMap[m]).toLowerCase().replace(/[^a-z0-9-]+/g, '-');
+                                 setNewProduct({...newProduct, slug: sanitized});
+                               }} />
+                        <p style={{ fontSize: '11px', color: '#a1a1aa', marginTop: '4px' }}>Boş bırakırsanız isminden otomatik oluşturulur. Boşluklar tireye çevrilir, Türkçe karakterler düzeltilir.</p>
+                      </div>
+                      <div className={styles.formGroup}>
                         <label className={styles.formLabel}>Donanım Tipi (Role)</label>
                         <input type="text" className={styles.formInput} placeholder="Örn: Uçuş Kontrol..." 
                                value={newProduct.role} onChange={e => setNewProduct({...newProduct, role: e.target.value})} />
                       </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Kategori</label>
-                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <select className={styles.formSelect} value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ flex: 1 }}>
-                            <option value="">Seçiniz...</option>
-                            {categories.map((cat: any) => (
-                              <option key={cat.id} value={cat.name}>{cat.name}</option>
-                            ))}
-                          </select>
-                          <button type="button" onClick={handleAddCategory} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px' }} title="Yeni Kategori Ekle">
-                            +
-                          </button>
-                          <button type="button" onClick={promptDeleteCategory} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Seçili Kategoriyi Sil">
-                            <Trash2 size={20} />
-                          </button>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel}>Kategori</label>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            <select className={styles.formSelect} value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ flex: 1 }}>
+                              <option value="">Seçiniz...</option>
+                              {categories.map((cat: any) => (
+                                <option key={cat.id} value={cat.name}>{cat.name}</option>
+                              ))}
+                            </select>
+                            <button type="button" onClick={handleAddCategory} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px' }} title="Yeni Kategori Ekle">
+                              +
+                            </button>
+                            <button type="button" onClick={promptDeleteCategory} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Seçili Kategoriyi Sil">
+                              <Trash2 size={20} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                      <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Etiket</label>
-                        <select className={styles.formSelect} value={newProduct.badge} onChange={e => setNewProduct({...newProduct, badge: e.target.value})}>
-                          <option value="">(Boş)</option>
-                          <option value="YENİ">YENİ</option>
-                          <option value="POPÜLER">POPÜLER</option>
-                        </select>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel}>Etiket</label>
+                          <select className={styles.formSelect} value={newProduct.badge} onChange={e => setNewProduct({...newProduct, badge: e.target.value})}>
+                            <option value="">(Boş)</option>
+                            <option value="YENİ">YENİ</option>
+                            <option value="POPÜLER">POPÜLER</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1060,23 +1136,45 @@ export default function AdminProductsPage() {
 
                   </div>
 
-                  {/* Teknofest Kampanyası */}
+                  {/* Genel Kampanya */}
                   <div className={styles.formSection} style={{ backgroundColor: '#1a1a1a', padding: '16px', borderRadius: '8px', border: '1px solid #3f3f46' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <input type="checkbox" id="teknofestToggle" 
-                             checked={newProduct.isTeknofestActive} 
-                             onChange={e => setNewProduct({...newProduct, isTeknofestActive: e.target.checked})} 
+                      <input type="checkbox" id="campaignToggle" 
+                             checked={newProduct.isCampaignActive} 
+                             onChange={e => setNewProduct({...newProduct, isCampaignActive: e.target.checked})} 
                              style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#3b82f6' }} />
-                      <label htmlFor="teknofestToggle" className={styles.formLabel} style={{ cursor: 'pointer', margin: 0, fontWeight: 700, color: '#ffffff' }}>
-                        Bu Üründe Teknofest Kampanyasını Aktif Et
+                      <label htmlFor="campaignToggle" className={styles.formLabel} style={{ cursor: 'pointer', margin: 0, fontWeight: 700, color: '#ffffff' }}>
+                        Bu Üründe Kampanya Aktif Et
                       </label>
                     </div>
                     
-                    {newProduct.isTeknofestActive && (
-                      <div className={styles.formGroup} style={{ marginTop: '16px' }}>
-                        <label className={styles.formLabel}>İndirim Oranı (%)</label>
-                        <input type="number" className={styles.formInput} placeholder="Örn: 15" 
-                               value={newProduct.teknofestDiscount} onChange={e => setNewProduct({...newProduct, teknofestDiscount: e.target.value})} />
+                    {newProduct.isCampaignActive && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel}>İndirim Oranı (Metin)</label>
+                          <input type="text" className={styles.formInput} placeholder="Örn: %15 veya 15" 
+                                 value={newProduct.campaignDiscountRate} onChange={e => setNewProduct({...newProduct, campaignDiscountRate: e.target.value})} />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel}>Kampanya Başlığı</label>
+                          <input type="text" className={styles.formInput} placeholder="Örn: Süper Cuma İndirimi" 
+                                 value={newProduct.campaignTitle} onChange={e => setNewProduct({...newProduct, campaignTitle: e.target.value})} />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel}>Kampanya Açıklaması</label>
+                          <textarea className={styles.formTextarea} placeholder="Açıklama giriniz..." rows={3}
+                                 value={newProduct.campaignDescription} onChange={e => setNewProduct({...newProduct, campaignDescription: e.target.value})} />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel}>Buton Yazısı</label>
+                          <input type="text" className={styles.formInput} placeholder="Örn: İncele" 
+                                 value={newProduct.campaignButtonText} onChange={e => setNewProduct({...newProduct, campaignButtonText: e.target.value})} />
+                        </div>
+                        <div className={styles.formGroup}>
+                          <label className={styles.formLabel}>Buton Linki (URL)</label>
+                          <input type="text" className={styles.formInput} placeholder="Örn: https://www.n11.com/..." 
+                                 value={newProduct.campaignButtonURL} onChange={e => setNewProduct({...newProduct, campaignButtonURL: e.target.value})} />
+                        </div>
                       </div>
                     )}
                   </div>
@@ -1087,12 +1185,23 @@ export default function AdminProductsPage() {
                   <div className={styles.formSection}>
                     <h4 className={styles.formSectionTitle}>Satış Kanalları</h4>
                     {newProduct.channels.map((channel, index) => (
-                      <div key={index} className={styles.dynamicListRow}>
+                      <div 
+                        key={index} 
+                        className={styles.dynamicListRow}
+                        draggable
+                        onDragStart={(e) => handleDragStartChannel(e, index)}
+                        onDragOver={handleDragOverChannel}
+                        onDrop={(e) => handleDropChannel(e, index)}
+                        style={{ cursor: 'grab', alignItems: 'center' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', color: '#52525b', marginRight: '4px' }}>
+                          <GripVertical size={16} />
+                        </div>
                         <input type="text" className={styles.formInput} placeholder="Örn: Hepsiburada" 
                                value={channel.name} onChange={e => handleChannelChange(index, "name", e.target.value)} />
                         <input type="text" className={styles.formInput} placeholder="Satış linki (https://...)" 
                                value={channel.url} onChange={e => handleChannelChange(index, "url", e.target.value)} />
-                        <button className={styles.actionBtn} style={{ marginTop: '4px' }} onClick={() => handleRemoveChannel(index)}>
+                        <button className={styles.actionBtn} style={{ marginTop: '0' }} onClick={() => handleRemoveChannel(index)}>
                           <Trash size={16} />
                         </button>
                       </div>
@@ -1103,12 +1212,23 @@ export default function AdminProductsPage() {
                   <div className={styles.formSection}>
                     <h4 className={styles.formSectionTitle}>Teknik Parametreler</h4>
                     {newProduct.specs.map((spec, index) => (
-                      <div key={index} className={styles.dynamicListRow}>
+                      <div 
+                        key={index} 
+                        className={styles.dynamicListRow}
+                        draggable
+                        onDragStart={(e) => handleDragStartSpec(e, index)}
+                        onDragOver={handleDragOverSpec}
+                        onDrop={(e) => handleDropSpec(e, index)}
+                        style={{ cursor: 'grab', alignItems: 'center' }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', color: '#52525b', marginRight: '4px' }}>
+                          <GripVertical size={16} />
+                        </div>
                         <input type="text" className={styles.formInput} placeholder="Örn: İşlemci" 
                                value={spec.label} onChange={e => handleSpecChange(index, "label", e.target.value)} />
                         <input type="text" className={styles.formInput} placeholder="Örn: STM32F405" 
                                value={spec.value} onChange={e => handleSpecChange(index, "value", e.target.value)} />
-                        <button className={styles.actionBtn} style={{ marginTop: '4px' }} onClick={() => handleRemoveSpec(index)}>
+                        <button className={styles.actionBtn} style={{ marginTop: '0' }} onClick={() => handleRemoveSpec(index)}>
                           <Trash size={16} />
                         </button>
                       </div>

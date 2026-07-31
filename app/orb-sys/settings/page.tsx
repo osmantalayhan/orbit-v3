@@ -13,6 +13,7 @@ interface SettingsData {
   site_keywords: string;
   logo_url: string;
   favicon_url: string;
+  favicon_dark_url: string;
   // Diğer alanları bozmuyoruz
   contact_email: string;
   contact_phone: string;
@@ -60,6 +61,7 @@ export default function SettingsAdminPage() {
   // Refs for hidden file inputs
   const logoInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const faviconDarkInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -124,6 +126,7 @@ export default function SettingsAdminPage() {
         site_keywords: data.site_keywords,
         logo_url: data.logo_url,
         favicon_url: data.favicon_url,
+        favicon_dark_url: data.favicon_dark_url,
         contact_email: data.contact_email,
         contact_phone: data.contact_phone,
         contact_address: data.contact_address,
@@ -169,7 +172,7 @@ export default function SettingsAdminPage() {
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "logo_url" | "favicon_url") => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: "logo_url" | "favicon_url" | "favicon_dark_url") => {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
     if (file.size > 5 * 1024 * 1024) {
@@ -200,6 +203,7 @@ export default function SettingsAdminPage() {
           site_keywords: updatedData.site_keywords,
           logo_url: updatedData.logo_url,
           favicon_url: updatedData.favicon_url,
+          favicon_dark_url: updatedData.favicon_dark_url,
           contact_email: updatedData.contact_email,
           contact_phone: updatedData.contact_phone,
           contact_address: updatedData.contact_address,
@@ -224,21 +228,28 @@ export default function SettingsAdminPage() {
           throw new Error(errData.error || "Veritabanına kaydedilemedi");
         }
 
-        // Eğer favicon yüklendiyse DOM'u hemen güncelle
-        if (field === "favicon_url") {
+        if (field === "favicon_url" || field === "favicon_dark_url") {
           const bustUrl = `${resData.url}?_cb=${Date.now()}`;
+          // For dynamic dark mode switching to apply instantly on preview, we would need 
+          // a bit more complex logic to insert media attribute.
+          // Since it's admin preview, we can just remove all and re-add.
           document
             .querySelectorAll("link[rel='icon'], link[rel='shortcut icon'], link[rel='apple-touch-icon']")
             .forEach((el) => el.remove());
-          const addLink = (rel: string, href: string) => {
+            
+          const addLink = (rel: string, href: string, media?: string) => {
             const link = document.createElement("link");
             link.rel = rel;
             link.href = href;
+            if (media) link.media = media;
             document.head.appendChild(link);
           };
-          addLink("icon", bustUrl);
-          addLink("shortcut icon", bustUrl);
-          addLink("apple-touch-icon", bustUrl);
+          
+          if (field === "favicon_url") {
+             addLink("icon", bustUrl, "(prefers-color-scheme: light)");
+          } else if (field === "favicon_dark_url") {
+             addLink("icon", bustUrl, "(prefers-color-scheme: dark)");
+          }
         }
       }
 
@@ -417,15 +428,30 @@ export default function SettingsAdminPage() {
 
               {/* Favicon */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '16px' }}>
-                <div style={{ width: '80px', height: '80px', backgroundColor: '#000', border: '1px solid #27272a', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '8px' }}>
+                <div style={{ width: '80px', height: '80px', backgroundColor: '#fff', border: '1px solid #27272a', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '8px' }}>
                   {data.favicon_url ? <img src={data.favicon_url} alt="Favicon" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : <span style={{ color: '#52525b', fontSize: '12px' }}>Yok</span>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label className={styles.formLabel}>Favicon</label>
+                  <label className={styles.formLabel}>Favicon (Aydınlık Mod / Varsayılan)</label>
                   <p style={{ fontSize: '12px', color: '#a1a1aa', margin: '4px 0 12px 0' }}>Tarayıcı sekmesinde görünecek küçük ikon. (Kare formatında olmalıdır)</p>
                   <input type="file" accept="image/*" ref={faviconInputRef} style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, "favicon_url")} />
                   <button onClick={() => faviconInputRef.current?.click()} style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px dashed rgba(59, 130, 246, 0.3)', padding: '8px 16px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
                     <UploadCloud size={16} /> Favicon Yükle
+                  </button>
+                </div>
+              </div>
+
+              {/* Favicon (Dark Mode) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '16px' }}>
+                <div style={{ width: '80px', height: '80px', backgroundColor: '#000', border: '1px solid #27272a', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '8px' }}>
+                  {data.favicon_dark_url ? <img src={data.favicon_dark_url} alt="Favicon Dark" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} /> : <span style={{ color: '#52525b', fontSize: '12px' }}>Yok</span>}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label className={styles.formLabel}>Karanlık Mod Favicon</label>
+                  <p style={{ fontSize: '12px', color: '#a1a1aa', margin: '4px 0 12px 0' }}>Cihaz karanlık modda iken görünecek ikon. Boş bırakırsanız varsayılan kullanılır.</p>
+                  <input type="file" accept="image/*" ref={faviconDarkInputRef} style={{ display: 'none' }} onChange={(e) => handleFileUpload(e, "favicon_dark_url")} />
+                  <button onClick={() => faviconDarkInputRef.current?.click()} style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px dashed rgba(59, 130, 246, 0.3)', padding: '8px 16px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>
+                    <UploadCloud size={16} /> Karanlık Favicon Yükle
                   </button>
                 </div>
               </div>

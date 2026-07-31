@@ -9,6 +9,7 @@ type SiteSettings struct {
 	SiteKeywords    string    `json:"site_keywords,omitempty"`
 	LogoURL         string    `json:"logo_url"`
 	FaviconURL      string    `json:"favicon_url"`
+	FaviconDarkURL  string    `json:"favicon_dark_url"`
 	ContactEmail    string    `json:"contact_email"`
 	ContactPhone    string    `json:"contact_phone"`
 	ContactAddress  string    `json:"contact_address"`

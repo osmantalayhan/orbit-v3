@@ -30,7 +30,8 @@ const baseEditorConfig = {
     hideSizeTimeout: 1000,
   },
   popup: {
-    img: ['imgFullWidth', '|', 'imageProperties', '|', 'left', 'center', 'right', 'justify', '|', 'delete']
+    img: ['imgFullWidth', '|', 'image', '|', 'left', 'center', 'right', 'justify', '|', 'deleteImgBtn'],
+    table: ['brush', 'valign', 'align', '|', 'splitv', 'splitg', 'merge', '|', 'addcolumn', 'addrow', '|', 'deleteTableBtn']
   },
   image: {
     editSrc: true,
@@ -47,6 +48,36 @@ const baseEditorConfig = {
     useImageEditor: false
   },
   controls: {
+    deleteImgBtn: {
+      name: 'Resmi Sil',
+      tooltip: 'Seçili Resmi Sil',
+      icon: 'bin',
+      exec: (editor: any) => {
+        const activeEl = editor.editor.querySelector('img.jodit_active');
+        if (activeEl) {
+          activeEl.remove();
+        } else {
+           const current = editor.selection.current();
+           if (current && current.tagName === 'IMG') {
+               current.remove();
+           } else if (current && current.querySelector && current.querySelector('img')) {
+               current.querySelector('img').remove();
+           }
+        }
+      }
+    },
+    grid1: {
+      name: 'Tekli Grid',
+      tooltip: 'Tekli Büyük Görsel',
+      iconURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjdXJyZW50Q29sb3IiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cmVjdCB4PSIzIiB5PSIzIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHJ4PSIxIi8+PC9zdmc+',
+      exec: (editor: any) => {
+        editor.s.insertHTML(`
+          <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
+            <div class="editor-grid-col" style="flex: 1 1 100%; min-width: 250px;"></div>
+          </div><p><br></p>
+        `);
+      }
+    },
     grid2: {
       name: '2li Grid',
       tooltip: '2li Görsel / Yan Yana İçerik',
@@ -54,8 +85,8 @@ const baseEditorConfig = {
       exec: (editor: any) => {
         editor.s.insertHTML(`
           <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
-            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
-            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"></div>
           </div><p><br></p>
         `);
       }
@@ -67,9 +98,9 @@ const baseEditorConfig = {
       exec: (editor: any) => {
         editor.s.insertHTML(`
           <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
-            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
-            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
-            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(33.333% - 16px); min-width: 200px;"></div>
           </div><p><br></p>
         `);
       }
@@ -81,10 +112,10 @@ const baseEditorConfig = {
       exec: (editor: any) => {
         editor.s.insertHTML(`
           <div class="editor-grid-container" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 16px 0;">
-            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
-            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
-            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
-            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"><p><br></p></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"></div>
+            <div class="editor-grid-col" style="flex: 1 1 calc(50% - 16px); min-width: 250px;"></div>
           </div><p><br></p>
         `);
       }
@@ -115,9 +146,74 @@ const baseEditorConfig = {
           image.style.margin = '16px auto';
         }
       }
+    },
+    deleteTableBtn: {
+      name: 'Tüm Tabloyu Sil',
+      tooltip: 'Tüm Tabloyu Tek Tıkla Sil',
+      icon: 'bin',
+      exec: (editor: any) => {
+        const current = editor.selection.current();
+        let table = null;
+        if (current) {
+          table = typeof current.closest === 'function' ? current.closest('table') : null;
+        }
+        if (!table) {
+           table = editor.editor.querySelector('.jodit_active');
+           if (table && table.tagName !== 'TABLE') table = null;
+        }
+        if (table) {
+          table.remove();
+        }
+      }
     }
   },
-  buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'image', 'table', 'link', '|', 'grid2', 'grid3', 'grid4', '|', 'align', 'undo', 'redo', '|', 'hr', 'eraser', 'fullsize']
+  events: {
+    click: function (this: any, e: any) {
+      const target = e.target as HTMLElement;
+      if (target && typeof target.closest === 'function') {
+        const col = target.closest('.editor-grid-col');
+        // Eğer tıklanan yer bir grid kolonuysa ve içinde resim yoksa (boşsa)
+        if (col && !col.querySelector('img')) {
+          const editor = this;
+          
+          // Selection'ın dom'a yerleşmesi için çok kısa bir süre bekle
+          setTimeout(() => {
+            // Toolbar'daki resim ekleme butonunu bulup ona tıklamayı simüle et
+            const root = editor.container || document;
+            const imageBtn = root.querySelector('button[aria-label="Image"], button[aria-label="Resim"], button[data-ref="image"], .jodit-toolbar-button_image button, .jodit-toolbar-button__image button');
+            if (imageBtn) {
+              (imageBtn as HTMLElement).click();
+            }
+          }, 50);
+        }
+      }
+    },
+    keydown: function (this: any, e: any) {
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        try {
+          // "this" is the Jodit instance
+          const editor = this;
+          if (!editor || !editor.editor) return;
+          
+          // Resizer tarafından seçilmiş (aktif) olan bir tablo veya resim varsa sil
+          const activeEl = editor.editor.querySelector('.jodit_active');
+          if (activeEl && (activeEl.tagName === 'TABLE' || activeEl.tagName === 'IMG')) {
+            activeEl.remove();
+            e.preventDefault();
+            return;
+          }
+          
+          // Eğer doğrudan tablo seçilmişse (breadcrumbs üzerinden)
+          const current = editor.selection.current();
+          if (current && current.tagName === 'TABLE') {
+            current.remove();
+            e.preventDefault();
+          }
+        } catch (err) {}
+      }
+    }
+  },
+  buttons: ['bold', 'italic', 'underline', '|', 'ul', 'ol', '|', 'font', 'fontsize', 'brush', 'paragraph', '|', 'image', 'table', 'link', '|', 'grid1', 'grid2', 'grid3', 'grid4', '|', 'align', 'undo', 'redo', '|', 'hr', 'eraser', 'fullsize']
 };
 
 interface BlogPost {
@@ -675,10 +771,40 @@ export default function AdminBlogPage() {
                           border-radius: 8px;
                           background-color: rgba(255,255,255,0.02);
                           transition: all 0.2s;
-                        }
-                        .jodit-wysiwyg .editor-grid-col:hover {
-                          background-color: rgba(255,255,255,0.05);
-                        }
+                        /* Metin yazılmasını 'görünmez' ve 'sıfır boyutlu' yaparak engelle */
+                        font-size: 0 !important;
+                        color: transparent !important;
+                        caret-color: transparent !important;
+                        position: relative;
+                      }
+                      .jodit-wysiwyg .editor-grid-col:hover {
+                        background-color: rgba(255,255,255,0.05);
+                      }
+                      
+                      /* Kutu seçildiğinde (imleç içindeyken) mavi border göster (RAW CSS) */
+                      .jodit-wysiwyg .editor-grid-col:focus-within {
+                        border: 1px solid #3b82f6 !important;
+                        background-color: rgba(59, 130, 246, 0.05) !important;
+                      }
+                      
+                      /* Eğer kutunun içinde img yoksa ipucu göster (RAW CSS) */
+                      .jodit-wysiwyg .editor-grid-col:not(:has(img))::before {
+                        content: "Görsel eklemek için tıklayın";
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100%;
+                        font-size: 13px !important;
+                        color: #71717a !important;
+                        position: absolute;
+                        top: 0; left: 0; right: 0; bottom: 0;
+                        pointer-events: none;
+                      }
+                      
+                      .jodit-wysiwyg .editor-grid-col img {
+                        width: 100%;
+                        height: auto;
+                      }
                         
                         .jodit-resizer {
                           z-index: 1000 !important;
@@ -709,6 +835,44 @@ export default function AdminBlogPage() {
                         .jodit-wysiwyg em, .jodit-wysiwyg i { font-style: italic !important; }
                         .jodit-wysiwyg u { text-decoration: underline !important; }
                         .jodit-wysiwyg blockquote { border-left: 4px solid #3f3f46 !important; padding-left: 1em !important; font-style: italic !important; margin: 1.5em 0 !important; color: rgba(255,255,255,0.6) !important; }
+
+                        /* Kopyala-Yapıştır Tablolar İçin "Orbit V3" Özel Tasarım Standartlaştırması */
+                        .jodit-wysiwyg table { 
+                          width: 100% !important; 
+                          border-collapse: separate !important; 
+                          border-spacing: 0 !important;
+                          margin: 2em 0 !important; 
+                          border: 1px solid #27272a !important; 
+                          border-radius: 12px !important;
+                          overflow: hidden !important;
+                          background-color: #0a0a0a !important;
+                        }
+                        .jodit-wysiwyg th, .jodit-wysiwyg td { 
+                          border: none !important;
+                          border-bottom: 1px solid #27272a !important; 
+                          padding: 20px 24px !important; 
+                          text-align: left !important; 
+                          vertical-align: middle !important; 
+                          color: #d4d4d8 !important;
+                          font-size: 15px !important;
+                        }
+                        .jodit-wysiwyg tr:last-child td, .jodit-wysiwyg tr:last-child th {
+                          border-bottom: none !important;
+                        }
+                        .jodit-wysiwyg th { 
+                          background-color: #121212 !important; 
+                          font-weight: 700 !important; 
+                          color: #fff !important; 
+                          text-transform: uppercase;
+                          font-size: 13px !important;
+                          letter-spacing: 0.5px;
+                        }
+                        .jodit-wysiwyg td:first-child, .jodit-wysiwyg th:first-child {
+                          font-weight: 700 !important;
+                          color: #ffffff !important;
+                          width: 35% !important;
+                        }
+                        .jodit-wysiwyg table p { margin: 0 !important; padding: 0 !important; }
 
                         /* Tam ekran düzeltmeleri (CSS :has() ile) */
                         div[class*="drawerOverlay"]:has(.jodit_fullsize) {

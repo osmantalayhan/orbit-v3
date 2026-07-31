@@ -27,7 +27,7 @@
   display: flex;
   align-items: center;
   height: 64px;
-  padding: 0 24px;
+  padding: 20px 24px 0 24px; /* Logoyu 5px daha aşağı almak için üst padding eklendi */
   text-decoration: none;
   gap: 12px;
 }
