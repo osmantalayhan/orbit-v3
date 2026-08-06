@@ -131,7 +131,7 @@ export default function ProductVitrin() {
                 style={{ paddingLeft: '32px' }}
               >
                 <div 
-                  className="bg-[#0d0d0d] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111]"
+                  className="bg-[#141414] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#1a1a1a]"
                   style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1 }}
                 >
                   <div 
