@@ -123,19 +123,30 @@ export default function HeroSection() {
       </div>
 
       {/* Massive Flight Control Card (BEHIND THE HILL) */}
+      <style>{`
+        .custom-hero-img {
+          width: 260px;
+          height: 260px;
+          transform: translateY(20px) rotate(-5deg) !important;
+        }
+        @media (min-width: 768px) {
+          .custom-hero-img {
+            width: 68%;
+            height: 68%;
+            transform: translateY(-35px) rotate(-5deg) !important;
+          }
+        }
+      `}</style>
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden">
         <AnimatePresence mode="wait">
           {current && (
             <motion.div
               key={`img-${index}`}
-              initial={{ opacity: 0, y: 100, scale: 0.8 }}
-              animate={{ opacity: 1, y: -35, scale: 1.0 }}
-              exit={{ opacity: 0, y: -90, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1.0 }}
+              exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="hero-img-container w-72 h-72 md:w-[68%] md:h-[68%] relative select-none opacity-90"
-              style={{
-                rotate: -5,
-              }}
+              className="hero-img-container custom-hero-img relative select-none opacity-90"
             >
               <Image
                 src={current.image}
