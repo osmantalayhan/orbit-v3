@@ -129,10 +129,10 @@ export default function HeroSection() {
             <motion.div
               key={`img-${index}`}
               initial={{ opacity: 0, y: 100, scale: 0.8 }}
-              animate={{ opacity: 1, y: 20, scale: 1.0 }}
-              exit={{ opacity: 0, y: -50, scale: 0.9 }}
+              animate={{ opacity: 1, y: -35, scale: 1.0 }}
+              exit={{ opacity: 0, y: -90, scale: 0.9 }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="hero-img-container w-[75%] h-[75%] relative select-none opacity-90"
+              className="hero-img-container w-[68%] h-[68%] relative select-none opacity-90"
               style={{
                 rotate: -5,
               }}

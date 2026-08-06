@@ -339,7 +339,7 @@ function UrunlerPageContent() {
                   <Link href={`/urunler/${product.id}`} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
                     <div
                       style={{
-                        backgroundColor: "#0a0a0a",
+                        backgroundColor: "#141414",
                         border: "1px solid rgba(255,255,255,0.05)",
                         borderRadius: "28px",
                         padding: "36px 36px 28px",
@@ -350,11 +350,11 @@ function UrunlerPageContent() {
                       }}
                       onMouseOver={(e) => {
                         e.currentTarget.style.borderColor = "rgba(255,255,255,0.11)";
-                        e.currentTarget.style.backgroundColor = "#0f0f0f";
+                        e.currentTarget.style.backgroundColor = "#1a1a1a";
                       }}
                       onMouseOut={(e) => {
                         e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)";
-                        e.currentTarget.style.backgroundColor = "#0a0a0a";
+                        e.currentTarget.style.backgroundColor = "#141414";
                       }}
                     >
                       {/* Ürün Görseli */}
@@ -370,7 +370,7 @@ function UrunlerPageContent() {
 
                       {/* Alt bölge: isim + ok */}
                       <div style={{
-                        backgroundColor: "#161616",
+                        backgroundColor: "#222222",
                         borderRadius: "18px",
                         padding: "20px 24px",
                         display: "flex", justifyContent: "space-between", alignItems: "center",

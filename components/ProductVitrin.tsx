@@ -115,7 +115,7 @@ export default function ProductVitrin() {
       {/* Carousel Area */}
       <div className="vitrin-carousel-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="w-full overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-8 items-stretch">
+          <div className="flex items-stretch" style={{ marginLeft: '-32px' }}>
             {productsList.map((product: any, index: number) => (
               <motion.div
                 key={product.id}
@@ -127,7 +127,8 @@ export default function ProductVitrin() {
                   delay: index * 0.15,
                   ease: [0.16, 1, 0.3, 1]
                 }}
-                className="flex-[0_0_100%] md:flex-[0_0_calc((100%-64px)/3)] min-w-0 flex flex-col"
+                className="flex-[0_0_100%] md:flex-[0_0_calc(100%/3)] min-w-0 flex flex-col"
+                style={{ paddingLeft: '32px' }}
               >
                 <div 
                   className="bg-[#0d0d0d] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111]"
