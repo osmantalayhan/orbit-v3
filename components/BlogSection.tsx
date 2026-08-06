@@ -70,7 +70,7 @@ export default function BlogSection() {
             transition={{ delay: 0.1 }}
             className="text-white text-4xl md:text-5xl font-bold tracking-tight text-left"
           >
-            Insights & <br /> Gelişmeler.
+            Insights & <br /> Gelişmeler
           </motion.h2>
 
           <motion.div 
@@ -95,7 +95,7 @@ export default function BlogSection() {
       {/* Blog Cards Slider */}
       <div className="blog-sec-carousel-wrapper w-full max-w-[1304px] px-6" style={{ width: 'calc(100% - 96px)' }}>
         <div className="w-full overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-8">
+          <div className="flex" style={{ marginLeft: '-32px' }}>
             {blogs.map((blog, index) => (
               <motion.div
                 key={blog.id}
@@ -107,11 +107,12 @@ export default function BlogSection() {
                   delay: index * 0.1,
                   ease: [0.16, 1, 0.3, 1]
                 }}
-                className="flex-[0_0_100%] md:flex-[0_0_calc((100%-64px)/3)] min-w-0"
+                className="flex-[0_0_100%] md:flex-[0_0_calc(100%/3)] min-w-0"
+                style={{ paddingLeft: '32px' }}
               >
                 <Link href={`/blog/${blog.slug}`} className="group cursor-pointer block no-underline h-full">
                 <div 
-                  className="bg-[#0d0d0d] border border-white/5 rounded-[32px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111] h-full flex flex-col"
+                  className="bg-[#141414] border border-white/5 rounded-[32px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#1a1a1a] h-full flex flex-col"
                 >
                 {/* Large Blog Image */}
                 <div className="relative aspect-[16/10] overflow-hidden w-full">
