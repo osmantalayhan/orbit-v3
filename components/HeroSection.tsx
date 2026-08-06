@@ -132,7 +132,7 @@ export default function HeroSection() {
               animate={{ opacity: 1, y: -35, scale: 1.0 }}
               exit={{ opacity: 0, y: -90, scale: 0.9 }}
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="hero-img-container w-[68%] h-[68%] relative select-none opacity-90"
+              className="hero-img-container w-[50%] h-[50%] md:w-[68%] md:h-[68%] relative select-none opacity-90"
               style={{
                 rotate: -5,
               }}
