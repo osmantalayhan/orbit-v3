@@ -218,14 +218,18 @@ export default function Navbar() {
 
         <div className="navbar-left">
           <Link href="/" className="navbar-logo">
-            <Image
-              src={settings?.logo_url || "/img/logo.png"}
-              alt="Orbit Teknoloji"
-              width={140}
-              height={42}
-              priority
-              unoptimized
-            />
+            {settings === undefined ? (
+              <div style={{ width: 140, height: 42 }} />
+            ) : (
+              <Image
+                src={settings?.logo_url || "/img/logo.png"}
+                alt="Orbit Teknoloji"
+                width={140}
+                height={42}
+                priority
+                unoptimized
+              />
+            )}
           </Link>
 
           <ul className="navbar-links">

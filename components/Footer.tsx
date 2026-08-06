@@ -243,12 +243,16 @@ export default function Footer() {
           style={{ paddingTop: '30px' }}
         >
           <div className="flex items-center gap-3">
-            <img 
-              src={settings?.logo_url || "/img/logo.png"} 
-              alt="Orbit Logo" 
-              className="h-4 w-auto brightness-0 invert opacity-30"
-              style={{ userSelect: 'none', pointerEvents: 'none' }}
-            />
+            {settings === undefined ? (
+              <div style={{ height: '1rem', width: '60px' }} />
+            ) : (
+              <img 
+                src={settings?.logo_url || "/img/logo.png"} 
+                alt="Orbit Logo" 
+                className="h-4 w-auto brightness-0 invert opacity-30"
+                style={{ userSelect: 'none', pointerEvents: 'none' }}
+              />
+            )}
             <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '13px', fontWeight: '500' }}>
               © {currentYear} Orbit Teknoloji. All rights reserved.
             </span>
