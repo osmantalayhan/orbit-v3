@@ -322,7 +322,7 @@ function GeneralApplicationSection() {
   };
 
   return (
-    <div className="genel-basvuru-grid" style={{
+    <div id="genel-basvuru" className="genel-basvuru-grid" style={{
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
       gap: '100px',
@@ -696,10 +696,9 @@ export default function KariyerPage() {
               fontWeight: '700',
               lineHeight: '0.95',
               letterSpacing: '-0.04em',
-              margin: 0,
-              textTransform: 'lowercase'
+              margin: 0
             }}>
-              bu kariyer <br />
+              Bu kariyer <br />
               göklere <br />
               değer.
             </h1>

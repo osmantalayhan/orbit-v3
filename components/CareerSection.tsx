@@ -46,7 +46,7 @@ export default function CareerSection() {
             transition={{ delay: 0.1 }}
             className="text-white text-4xl md:text-5xl font-bold tracking-tight text-left"
           >
-            Geleceği <br /> Birlikte Kuralım.
+            Geleceği <br /> birlikte kuralım.
           </motion.h2>
 
           <motion.div
@@ -54,8 +54,8 @@ export default function CareerSection() {
             whileInView={{ opacity: 1, x: 0 }}
             className="mobile-button-group md:mt-0 flex flex-col md:flex-row md:flex-wrap w-full md:w-auto justify-start md:justify-end md:gap-4"
           >
-            <a
-              href="mailto:career@orbit.com"
+            <Link
+              href="/kariyer#genel-basvuru"
               className="group/gen flex md:inline-flex items-center justify-center gap-2 h-10 w-full md:w-auto bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white font-semibold transition-all text-[14px] md:text-sm no-underline whitespace-nowrap"
               style={{ paddingLeft: '30px', paddingRight: '30px' }}
             >
@@ -63,7 +63,7 @@ export default function CareerSection() {
               <svg className="w-3.5 h-3.5 transition-transform group-hover/gen:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
-            </a>
+            </Link>
 
             <Link
               href="/kariyer"
