@@ -45,12 +45,12 @@ func SetupRoutes(app *fiber.App) {
 	})
 
 	api := app.Group("/api/v1")
-	
+
 	// API altındaki tüm endpointler için genel korumayı aktifleştir
 	api.Use(generalLimiter)
 
 	// ==========================================
-	// 📂 Dosya Yükleme (Upload) Rotaları
+	// Dosya Yükleme (Upload) Rotaları
 	// ==========================================
 	api.Post("/upload", middleware.Protected(), handlers.UploadImage)
 	api.Post("/upload-doc", middleware.Protected(), handlers.UploadDocument)
@@ -58,19 +58,19 @@ func SetupRoutes(app *fiber.App) {
 	// Yetkilendirme şimdilik sadece Admin panel için /admin/login üzerinden yapılıyor.
 
 	// ==========================================
-	// ⚙️ Site Ayarları (Settings) Rotaları
+	// Site Ayarları (Settings) Rotaları
 	// ==========================================
 	api.Get("/settings", handlers.GetSettings)
 	api.Put("/settings", middleware.Protected(), handlers.UpdateSettings)
 
 	// ==========================================
-	// 📂 Kategoriler (Categories) Rotaları
+	// Kategoriler (Categories) Rotaları
 	// ==========================================
 	api.Get("/categories", handlers.GetAllCategories)
 
 	// ==========================================
 	// ==========================================
-	// 📩 İletişim (Contact & Message) Rotaları
+	// İletişim (Contact & Message) Rotaları
 	// ==========================================
 	api.Post("/contact", spamLimiter, handlers.CreateMessage)
 	api.Get("/messages", middleware.Protected(), handlers.GetMessages)
@@ -79,7 +79,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Delete("/messages/:id", middleware.Protected(), handlers.DeleteMessage)
 
 	// ==========================================
-	// 🛡️ ADMIN API & Yetkilendirme
+	// ADMIN API & Yetkilendirme
 	// ==========================================
 	adminGroup := api.Group("/orb-sys")
 	adminGroup.Post("/login", loginLimiter, handlers.AdminLogin)
@@ -114,7 +114,7 @@ func SetupRoutes(app *fiber.App) {
 	adminGroup.Post("/careers", handlers.CreateJobPosition)
 	adminGroup.Put("/careers/:id", handlers.UpdateJobPosition)
 	adminGroup.Delete("/careers/:id", handlers.DeleteJobPosition)
-	
+
 	// Dashboard
 	adminGroup.Get("/dashboard", handlers.GetDashboardStats)
 
@@ -125,14 +125,14 @@ func SetupRoutes(app *fiber.App) {
 	adminGroup.Delete("/applications/:id", handlers.DeleteApplication)
 
 	// ==========================================
-	// 📦 Ürün Kataloğu (Catalog) Rotaları
+	// Ürün Kataloğu (Catalog) Rotaları
 	// ==========================================
 	api.Post("/products", middleware.Protected(), handlers.CreateProduct)
 	api.Get("/products", handlers.GetProducts)
 	api.Get("/products/:id", handlers.GetProductByID)
 	api.Put("/products/:id", middleware.Protected(), handlers.UpdateProduct)
 	api.Delete("/products/:id", middleware.Protected(), handlers.DeleteProduct)
-	
+
 	// Anasayfa Slider
 	api.Get("/slider", handlers.GetSliderItems)
 	adminGroup.Get("/slider", handlers.GetAllSliderItems)
@@ -141,19 +141,19 @@ func SetupRoutes(app *fiber.App) {
 	adminGroup.Delete("/slider/:id", handlers.DeleteSliderItem)
 
 	// ==========================================
-	// ✍️ Blog Rotaları
+	// Blog Rotaları
 	// ==========================================
 	api.Get("/blog", handlers.GetBlogPosts)
 	api.Get("/blog/:id", handlers.GetBlogPostBySlug)
 
 	// ==========================================
-	// 💼 Kariyer/İş İlanı (Career) Rotaları
+	// Kariyer/İş İlanı (Career) Rotaları
 	// ==========================================
 	api.Get("/careers", handlers.GetJobPositions)
 	api.Post("/applications", spamLimiter, handlers.CreateApplication)
 
 	// ==========================================
-	// 🛒 Satış Kanalları (Sales Channels) Rotaları
+	// Satış Kanalları (Sales Channels) Rotaları
 	// ==========================================
 	api.Get("/sales-channels", handlers.GetSalesChannels)
 	adminGroup.Get("/sales-channels", handlers.GetAllSalesChannels)

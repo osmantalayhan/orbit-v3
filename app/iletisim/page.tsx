@@ -144,7 +144,6 @@ export default function IletisimPage() {
         }
       `}</style>
       
-      {/* page-container: Navbar ile tam genişlikte (globals.css'den) */}
       <div className="page-container iletisim-container" style={{ 
         paddingTop: '180px', 
         paddingBottom: '60px',
@@ -154,30 +153,28 @@ export default function IletisimPage() {
         <div className="iletisim-grid" style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
-          gap: '100px', /* Biraz daraltıldı */
+          gap: '100px',
           alignItems: 'start' 
         }}>
           
-          {/* Left Side: Orantılı Küçültüldü */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
             <h1 className="iletisim-title" style={{ 
-              fontSize: '74px', /* 84px -> 74px */
+              fontSize: '74px',
               fontWeight: '700', 
               lineHeight: '0.95', 
               letterSpacing: '-0.04em', 
-              margin: '0 0 24px 0',
-              textTransform: 'lowercase'
+              margin: '0 0 24px 0'
             }}>
-              orbit'e <br />
+              Orbit'e <br />
               ulaşın.
             </h1>
             <p style={{ 
               color: 'rgba(255,255,255,0.4)', 
-              fontSize: '16px', /* 18px -> 16px */
+              fontSize: '16px',
               fontWeight: '500', 
               lineHeight: '1.6', 
               maxWidth: '360px', 
@@ -202,7 +199,7 @@ export default function IletisimPage() {
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '6px', 
-                    fontSize: '16px', /* 18px -> 16px */
+                    fontSize: '16px',
                     fontWeight: '700', 
                     color: '#fff', 
                     textDecoration: 'none',

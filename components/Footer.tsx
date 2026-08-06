@@ -100,7 +100,7 @@ export default function Footer() {
                 marginBottom: '32px'
               }}
             >
-              havacılığın geleceğini <br />
+              Havacılığın geleceğini <br />
               yazıyoruz.
             </h2>
           </div>

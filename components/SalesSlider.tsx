@@ -97,7 +97,7 @@ export default function SalesSlider() {
             transition={{ delay: 0.1 }}
             className="text-white text-4xl md:text-5xl font-bold tracking-tight text-left"
           >
-            Satış <br /> Kanallarımız.
+            Satış <br /> Kanallarımız
           </motion.h2>
         </header>
       </div>

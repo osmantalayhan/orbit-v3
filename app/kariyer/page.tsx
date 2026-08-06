@@ -341,11 +341,10 @@ function GeneralApplicationSection() {
           fontWeight: '700',
           lineHeight: '1.05',
           letterSpacing: '-0.03em',
-          margin: '0 0 24px 0',
-          textTransform: 'lowercase'
+          margin: '0 0 24px 0'
         }}>
-          genel <br />
-          başvuru.
+          Genel <br />
+          Başvuru.
         </h2>
 
         <p style={{
