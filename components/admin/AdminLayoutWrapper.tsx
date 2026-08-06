@@ -64,6 +64,16 @@ export default function AdminLayoutWrapper({
       window.location.href = "/orb-sys/login";
     } else {
       try {
+        // Token süresini (expiration) kontrol et
+        const payloadBase64 = token.split('.')[1];
+        if (payloadBase64) {
+          const payloadJson = JSON.parse(atob(payloadBase64));
+          const currentTime = Math.floor(Date.now() / 1000);
+          if (payloadJson.exp && payloadJson.exp < currentTime) {
+            throw new Error("Token expired");
+          }
+        }
+
         setUser(JSON.parse(storedUser));
         setIsAuthenticated(true);
       } catch (e) {
