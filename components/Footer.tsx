@@ -79,8 +79,8 @@ export default function Footer() {
         <img
           src="/img/footer-arka.png"
           alt="Orbit Background"
-          className="w-[50%] md:w-[35%] lg:w-[25%] object-contain opacity-15"
-          style={{ opacity: 0.15 }}
+          className="w-[50%] md:w-[35%] lg:w-[25%] object-contain opacity-25"
+          style={{ opacity: 0.25 }}
         />
       </div>
 
