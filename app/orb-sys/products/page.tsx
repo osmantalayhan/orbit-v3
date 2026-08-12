@@ -6,6 +6,7 @@ import { Package, Plus, Search, Edit2, Trash2, X, Trash, UploadCloud, GripVertic
 import { apiClient } from "@/lib/api";
 import Toast from "../../../components/Toast";
 import dynamic from "next/dynamic";
+import { mutate } from "swr";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
@@ -175,6 +176,12 @@ export default function AdminProductsPage() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
 
+  // Badges State
+  const [badges, setBadges] = useState<{id: number, name: string}[]>([]);
+  const [isBadgeModalOpen, setIsBadgeModalOpen] = useState(false);
+  const [newBadgeName, setNewBadgeName] = useState("");
+  const [deletingBadgeName, setDeletingBadgeName] = useState<string | null>(null);
+
   // Global Catalog State
   const [siteSettings, setSiteSettings] = useState<any>(null);
   const [catalogFile, setCatalogFile] = useState<File | null>(null);
@@ -219,6 +226,7 @@ export default function AdminProductsPage() {
   // Delete Confirm State
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
   const [deletingCategoryName, setDeletingCategoryName] = useState<string | null>(null);
+  const [transferToCategory, setTransferToCategory] = useState<string>("Diğer");
 
   // Toast State
   const [toast, setToast] = useState<{ isVisible: boolean, message: string, type: "success" | "error" }>({ isVisible: false, message: "", type: "success" });
@@ -299,6 +307,7 @@ export default function AdminProductsPage() {
     fetchProducts();
     fetchSettings();
     fetchCategories();
+    fetchBadges();
   }, []);
 
   const fetchCategories = async () => {
@@ -310,6 +319,18 @@ export default function AdminProductsPage() {
       }
     } catch (err) {
       console.error("Kategoriler yüklenemedi:", err);
+    }
+  };
+
+  const fetchBadges = async () => {
+    try {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/badges`);
+      if (res.ok) {
+        const data = await res.json();
+        setBadges(data || []);
+      }
+    } catch (err) {
+      console.error("Etiketler yüklenemedi:", err);
     }
   };
 
@@ -343,13 +364,10 @@ export default function AdminProductsPage() {
     }
   };
 
-  const promptDeleteCategory = () => {
-    const selectedCatName = newProduct.category;
-    if (!selectedCatName) {
-      alert("Lütfen silmek için önce listeden bir kategori seçin.");
-      return;
-    }
-    setDeletingCategoryName(selectedCatName);
+  const promptDeleteCategory = (categoryName: string) => {
+    if (!categoryName) return;
+    setDeletingCategoryName(categoryName);
+    setTransferToCategory("Diğer"); // Varsayılan olarak "Diğer" seçili gelsin
   };
 
   const confirmDeleteCategory = async () => {
@@ -363,7 +381,8 @@ export default function AdminProductsPage() {
     }
 
     try {
-      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/orb-sys/categories/${catObj.id}`, {
+      const queryParam = transferToCategory ? `?transfer_to=${encodeURIComponent(transferToCategory)}` : '';
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/orb-sys/categories/${catObj.id}${queryParam}`, {
         method: "DELETE"
       });
 
@@ -377,11 +396,82 @@ export default function AdminProductsPage() {
 
       setNewProduct({...newProduct, category: ""});
       fetchCategories();
+      mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
       setDeletingCategoryName(null);
     } catch (err) {
       console.error(err);
       alert("Kategori silinirken bir hata oluştu.");
       setDeletingCategoryName(null);
+    }
+  };
+
+  const handleAddBadge = () => {
+    setNewBadgeName("");
+    setIsBadgeModalOpen(true);
+  };
+
+  const confirmAddBadge = async () => {
+    if (!newBadgeName || !newBadgeName.trim()) {
+      alert("Etiket adı boş olamaz.");
+      return;
+    }
+    try {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/orb-sys/badges`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newBadgeName.trim() })
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(`Hata: ${errorData.error} | Detay: ${errorData.details}`);
+        return;
+      }
+      fetchBadges();
+      setNewProduct({ ...newProduct, badge: newBadgeName.trim() });
+      setIsBadgeModalOpen(false);
+    } catch (err) {
+      console.error("Etiket ekleme hatası:", err);
+      alert("Etiket eklenirken bir hata oluştu.");
+    }
+  };
+
+  const promptDeleteBadge = (badgeName: string) => {
+    if (!badgeName) return;
+    setDeletingBadgeName(badgeName);
+  };
+
+  const confirmDeleteBadge = async () => {
+    if (!deletingBadgeName) return;
+    
+    const badgeObj = badges.find((b: any) => b.name === deletingBadgeName);
+    if (!badgeObj) {
+      alert("Seçili etiket sistemde bulunamadı.");
+      setDeletingBadgeName(null);
+      return;
+    }
+
+    try {
+      const res = await apiClient(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/orb-sys/badges/${badgeObj.id}`, {
+        method: "DELETE"
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        setToast({ isVisible: true, message: `Hata: ${errorData.error}`, type: "error" });
+        setTimeout(() => setToast(prev => ({ ...prev, isVisible: false })), 5000);
+        setDeletingBadgeName(null);
+        return;
+      }
+
+      setNewProduct({...newProduct, badge: ""});
+      fetchBadges();
+      fetchProducts();
+      mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
+      setDeletingBadgeName(null);
+    } catch (err) {
+      console.error(err);
+      alert("Etiket silinirken bir hata oluştu.");
+      setDeletingBadgeName(null);
     }
   };
 
@@ -523,6 +613,7 @@ export default function AdminProductsPage() {
 
       // Listeyi güncellemek için
       fetchProducts();
+      mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
     } catch (err: any) {
       alert("Hata: " + err.message);
     }
@@ -592,6 +683,7 @@ export default function AdminProductsPage() {
       });
       if (res.ok) {
         setProducts(products.filter(p => p.id !== deletingProductId));
+        mutate(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`);
         setDeletingProductId(null);
       } else {
         alert("Ürün silinirken bir hata oluştu.");
@@ -851,6 +943,104 @@ export default function AdminProductsPage() {
         </button>
       </div>
 
+      {/* --- KATEGORİ VE ETİKET YÖNETİMİ --- */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        
+        {/* Kategori Paneli */}
+        <div className={styles.panelCard} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', margin: 0, marginBottom: '8px' }}>Kategori Yönetimi</h3>
+            <p style={{ fontSize: '13px', color: '#a1a1aa', margin: 0 }}>
+              Katalogdaki ürünlerin listeleneceği kategorileri buradan yönetebilirsiniz. Yeni ekleyebilir veya silebilirsiniz.
+            </p>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            <button 
+              onClick={handleAddCategory}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '6px', 
+                padding: '6px 12px', borderRadius: '16px', 
+                backgroundColor: '#3b82f6', color: '#fff', 
+                border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600
+              }}
+            >
+              <Plus size={14} /> Yeni Kategori Ekle
+            </button>
+            {categories.map((cat: any) => (
+              <div 
+                key={cat.id} 
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px', 
+                  padding: '6px 12px', borderRadius: '16px', 
+                  backgroundColor: '#1a1a1a', border: '1px solid #3f3f46', color: '#d4d4d8', 
+                  fontSize: '12px', fontWeight: 500
+                }}
+              >
+                {cat.name}
+                <button 
+                  onClick={() => promptDeleteCategory(cat.name)}
+                  style={{
+                    background: 'none', border: 'none', color: '#ef4444', 
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', 
+                    padding: '2px', marginLeft: '4px'
+                  }}
+                  title="Kategoriyi Sil"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Etiket Paneli */}
+        <div className={styles.panelCard} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', margin: 0, marginBottom: '8px' }}>Etiket Yönetimi</h3>
+            <p style={{ fontSize: '13px', color: '#a1a1aa', margin: 0 }}>
+              Ürün kartlarında görünecek etiketleri (YENİ, POPÜLER vb.) buradan yönetebilirsiniz.
+            </p>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            <button 
+              onClick={handleAddBadge}
+              style={{ 
+                display: 'flex', alignItems: 'center', gap: '6px', 
+                padding: '6px 12px', borderRadius: '16px', 
+                backgroundColor: '#3b82f6', color: '#fff', 
+                border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600
+              }}
+            >
+              <Plus size={14} /> Yeni Etiket Ekle
+            </button>
+            {badges.map((b: any) => (
+              <div 
+                key={b.id} 
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '6px', 
+                  padding: '6px 12px', borderRadius: '16px', 
+                  backgroundColor: '#1a1a1a', border: '1px solid #3f3f46', color: '#d4d4d8', 
+                  fontSize: '12px', fontWeight: 500
+                }}
+              >
+                {b.name}
+                <button 
+                  onClick={() => promptDeleteBadge(b.name)}
+                  style={{
+                    background: 'none', border: 'none', color: '#ef4444', 
+                    cursor: 'pointer', display: 'flex', alignItems: 'center', 
+                    padding: '2px', marginLeft: '4px'
+                  }}
+                  title="Etiketi Sil"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* Tablo Kartı */}
       <div className={styles.panelCard} style={{ padding: 0, overflow: 'hidden', marginBottom: '24px' }}>
         
@@ -1055,27 +1245,20 @@ export default function AdminProductsPage() {
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                         <div className={styles.formGroup}>
                           <label className={styles.formLabel}>Kategori</label>
-                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                            <select className={styles.formSelect} value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ flex: 1 }}>
-                              <option value="">Seçiniz...</option>
-                              {categories.map((cat: any) => (
-                                <option key={cat.id} value={cat.name}>{cat.name}</option>
-                              ))}
-                            </select>
-                            <button type="button" onClick={handleAddCategory} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px' }} title="Yeni Kategori Ekle">
-                              +
-                            </button>
-                            <button type="button" onClick={promptDeleteCategory} style={{ backgroundColor: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Seçili Kategoriyi Sil">
-                              <Trash2 size={20} />
-                            </button>
-                          </div>
+                          <select className={styles.formSelect} value={newProduct.category} onChange={e => setNewProduct({...newProduct, category: e.target.value})} style={{ width: '100%' }}>
+                            <option value="">Seçiniz...</option>
+                            {categories.map((cat: any) => (
+                              <option key={cat.id} value={cat.name}>{cat.name}</option>
+                            ))}
+                          </select>
                         </div>
                         <div className={styles.formGroup}>
                           <label className={styles.formLabel}>Etiket</label>
                           <select className={styles.formSelect} value={newProduct.badge} onChange={e => setNewProduct({...newProduct, badge: e.target.value})}>
                             <option value="">(Boş)</option>
-                            <option value="YENİ">YENİ</option>
-                            <option value="POPÜLER">POPÜLER</option>
+                            {badges.map((b: any) => (
+                              <option key={b.id} value={b.name}>{b.name}</option>
+                            ))}
                           </select>
                         </div>
                       </div>
@@ -1511,8 +1694,38 @@ export default function AdminProductsPage() {
               Kategoriyi Sil
             </h3>
             <p style={{ fontSize: '14px', color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
-              <strong style={{ color: '#fff' }}>"{deletingCategoryName}"</strong> kategorisini silmek istediğinize emin misiniz? Eğer bu kategoriye ait ürün varsa silme işlemi gerçekleşmeyecektir.
+              <strong style={{ color: '#fff' }}>"{deletingCategoryName}"</strong> kategorisini silmek istediğinize emin misiniz? <br/>
+              Eğer bu kategoride ürünler varsa, silinmeden önce aşağıdaki seçilen kategoriye aktarılacaktır:
             </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '13px', color: '#a1a1aa', fontWeight: 500 }}>Ürünlerin Aktarılacağı Kategori:</label>
+              <select
+                value={transferToCategory}
+                onChange={(e) => setTransferToCategory(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  backgroundColor: '#09090b',
+                  border: '1px solid #3f3f46',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  outline: 'none',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="Diğer">Diğer (Kategorisiz)</option>
+                {categories
+                  .filter((cat) => cat.name !== deletingCategoryName)
+                  .map((cat) => (
+                    <option key={cat.id} value={cat.name}>
+                      {cat.name}
+                    </option>
+                  ))
+                }
+              </select>
+            </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
               <button 
                 onClick={() => setDeletingCategoryName(null)}
@@ -1524,6 +1737,124 @@ export default function AdminProductsPage() {
               </button>
               <button 
                 onClick={confirmDeleteCategory}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#ef4444', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}
+              >
+                Evet, Sil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Yeni Etiket Ekleme Modalı */}
+      {isBadgeModalOpen && (
+        <div className={styles.drawerOverlay} onClick={() => setIsBadgeModalOpen(false)} style={{ zIndex: 999 }}>
+          <div 
+            style={{
+              backgroundColor: '#121212',
+              border: '1px solid #27272a',
+              borderRadius: '16px',
+              padding: '32px',
+              width: '400px',
+              maxWidth: '90%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+              animation: 'popIn 0.3s forwards cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Plus size={20} color="#3b82f6" />
+              Yeni Etiket Ekle
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ fontSize: '13px', color: '#a1a1aa' }}>Etiket Adı</label>
+              <input 
+                type="text" 
+                value={newBadgeName}
+                onChange={(e) => setNewBadgeName(e.target.value)}
+                placeholder="Örn: YENİ, POPÜLER"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  backgroundColor: '#1a1a1a',
+                  border: '1px solid #27272a',
+                  borderRadius: '8px',
+                  color: '#fff',
+                  fontSize: '14px',
+                  outline: 'none'
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') confirmAddBadge();
+                }}
+                autoFocus
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+              <button 
+                onClick={() => setIsBadgeModalOpen(false)}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #27272a', backgroundColor: 'transparent', color: '#a1a1aa', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                İptal
+              </button>
+              <button 
+                onClick={confirmAddBadge}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#3b82f6', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
+              >
+                Etiketi Ekle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Etiket Silme Onayı Modalı */}
+      {deletingBadgeName && (
+        <div className={styles.drawerOverlay} onClick={() => setDeletingBadgeName(null)} style={{ zIndex: 999 }}>
+          <div 
+            style={{
+              backgroundColor: '#121212',
+              border: '1px solid #27272a',
+              borderRadius: '16px',
+              padding: '32px',
+              width: '400px',
+              maxWidth: '90%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.8)',
+              animation: 'popIn 0.3s forwards cubic-bezier(0.16, 1, 0.3, 1)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Trash2 size={20} color="#ef4444" />
+              Etiketi Sil
+            </h3>
+            <p style={{ fontSize: '14px', color: '#a1a1aa', margin: 0, lineHeight: 1.5 }}>
+              <strong style={{ color: '#fff' }}>"{deletingBadgeName}"</strong> etiketini silmek istediğinize emin misiniz? Eğer bu etikete sahip ürün varsa, o ürünlerden bu etiket otomatik olarak kaldırılacaktır.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' }}>
+              <button 
+                onClick={() => setDeletingBadgeName(null)}
+                style={{ padding: '10px 16px', borderRadius: '8px', border: '1px solid #27272a', backgroundColor: 'transparent', color: '#a1a1aa', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1a1a1a'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                İptal Et
+              </button>
+              <button 
+                onClick={confirmDeleteBadge}
                 style={{ padding: '10px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#ef4444', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
                 onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#ef4444'}

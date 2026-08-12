@@ -69,7 +69,7 @@ function JobListSection() {
             textTransform: 'lowercase'
           }}
         >
-          açık pozisyonları arayın.
+          açık pozisyonları arayın
         </motion.h2>
 
         {/* Arama Kutusu (Search Bar) */}
@@ -344,7 +344,7 @@ function GeneralApplicationSection() {
           margin: '0 0 24px 0'
         }}>
           Genel <br />
-          Başvuru.
+          Başvuru
         </h2>
 
         <p style={{

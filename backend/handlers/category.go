@@ -82,6 +82,7 @@ func CreateCategory(c *fiber.Ctx) error {
 // DeleteCategory, belirtilen kategoriyi siler
 func DeleteCategory(c *fiber.Ctx) error {
 	id := c.Params("id")
+	transferTo := strings.TrimSpace(c.Query("transfer_to"))
 
 	// Önce kategorinin adını almamız lazım ki ürünlerde kullanılıyor mu bakalım
 	var categoryName string
@@ -92,12 +93,20 @@ func DeleteCategory(c *fiber.Ctx) error {
 
 	// Bu kategori adına sahip ürün var mı kontrol et
 	var count int
-	checkQuery := `SELECT COUNT(*) FROM products WHERE category = $1`
+	checkQuery := `SELECT COUNT(*) FROM products WHERE category ILIKE $1`
 	if err := config.DB.QueryRow(context.Background(), checkQuery, categoryName).Scan(&count); err == nil && count > 0 {
-		return c.Status(400).JSON(fiber.Map{"error": fmt.Sprintf("Bu kategoride (%s) %d adet ürün bulunuyor. Lütfen önce o ürünlerin kategorisini değiştirin.", categoryName, count)})
+		if transferTo == "" {
+			return c.Status(400).JSON(fiber.Map{"error": fmt.Sprintf("Bu kategoride (%s) %d adet ürün bulunuyor. Lütfen önce o ürünlerin kategorisini değiştirin veya bir aktarım hedefi seçin.", categoryName, count)})
+		}
+
+		// Ürünleri transfer et
+		_, err := config.DB.Exec(context.Background(), "UPDATE products SET category = $1 WHERE category ILIKE $2", transferTo, categoryName)
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Ürünler aktarılırken hata oluştu", "details": err.Error()})
+		}
 	}
 
-	// Kullanılmıyorsa sil
+	// Kullanılmıyorsa (veya aktarıldıysa) sil
 	_, err = config.DB.Exec(context.Background(), "DELETE FROM categories WHERE id = $1", id)
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Kategori silinirken hata oluştu", "details": err.Error()})

@@ -16,6 +16,7 @@ import {
   Image as ImageIcon,
   ShoppingCart,
   Users,
+  Link2,
 } from "lucide-react";
 import styles from "../../app/orb-sys/orb-sys.module.css";
 
@@ -29,6 +30,7 @@ const menuItems = [
   { title: "Kariyer", url: "/orb-sys/careers", icon: Briefcase },
   { title: "İletişim", url: "/orb-sys/messages", icon: Mail },
   { title: "Sosyal & Harita", url: "/orb-sys/social-map", icon: MapPin },
+  { title: "Yönlendirmeler", url: "/orb-sys/redirects", icon: Link2 },
   { title: "Ayarlar", url: "/orb-sys/settings", icon: Settings },
 ];
 

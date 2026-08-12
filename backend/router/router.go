@@ -103,6 +103,18 @@ func SetupRoutes(app *fiber.App) {
 	adminGroup.Post("/categories", handlers.CreateCategory)
 	adminGroup.Delete("/categories/:id", handlers.DeleteCategory)
 
+	// Admin: Etiket (Badge) Yönetimi
+	api.Get("/badges", handlers.GetAllBadges)
+	adminGroup.Post("/badges", handlers.CreateBadge)
+	adminGroup.Delete("/badges/:id", handlers.DeleteBadge)
+
+	// Yönlendirme (Redirect) Rotaları
+	api.Get("/active-redirects", handlers.GetActiveRedirects) // Middleware için (Public, Cached)
+	adminGroup.Get("/redirects", handlers.GetAllRedirects)    // Admin için
+	adminGroup.Post("/redirects", handlers.CreateRedirect)
+	adminGroup.Put("/redirects/:id", handlers.UpdateRedirect)
+	adminGroup.Delete("/redirects/:id", handlers.DeleteRedirect)
+
 	// Admin: Yazar (Author) Yönetimi
 	adminGroup.Get("/authors", handlers.GetAuthors)
 	adminGroup.Post("/authors", handlers.CreateAuthor)

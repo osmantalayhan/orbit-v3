@@ -359,23 +359,23 @@ function UrunlerPageContent() {
                     >
                       {/* Ürün Görseli */}
                       <div style={{ position: "relative", width: "100%", aspectRatio: "4/3", marginBottom: "28px" }}>
-                        {product.tag && (
+                        {product.badge && (
                           <div style={{
                             position: "absolute",
                             top: "0px",
-                            left: "0px",
+                            right: "0px",
                             backgroundColor: "rgba(255, 255, 255, 0.1)",
                             border: "1px solid rgba(255, 255, 255, 0.2)",
                             color: "#fff",
-                            padding: "4px 12px",
-                            borderRadius: "12px",
-                            fontSize: "11px",
+                            padding: "4px 10px",
+                            borderRadius: "10px",
+                            fontSize: "10px",
                             fontWeight: "600",
                             letterSpacing: "0.5px",
                             zIndex: 10,
                             backdropFilter: "blur(4px)"
                           }}>
-                            {product.tag}
+                            {product.badge}
                           </div>
                         )}
                         <Image

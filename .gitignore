@@ -45,3 +45,4 @@ backend/orbit-backend.exe
 /public/uploads/
 products.json
 /backend/tmp.exe
+backend/tmp_app.exe

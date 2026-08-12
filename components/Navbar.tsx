@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import useSWR from "swr";
 
-const fetcher = (url: string) => fetch(url).then((res) => (res.ok ? res.json() : null));
+const fetcher = (url: string) => fetch(url, { cache: "no-store" }).then((res) => (res.ok ? res.json() : null));
 
 export default function Navbar() {
   const [lang, setLang] = useState("TR");

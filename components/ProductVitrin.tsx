@@ -32,6 +32,7 @@ export default function ProductVitrin() {
         name: item.name,
         role: item.role,
         desc: item.tagline,
+        badge: item.badge,
         image: item.images && item.images.length > 0 ? item.images[0] : "/img/ucuskontrol.png",
       }))
     : [];
@@ -134,7 +135,7 @@ export default function ProductVitrin() {
                   className="bg-[#141414] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#1a1a1a]"
                   style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, position: 'relative' }}
                 >
-                  {product.tag && (
+                  {product.badge && (
                     <div style={{
                       position: "absolute",
                       top: "32px",
@@ -142,15 +143,15 @@ export default function ProductVitrin() {
                       backgroundColor: "rgba(255, 255, 255, 0.1)",
                       border: "1px solid rgba(255, 255, 255, 0.2)",
                       color: "#fff",
-                      padding: "6px 14px",
-                      borderRadius: "14px",
-                      fontSize: "12px",
+                      padding: "4px 10px",
+                      borderRadius: "10px",
+                      fontSize: "10px",
                       fontWeight: "600",
                       letterSpacing: "0.5px",
                       zIndex: 10,
                       backdropFilter: "blur(4px)"
                     }}>
-                      {product.tag}
+                      {product.badge}
                     </div>
                   )}
                   <div 

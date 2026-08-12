@@ -29,7 +29,7 @@ export default function Footer() {
   return (
     <footer
       className="w-full bg-black relative overflow-hidden flex flex-col items-center"
-      style={{ paddingTop: '150px', paddingBottom: '60px' }}
+      style={{ paddingTop: '180px', paddingBottom: '60px' }}
     >
       <style>{`
         @media (max-width: 1024px) {
@@ -77,10 +77,10 @@ export default function Footer() {
       {/* 1. Background Image */}
       <div className="absolute inset-0 select-none pointer-events-none overflow-hidden flex items-center justify-center">
         <img
-          src="/img/footer-arka.png"
+          src="/img/footer-background-image.png"
           alt="Orbit Background"
-          className="w-[50%] md:w-[35%] lg:w-[25%] object-contain opacity-25"
-          style={{ opacity: 0.25 }}
+          className="w-[80%] md:w-[60%] lg:w-[45%] object-contain -translate-y-[75px] md:-translate-y-[145px]"
+          style={{ opacity: 0.40 }}
         />
       </div>
 

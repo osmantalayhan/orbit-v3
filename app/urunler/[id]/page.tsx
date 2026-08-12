@@ -125,6 +125,7 @@ export default function UrunDetayPage() {
               name: p.name,
               role: p.role,
               desc: p.tagline || p.description,
+              badge: p.badge,
               image: p.images && p.images.length > 0 ? p.images[0] : "/img/flight-control.png"
             }))
             .slice(0, 3);
@@ -820,8 +821,27 @@ export default function UrunDetayPage() {
               >
                 <div
                   className="bg-[#0d0d0d] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#111]"
-                  style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1 }}
+                  style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, position: 'relative' }}
                 >
+                  {item.badge && (
+                    <div style={{
+                      position: "absolute",
+                      top: "32px",
+                      right: "32px",
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      border: "1px solid rgba(255, 255, 255, 0.2)",
+                      color: "#fff",
+                      padding: "4px 10px",
+                      borderRadius: "10px",
+                      fontSize: "10px",
+                      fontWeight: "600",
+                      letterSpacing: "0.5px",
+                      zIndex: 10,
+                      backdropFilter: "blur(4px)"
+                    }}>
+                      {item.badge}
+                    </div>
+                  )}
                   <div
                     style={{ padding: '40px', display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, justifyContent: 'space-between' }}
                   >
