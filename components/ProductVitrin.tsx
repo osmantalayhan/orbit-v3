@@ -132,8 +132,27 @@ export default function ProductVitrin() {
               >
                 <div 
                   className="bg-[#141414] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#1a1a1a]"
-                  style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1 }}
+                  style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, position: 'relative' }}
                 >
+                  {product.tag && (
+                    <div style={{
+                      position: "absolute",
+                      top: "32px",
+                      right: "32px",
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      border: "1px solid rgba(255, 255, 255, 0.2)",
+                      color: "#fff",
+                      padding: "6px 14px",
+                      borderRadius: "14px",
+                      fontSize: "12px",
+                      fontWeight: "600",
+                      letterSpacing: "0.5px",
+                      zIndex: 10,
+                      backdropFilter: "blur(4px)"
+                    }}>
+                      {product.tag}
+                    </div>
+                  )}
                   <div 
                     style={{ padding: '40px', display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, justifyContent: 'space-between' }}
                   >
