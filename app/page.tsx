@@ -12,8 +12,8 @@ export default function Home() {
       <HeroSection />
       <EcosystemSlider />
       <ProductVitrin />
-      <AboutScroll />
       <SalesSlider />
+      <AboutScroll />
       <BlogSection />
       <CareerSection />
     </main>
