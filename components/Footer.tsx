@@ -79,7 +79,7 @@ export default function Footer() {
         <img
           src="/img/footer-background-image.png"
           alt="Orbit Background"
-          className="w-[80%] md:w-[60%] lg:w-[45%] object-contain -translate-y-[35px] md:-translate-y-[105px]"
+          className="w-[80%] md:w-[60%] lg:w-[45%] object-contain translate-y-[20px] md:translate-y-[30px]"
           style={{ opacity: 0.40 }}
         />
       </div>
