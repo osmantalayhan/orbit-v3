@@ -141,6 +141,8 @@ function UrunlerPageContent() {
           display: "flex",
           flexDirection: "row",
           alignItems: "center",
+          justifyContent: "space-between",
+          position: "relative",
           width: "100%",
           minHeight: "460px",
           marginBottom: "80px",
@@ -167,33 +169,43 @@ function UrunlerPageContent() {
             </h1>
           </motion.div>
 
-          {/* Sağ: Görsel — flex ile kalan alanı doldurur, sağa yaslı */}
+          {/* Sağ: Görsel — Blog yapısı ile aynı, dışarı taşan kutu */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="urunler-hero-right"
-            style={{
-              flexGrow: 1,
-              position: "relative",
-              alignSelf: "stretch",
-              pointerEvents: "none",
-              minHeight: "460px",
+            className="urunler-hero-img-container"
+            initial={{ opacity: 0, scale: 0.85, rotate: -5 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1, 
+              rotate: -5
+            }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            style={{ 
+              position: 'absolute',
+              right: '-5%', 
+              left: '40%',   
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 10,
+              pointerEvents: 'none'
             }}
           >
-            <Image
-              src="/img/shop-2.png"
-              alt="Orbit Shop"
-              fill
-              className="object-contain"
-              style={{
-                objectPosition: "right center",
-                filter: "grayscale(1) brightness(1.2) contrast(1.1)",
-                transform: "scale(1.15)",
-                transformOrigin: "right center"
-              }}
-              priority
-            />
+            <div style={{
+              width: '90%',
+              aspectRatio: '1',
+              position: 'relative'
+            }}>
+              <Image
+                src="/img/shop-2.png"
+                alt="Orbit Shop"
+                fill
+                className="object-contain"
+                style={{
+                  filter: "grayscale(1) brightness(1.2) contrast(1.1)"
+                }}
+                priority
+              />
+            </div>
           </motion.div>
         </div>
 

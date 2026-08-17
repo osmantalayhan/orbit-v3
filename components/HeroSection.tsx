@@ -171,8 +171,7 @@ export default function HeroSection() {
               className="relative select-none opacity-90"
               style={{
                 width: isMobile ? '340px' : '68%',
-                height: isMobile ? '340px' : '68%',
-                rotate: -5,
+                height: isMobile ? '340px' : '68%'
               }}
             >
               <Image

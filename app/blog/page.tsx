@@ -551,17 +551,17 @@ export default function BlogPage() {
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             style={{ 
               position: 'absolute',
-              right: '-5%', 
+              right: '0', 
               left: '40%',   
               display: 'flex',
-              justifyContent: 'center',
+              justifyContent: 'flex-end',
               alignItems: 'center',
               zIndex: 10,
               pointerEvents: 'none'
             }}
           >
             <div style={{
-              width: '90%',
+              width: '80%',
               aspectRatio: '1',
               position: 'relative'
             }}>
