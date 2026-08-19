@@ -411,6 +411,11 @@ function UrunlerPageContent() {
                           <h3 style={{
                             fontSize: "29px", fontWeight: "700",
                             letterSpacing: "-0.025em", margin: 0, marginBottom: "4px", color: "#fff",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis"
                           }}>
                             {product.name}
                           </h3>

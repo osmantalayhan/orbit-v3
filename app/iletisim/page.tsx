@@ -178,12 +178,12 @@ export default function IletisimPage() {
               fontWeight: '500', 
               lineHeight: '1.6', 
               maxWidth: '360px', 
-              margin: '0 0 40px 0' 
+              margin: '0 0 32px 0' 
             }}>
               Sorularınız, teknik destek talepleriniz veya iş birliği fikirleriniz için buradayız. Ekibimiz en kısa sürede size dönüş yapacaktır.
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', alignItems: 'center', marginBottom: '40px' }}>
               {[
                 { name: "LinkedIn", url: settings?.social_linkedin || "https://linkedin.com/company/orbitteknoloji" },
                 { name: "X", url: settings?.social_x || "https://x.com/orbitteknoloji" },
@@ -214,6 +214,31 @@ export default function IletisimPage() {
                   </svg>
                 </a>
               ))}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <a 
+                href={`mailto:${settings?.contact_email || "info@orbitteknoloji.com"}`} 
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', width: 'fit-content', color: '#fff', fontSize: '18px', fontWeight: '600', textDecoration: 'none', transition: 'opacity 0.3s ease' }}
+                onMouseOver={(e) => (e.currentTarget.style.opacity = '0.7')}
+                onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
+              >
+                {settings?.contact_email || "info@orbitteknoloji.com"}
+                <svg style={{ width: '15px', height: '15px', opacity: '0.4' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
+                </svg>
+              </a>
+              <a 
+                href={`tel:${(settings?.contact_phone || "+90 212 000 00 00").replace(/\s+/g, '')}`} 
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', width: 'fit-content', color: 'rgba(255,255,255,0.4)', fontSize: '15px', fontWeight: '500', textDecoration: 'none', letterSpacing: '0.02em', transition: 'color 0.3s ease' }}
+                onMouseOver={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
+                onMouseOut={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+              >
+                {settings?.contact_phone || "+90 212 000 00 00"}
+                <svg style={{ width: '13px', height: '13px', opacity: '0.6' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
+                </svg>
+              </a>
             </div>
 
           </motion.div>

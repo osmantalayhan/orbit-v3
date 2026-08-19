@@ -183,7 +183,6 @@ body {
 .navbar-logo img {
   height: 38px !important;
   width: auto !important;
-  filter: brightness(0) invert(1);
 }
 
 .navbar-links {

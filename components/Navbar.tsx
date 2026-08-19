@@ -644,7 +644,7 @@ export default function Navbar() {
                             background: "rgba(255,255,255,0.05)", 
                             borderRadius: "4px",
                             color: "rgba(255,255,255,0.4)"
-                          }}>Yakında</span>
+                          }}>Soon</span>
                         )}
                       </div>
                       {!isDisabled && lang === l && <span style={{ color: "var(--blue-primary)", fontSize: "11px" }}>●</span>}

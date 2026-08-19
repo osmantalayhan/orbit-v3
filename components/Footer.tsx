@@ -79,7 +79,7 @@ export default function Footer() {
         <img
           src="/img/footer-background-image.png"
           alt="Orbit Background"
-          className="w-[80%] md:w-[60%] lg:w-[45%] object-contain translate-y-[20px] md:translate-y-[50px]"
+          className="w-[80%] md:w-[60%] lg:w-[45%] object-contain translate-y-[5px] md:translate-y-[35px]"
           style={{ opacity: 0.30 }}
         />
       </div>
@@ -249,7 +249,7 @@ export default function Footer() {
               <img 
                 src={settings?.logo_url || "/img/logo.png"} 
                 alt="Orbit Logo" 
-                className="h-4 w-auto brightness-0 invert opacity-30"
+                className="h-4 w-auto opacity-30"
                 style={{ userSelect: 'none', pointerEvents: 'none' }}
               />
             )}

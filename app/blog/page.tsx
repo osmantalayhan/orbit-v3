@@ -107,10 +107,9 @@ function BlogListSection() {
             fontWeight: '700', 
             letterSpacing: '-0.03em', 
             margin: 0,
-            textTransform: 'lowercase'
           }}
         >
-          tüm yayınlar
+          Tüm Yayınlar
         </motion.h2>
 
         {/* Arama Kutusu (Search Bar) */}

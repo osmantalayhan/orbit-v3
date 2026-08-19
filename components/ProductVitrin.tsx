@@ -131,69 +131,96 @@ export default function ProductVitrin() {
                 className="flex-[0_0_100%] md:flex-[0_0_calc(100%/3)] min-w-0 flex flex-col"
                 style={{ paddingLeft: '32px' }}
               >
-                <div 
-                  className="bg-[#141414] border border-white/5 rounded-[48px] overflow-hidden transition-all hover:border-white/10 hover:bg-[#1a1a1a]"
-                  style={{ display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, position: 'relative' }}
-                >
-                  {product.badge && (
-                    <div style={{
-                      position: "absolute",
-                      top: "32px",
-                      right: "32px",
-                      backgroundColor: "rgba(255, 255, 255, 0.1)",
-                      border: "1px solid rgba(255, 255, 255, 0.2)",
-                      color: "#fff",
-                      padding: "4px 10px",
-                      borderRadius: "10px",
-                      fontSize: "10px",
-                      fontWeight: "600",
-                      letterSpacing: "0.5px",
-                      zIndex: 10,
-                      backdropFilter: "blur(4px)"
-                    }}>
-                      {product.badge}
-                    </div>
-                  )}
-                  <div 
-                    style={{ padding: '40px', display: 'flex', flexDirection: 'column', height: '100%', flexGrow: 1, justifyContent: 'space-between' }}
+                <Link href={`/urunler/${product.id}`} style={{ textDecoration: "none", color: "inherit", display: "block", height: "100%" }}>
+                  <div
+                    style={{
+                      backgroundColor: "#141414",
+                      border: "1px solid rgba(255,255,255,0.05)",
+                      borderRadius: "28px",
+                      padding: "36px 36px 28px",
+                      display: "flex", flexDirection: "column",
+                      height: "100%",
+                      cursor: "pointer", transition: "all 0.3s ease",
+                      position: "relative", overflow: "hidden",
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.11)";
+                      e.currentTarget.style.backgroundColor = "#1a1a1a";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.05)";
+                      e.currentTarget.style.backgroundColor = "#141414";
+                    }}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                      {/* Card Header */}
-                      <div style={{ marginBottom: '24px' }}>
-                        <div className="product-vitrin-logo-box w-40 h-40 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center p-4 relative">
-                           <Image 
-                             src={product.image} 
-                             alt="icon" 
-                             fill 
-                             sizes="160px"
-                             quality={85}
-                             className="object-contain filter brightness-125 p-4" 
-                           />
+                    {/* Ürün Görseli */}
+                    <div style={{ position: "relative", width: "100%", aspectRatio: "4/3", marginBottom: "28px" }}>
+                      {product.badge && (
+                        <div style={{
+                          position: "absolute",
+                          top: "0px",
+                          right: "0px",
+                          backgroundColor: "rgba(255, 255, 255, 0.1)",
+                          border: "1px solid rgba(255, 255, 255, 0.2)",
+                          color: "#fff",
+                          padding: "4px 10px",
+                          borderRadius: "10px",
+                          fontSize: "10px",
+                          fontWeight: "600",
+                          letterSpacing: "0.5px",
+                          zIndex: 10,
+                          backdropFilter: "blur(4px)"
+                        }}>
+                          {product.badge}
                         </div>
-                      </div>
+                      )}
+                      <Image
+                        src={product.image}
+                        alt={product.name}
+                        fill
+                        className="object-contain"
+                        style={{ filter: "brightness(1.05)" }}
+                      />
+                    </div>
 
-                      {/* Title & Info */}
-                      <div className="product-vitrin-text-container flex flex-col">
-                        <h3 className="text-white text-3xl font-bold tracking-tight" style={{ marginBottom: '14px' }}>
+                    {/* Alt bölge: isim + ok */}
+                    <div style={{
+                      backgroundColor: "#222222",
+                      borderRadius: "18px",
+                      padding: "20px 24px",
+                      display: "flex", justifyContent: "space-between", alignItems: "center",
+                      marginTop: "auto",
+                    }}>
+                      <div>
+                        <h3 style={{
+                          fontSize: "29px", fontWeight: "700",
+                          letterSpacing: "-0.025em", margin: 0, marginBottom: "4px", color: "#fff",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis"
+                        }}>
                           {product.name}
                         </h3>
-                        <div style={{ marginBottom: '32px' }}>
-                          <p className="text-white/90 text-xl font-medium">{product.role}</p>
-                        </div>
+                        <p style={{
+                          fontSize: "13px", color: "rgba(255,255,255,0.35)", fontWeight: "600",
+                          textTransform: "lowercase", margin: 0,
+                        }}>
+                          {product.role}
+                        </p>
+                      </div>
+                      <div style={{
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        flexShrink: 0, color: "rgba(255,255,255,0.45)",
+                        transition: "all 0.25s ease",
+                      }}>
+                        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
                       </div>
                     </div>
-
-                    {/* Action */}
-                    <div style={{ marginTop: 'auto' }}>
-                      <Link href={`/urunler/${product.id}`} className="w-full h-16 bg-white/5 hover:bg-white/10 text-white font-bold rounded-2xl transition-all border border-white/5 flex items-center justify-center gap-3 group/btn text-lg no-underline cursor-pointer">
-                        Detayları Görüntüle
-                        <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                      </Link>
-                    </div>
                   </div>
-                </div>
+                </Link>
               </motion.div>
             ))}
           </div>

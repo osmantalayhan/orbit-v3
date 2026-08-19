@@ -6,21 +6,21 @@ import React, { useRef, useState, useEffect } from "react";
 const content = [
   {
     id: "engineering",
-    title: "Engineering",
+    title: "Mühendislik",
     heading: "10+ Yıllık Teknik Miras",
     description: "İHA ve robotik sistemler için uçuş kontrol kartları, ESC'ler ve elektronik donanımlar tasarlıyor ve geliştiriyoruz.",
     image: "/img/about/engineering-kb.jpeg",
   },
   {
     id: "manufacturing",
-    title: "Manufacturing",
+    title: "Üretim",
     heading: "Yüksek Hassasiyetli Üretim",
     description: "ESC ve uçuş kontrol kartları başta olmak üzere, geliştirdiğimiz elektronik donanımların PCB dizgi, montaj ve test süreçlerini kendi tesislerimizde gerçekleştiriyoruz.",
     image: "/img/about/manufacturing.png",
   },
   {
     id: "software",
-    title: "Software",
+    title: "Yazılım",
     heading: "Akıllı Görev Yazılımları",
     description: "Gömülü yazılım ve insansız sistem yazılımları alanında çalışmalar yürütüyor, donanımlarımızla uyumlu yazılım çözümleri geliştirmeye odaklanıyoruz.",
     image: "/img/about/terminal.png",
@@ -97,9 +97,9 @@ export default function AboutScroll() {
             className="hero-heading select-none pointer-events-none"
             style={{ marginBottom: '50px' }}
           >
-            <span className="text-white">Create,</span>
-            <span className="text-white">Engineering,</span>
-            <span className="text-white">Orbit</span>
+            <span className="text-white">Mühendislik,</span>
+            <span className="text-white">Donanım,</span>
+            <span className="text-white">Yazılım</span>
           </div>
           
           <div className="flex flex-col gap-4 w-full max-w-[400px]">

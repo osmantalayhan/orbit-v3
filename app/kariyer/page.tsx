@@ -66,10 +66,9 @@ function JobListSection() {
             fontWeight: '700',
             letterSpacing: '-0.03em',
             margin: 0,
-            textTransform: 'lowercase'
           }}
         >
-          açık pozisyonları arayın
+          Açık pozisyonları arayın.
         </motion.h2>
 
         {/* Arama Kutusu (Search Bar) */}
