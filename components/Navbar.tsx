@@ -792,18 +792,18 @@ export default function Navbar() {
                 width: "100%",
                 textAlign: "center",
                 marginTop: "16px",
-                background: "var(--blue-primary)",
+                background: "#FF7300",
                 color: "#fff",
                 fontSize: "15px",
                 fontWeight: "600",
                 padding: "12px 24px",
                 borderRadius: "999px",
                 textDecoration: "none",
-                boxShadow: "0 10px 25px rgba(64, 96, 255, 0.3)",
+                boxShadow: "0 10px 25px rgba(255, 115, 0, 0.3)",
                 transition: "all 0.25s ease"
               }}
-              onMouseOver={(e) => e.currentTarget.style.background = "var(--blue-hover)"}
-              onMouseOut={(e) => e.currentTarget.style.background = "var(--blue-primary)"}
+              onMouseOver={(e) => e.currentTarget.style.background = "#E66600"}
+              onMouseOut={(e) => e.currentTarget.style.background = "#FF7300"}
             >
               Mağaza
             </Link>

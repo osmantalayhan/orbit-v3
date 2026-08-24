@@ -231,17 +231,17 @@ function UrunlerPageContent() {
                   style={{
                     height: "38px", padding: "0 18px",
                     borderRadius: "99px",
-                    backgroundColor: isActive ? "#fff" : "rgba(255,255,255,0.03)",
+                    backgroundColor: isActive ? "#FF7300" : "rgba(255,255,255,0.03)",
                     border: isActive ? "none" : "1px solid rgba(255,255,255,0.08)",
-                    color: isActive ? "#000" : "rgba(255,255,255,0.45)",
+                    color: isActive ? "#fff" : "rgba(255,255,255,0.45)",
                     fontSize: "13px", fontWeight: "700", cursor: "pointer",
                     textTransform: "lowercase",
                     transition: "all 0.22s ease",
                   }}
                   onMouseOver={(e) => {
                     if (!isActive) {
-                      e.currentTarget.style.borderColor = "rgba(255,255,255,0.18)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.8)";
+                      e.currentTarget.style.borderColor = "rgba(255, 115, 0, 0.4)";
+                      e.currentTarget.style.color = "#FF7300";
                     }
                   }}
                   onMouseOut={(e) => {
@@ -376,13 +376,13 @@ function UrunlerPageContent() {
                             position: "absolute",
                             top: "0px",
                             right: "0px",
-                            backgroundColor: "rgba(255, 255, 255, 0.1)",
-                            border: "1px solid rgba(255, 255, 255, 0.2)",
-                            color: "#fff",
+                            backgroundColor: "rgba(255, 115, 0, 0.12)",
+                            border: "1px solid rgba(255, 115, 0, 0.3)",
+                            color: "#FF7300",
                             padding: "4px 10px",
                             borderRadius: "10px",
                             fontSize: "10px",
-                            fontWeight: "600",
+                            fontWeight: "700",
                             letterSpacing: "0.5px",
                             zIndex: 10,
                             backdropFilter: "blur(4px)"

@@ -108,7 +108,7 @@ export default function Footer() {
           <div className="flex flex-col items-start md:items-end gap-4">
             <a
               href={`mailto:${settings?.contact_email || "info@orbitteknoloji.com"}`}
-              className="text-white text-2xl md:text-3xl font-bold border-b border-white/10 pb-1 hover:border-white transition-all no-underline tracking-tight"
+              className="text-white text-2xl md:text-3xl font-bold border-b border-white/10 pb-1 hover:border-[#FF7300] transition-all no-underline tracking-tight"
             >
               {settings?.contact_email || "info@orbitteknoloji.com"}
             </a>

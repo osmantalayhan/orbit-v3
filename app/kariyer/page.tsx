@@ -136,7 +136,7 @@ function JobListSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
-              className="job-card"
+              className="job-card group/job"
               style={{
                 cursor: 'pointer',
                 backgroundColor: '#0d0d0d',
@@ -190,7 +190,9 @@ function JobListSection() {
                 <span style={{ color: 'rgba(255,255,255,0.8)', fontSize: '16px', fontWeight: '600' }}>
                   {job.location}
                 </span>
-                <div style={{
+                <div 
+                  className="group-hover/job:border-[#FF7300] group-hover/job:text-[#FF7300]"
+                  style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -501,8 +503,8 @@ function GeneralApplicationSection() {
                   gap: '12px'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
-                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.02)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 115, 0, 0.4)';
+                  e.currentTarget.style.backgroundColor = 'rgba(255, 115, 0, 0.03)';
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
@@ -531,7 +533,7 @@ function GeneralApplicationSection() {
               height: '48px',
               width: '180px',
               alignSelf: 'flex-end',
-              backgroundColor: isLoading ? 'rgba(255,255,255,0.1)' : '#4060ff',
+              backgroundColor: isLoading ? 'rgba(255,255,255,0.1)' : '#FF7300',
               color: isLoading ? 'rgba(255,255,255,0.4)' : '#fff',
               fontWeight: '700',
               borderRadius: '12px',
@@ -540,10 +542,10 @@ function GeneralApplicationSection() {
               cursor: isLoading ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease',
               marginTop: '10px',
-              boxShadow: isLoading ? 'none' : '0 10px 20px rgba(64, 96, 255, 0.15)'
+              boxShadow: isLoading ? 'none' : '0 10px 20px rgba(255, 115, 0, 0.2)'
             }}
-              onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#3852de'; }}
-              onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#4060ff'; }}
+              onMouseOver={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#E66600'; }}
+              onMouseOut={(e) => { if (!isLoading) e.currentTarget.style.backgroundColor = '#FF7300'; }}
             >
               {isLoading ? "Gönderiliyor..." : "Başvuruyu Gönder"}
             </button>

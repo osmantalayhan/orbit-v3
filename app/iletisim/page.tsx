@@ -183,7 +183,32 @@ export default function IletisimPage() {
               Sorularınız, teknik destek talepleriniz veya iş birliği fikirleriniz için buradayız. Ekibimiz en kısa sürede size dönüş yapacaktır.
             </p>
 
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', alignItems: 'center', marginBottom: '40px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '40px' }}>
+              <a 
+                href={`mailto:${settings?.contact_email || "info@orbitteknoloji.com"}`} 
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', width: 'fit-content', color: '#fff', fontSize: '18px', fontWeight: '600', textDecoration: 'none', transition: 'opacity 0.3s ease' }}
+                onMouseOver={(e) => (e.currentTarget.style.opacity = '0.7')}
+                onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
+              >
+                {settings?.contact_email || "info@orbitteknoloji.com"}
+                <svg style={{ width: '15px', height: '15px', opacity: '0.4' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
+                </svg>
+              </a>
+              <a 
+                href={`tel:${(settings?.contact_phone || "+90 212 000 00 00").replace(/\s+/g, '')}`} 
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', width: 'fit-content', color: 'rgba(255,255,255,0.4)', fontSize: '15px', fontWeight: '500', textDecoration: 'none', letterSpacing: '0.02em', transition: 'color 0.3s ease' }}
+                onMouseOver={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
+                onMouseOut={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
+              >
+                {settings?.contact_phone || "+90 212 000 00 00"}
+                <svg style={{ width: '13px', height: '13px', opacity: '0.6' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
+                </svg>
+              </a>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', alignItems: 'center' }}>
               {[
                 { name: "LinkedIn", url: settings?.social_linkedin || "https://linkedin.com/company/orbitteknoloji" },
                 { name: "X", url: settings?.social_x || "https://x.com/orbitteknoloji" },
@@ -214,31 +239,6 @@ export default function IletisimPage() {
                   </svg>
                 </a>
               ))}
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <a 
-                href={`mailto:${settings?.contact_email || "info@orbitteknoloji.com"}`} 
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', width: 'fit-content', color: '#fff', fontSize: '18px', fontWeight: '600', textDecoration: 'none', transition: 'opacity 0.3s ease' }}
-                onMouseOver={(e) => (e.currentTarget.style.opacity = '0.7')}
-                onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
-              >
-                {settings?.contact_email || "info@orbitteknoloji.com"}
-                <svg style={{ width: '15px', height: '15px', opacity: '0.4' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
-                </svg>
-              </a>
-              <a 
-                href={`tel:${(settings?.contact_phone || "+90 212 000 00 00").replace(/\s+/g, '')}`} 
-                style={{ display: 'flex', alignItems: 'center', gap: '6px', width: 'fit-content', color: 'rgba(255,255,255,0.4)', fontSize: '15px', fontWeight: '500', textDecoration: 'none', letterSpacing: '0.02em', transition: 'color 0.3s ease' }}
-                onMouseOver={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.8)')}
-                onMouseOut={(e) => (e.currentTarget.style.color = 'rgba(255,255,255,0.4)')}
-              >
-                {settings?.contact_phone || "+90 212 000 00 00"}
-                <svg style={{ width: '13px', height: '13px', opacity: '0.6' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M7 17L17 7M17 7H7M17 7v10" />
-                </svg>
-              </a>
             </div>
 
           </motion.div>
@@ -377,7 +377,7 @@ export default function IletisimPage() {
                       height: '48px', 
                       width: '180px', 
                       alignSelf: 'flex-end', 
-                      backgroundColor: status === "loading" ? 'rgba(255,255,255,0.1)' : '#4060ff', 
+                      backgroundColor: status === "loading" ? 'rgba(255,255,255,0.1)' : '#FF7300', 
                       color: status === "loading" ? 'rgba(255,255,255,0.4)' : '#fff', 
                       fontWeight: '700', 
                       borderRadius: '12px', 
@@ -386,13 +386,13 @@ export default function IletisimPage() {
                       cursor: status === "loading" ? 'not-allowed' : 'pointer',
                       transition: 'all 0.3s ease',
                       marginTop: '10px',
-                      boxShadow: status === "loading" ? 'none' : '0 10px 20px rgba(64, 96, 255, 0.15)'
+                      boxShadow: status === "loading" ? 'none' : '0 10px 20px rgba(255, 115, 0, 0.2)'
                     }}
                     onMouseOver={(e) => {
-                      if (status !== "loading") e.currentTarget.style.backgroundColor = '#3852de';
+                      if (status !== "loading") e.currentTarget.style.backgroundColor = '#E66600';
                     }}
                     onMouseOut={(e) => {
-                      if (status !== "loading") e.currentTarget.style.backgroundColor = '#4060ff';
+                      if (status !== "loading") e.currentTarget.style.backgroundColor = '#FF7300';
                     }}
                   >
                     {status === "loading" ? "Gönderiliyor..." : "Mesajı Gönder"}

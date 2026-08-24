@@ -146,7 +146,7 @@ func CreateBlogPost(c *fiber.Ctx) error {
 		bodyContentRaw = "[]"
 	}
 
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	os.MkdirAll(uploadDir, os.ModePerm)
 
 	coverImageUrl := ""
@@ -213,7 +213,7 @@ func UpdateBlogPost(c *fiber.Ctx) error {
 		bodyContentRaw = "[]"
 	}
 
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	os.MkdirAll(uploadDir, os.ModePerm)
 
 	coverImageUrl := ""

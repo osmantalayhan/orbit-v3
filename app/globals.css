@@ -240,18 +240,18 @@ body {
 }
 
 .navbar-cta-blue {
-  background: var(--blue-primary);
+  background: #FF7300;
   color: #fff;
   font-size: 13px;
   font-weight: 500;
   padding: 8px 18px;
   border-radius: 999px;
   text-decoration: none;
-  transition: background 0.2s ease;
+  transition: opacity 0.2s ease;
 }
 
 .navbar-cta-blue:hover {
-  background: var(--blue-hover);
+  opacity: 0.9;
 }
 
 /* ── HERO ── */
@@ -297,14 +297,14 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background: var(--blue-primary);
+  background: #FF7300;
   border-radius: 8px;
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-  background: var(--blue-hover);
+  opacity: 0.9;
 }
 
 .btn-secondary {

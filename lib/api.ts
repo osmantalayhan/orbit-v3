@@ -1,16 +1,12 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || "/api-proxy";
+const SERVER_API_BASE = process.env.BACKEND_URL || "http://orbit_backend:8080";
 
 /**
  * Merkezi API İstek Yöneticisi
- * 
- * Bu fonksiyon, projede kullanılan tüm fetch() çağrılarının yerini alır.
- * Güvenlik için token ekleme ve hata durumunda yönlendirme işlemlerini tek bir merkezden yapar.
  */
 export async function apiClient(endpoint: string, options: RequestInit = {}) {
-  // 1. Headers (Başlıklar) ayarlanması
   const headers = new Headers(options.headers || {});
 
-  // Tarayıcı ortamındaysak ve token varsa ekle
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("orb_sys_token");
     if (token) {
@@ -18,17 +14,27 @@ export async function apiClient(endpoint: string, options: RequestInit = {}) {
     }
   }
 
-  // Eğer body FormData ise Content-Type'ı BİZ BELİRLEMİYORUZ (Tarayıcı boundary ile kendi ayarlar)
   if (!(options.body instanceof FormData)) {
     if (!headers.has("Content-Type")) {
       headers.set("Content-Type", "application/json");
     }
   }
 
-  // 2. Fetch isteğinin yapılması
-  // Endpoint URL yapısını oluştur (Eğer endpoint doğrudan http ile başlıyorsa API_URL ekleme)
   const isAbsoluteURL = endpoint.startsWith("http://") || endpoint.startsWith("https://");
-  const url = isAbsoluteURL ? endpoint : `${API_URL}${endpoint}`;
+  let url = endpoint;
+
+  if (!isAbsoluteURL) {
+    if (typeof window === "undefined") {
+      if (url.startsWith("/api-proxy")) {
+        url = url.substring("/api-proxy".length);
+      }
+      url = `${SERVER_API_BASE}${url}`;
+    } else {
+      if (!url.startsWith(API_URL)) {
+        url = `${API_URL}${url}`;
+      }
+    }
+  }
 
   const response = await fetch(url, {
     ...options,

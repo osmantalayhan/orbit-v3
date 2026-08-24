@@ -9,7 +9,7 @@ const content = [
     title: "Mühendislik",
     heading: "10+ Yıllık Teknik Miras",
     description: "İHA ve robotik sistemler için uçuş kontrol kartları, ESC'ler ve elektronik donanımlar tasarlıyor ve geliştiriyoruz.",
-    image: "/img/about/engineering-kb.jpeg",
+    image: "/img/about/engineering-kb.png",
   },
   {
     id: "manufacturing",

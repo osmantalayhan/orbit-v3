@@ -5,8 +5,8 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   try {
-    // Sadece public API veya backend URL'inizi tanımlayın
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    // Sunucu tarafında çalıştığı için (Edge runtime) göreceli yol (/api-proxy) kullanamaz, backend'e tam URL atmalı.
+    const apiUrl = process.env.BACKEND_URL || 'http://orbit_backend:8080';
     
     // Aktif yönlendirmeleri backend'den çekiyoruz
     // next: { revalidate: 60 } sayesinde her saniye istek atılmaz, 60 saniyede bir önbellek (cache) tazelenir. Performansı yüksek tutar.

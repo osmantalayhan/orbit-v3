@@ -17,12 +17,16 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  async redirects() {
+  async rewrites() {
+    const backendUrl = process.env.BACKEND_URL || 'http://orbit_backend:8080';
     return [
       {
         source: '/uploads/:path*',
-        destination: 'http://localhost:8080/uploads/:path*',
-        permanent: false,
+        destination: `${backendUrl}/uploads/:path*`,
+      },
+      {
+        source: '/api-proxy/:path*',
+        destination: `${backendUrl}/:path*`,
       },
     ]
   },

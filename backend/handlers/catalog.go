@@ -229,7 +229,7 @@ func CreateProduct(c *fiber.Ctx) error {
 	}
 
 	// Klasör Yolu
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	os.MkdirAll(uploadDir, os.ModePerm)
 
 	form, err := c.MultipartForm()
@@ -405,7 +405,7 @@ func UpdateProduct(c *fiber.Ctx) error {
 		json.Unmarshal([]byte(downloadsRaw), &dlArr)
 	}
 
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	os.MkdirAll(uploadDir, os.ModePerm)
 
 	form, err := c.MultipartForm()
@@ -638,7 +638,7 @@ func CreateSliderItem(c *fiber.Ctx) error {
 	active := activeStr == "true"
 
 	// Dosya yükleme (Opsiyonel ama genelde gerekir)
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	os.MkdirAll(uploadDir, os.ModePerm)
 
 	var imageURL string
@@ -703,7 +703,7 @@ func UpdateSliderItem(c *fiber.Ctx) error {
 	fmt.Sscanf(sortOrderStr, "%d", &sortOrder)
 	active := activeStr == "true"
 
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	os.MkdirAll(uploadDir, os.ModePerm)
 
 	var imageURL = c.FormValue("image_url") // Eski URL

@@ -47,7 +47,7 @@ func CreateAuthor(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Yazar adı zorunludur"})
 	}
 
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	os.MkdirAll(uploadDir, os.ModePerm)
 
 	avatarUrl := ""
@@ -79,7 +79,7 @@ func UpdateAuthor(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Yazar adı zorunludur"})
 	}
 
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	os.MkdirAll(uploadDir, os.ModePerm)
 
 	avatarUrl := ""

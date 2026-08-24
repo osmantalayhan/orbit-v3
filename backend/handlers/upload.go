@@ -49,7 +49,7 @@ func UploadImage(c *fiber.Ctx) error {
 	}
 
 	// Yükleme dizini kontrolü (Next.js public diziniyle aynı olmalı)
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 		os.MkdirAll(uploadDir, os.ModePerm)
 	}
@@ -110,7 +110,7 @@ func UploadDocument(c *fiber.Ctx) error {
 	}
 
 	// Yükleme dizini kontrolü (Next.js public dizini)
-	uploadDir := filepath.Join("..", "public", "uploads")
+	uploadDir := filepath.Join(".", "uploads")
 	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
 		os.MkdirAll(uploadDir, 0755)
 	}

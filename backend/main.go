@@ -18,6 +18,7 @@ import (
 )
 
 func main() {
+	// Bilgisayardaki global değişkenler yerine SADECE projedeki .env dosyasını baz alması için Overload kullanıyoruz.
 	_ = godotenv.Overload()
 
 	// Güvenlik Kontrolü: JWT_SECRET eksikse sunucuyu hiç başlatma

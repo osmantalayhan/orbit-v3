@@ -18,8 +18,8 @@ const MapComponent = ({ center, city, address, name, isSingle }: { center: [numb
       const DefaultIcon = leaflet.Icon.Default.prototype as any;
       delete DefaultIcon._getIconUrl;
       leaflet.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+        iconRetinaUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png",
+        iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png",
         shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
       });
       setL(leaflet);
@@ -85,7 +85,7 @@ const MapComponent = ({ center, city, address, name, isSingle }: { center: [numb
                 rel="noopener noreferrer"
                 style={{
                   display: 'inline-block',
-                  backgroundColor: '#4060ff',
+                  backgroundColor: '#FF7300',
                   color: '#fff',
                   fontSize: '11px',
                   fontWeight: '700',
