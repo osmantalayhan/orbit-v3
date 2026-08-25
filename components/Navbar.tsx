@@ -641,13 +641,13 @@ export default function Navbar() {
                           <span style={{ 
                             fontSize: "9px", 
                             padding: "2px 6px", 
-                            background: "rgba(255,255,255,0.05)", 
+                            background: "rgba(255, 115, 0, 0.12)", 
                             borderRadius: "4px",
-                            color: "rgba(255,255,255,0.4)"
+                            color: "#FF7300"
                           }}>Soon</span>
                         )}
                       </div>
-                      {!isDisabled && lang === l && <span style={{ color: "var(--blue-primary)", fontSize: "11px" }}>●</span>}
+                      {!isDisabled && lang === l && <span style={{ color: "#FF7300", fontSize: "11px" }}>●</span>}
                     </button>
                   )})}
                 </div>

@@ -119,17 +119,17 @@ export default function NotFound() {
           justifyContent: 'center',
           height: '48px',
           padding: '0 32px',
-          backgroundColor: '#4060ff',
+          backgroundColor: '#FF7300',
           color: '#fff',
           fontWeight: '700',
           borderRadius: '12px',
           fontSize: '15px',
           textDecoration: 'none',
-          boxShadow: '0 10px 20px rgba(64, 96, 255, 0.15)',
+          boxShadow: '0 10px 20px rgba(255, 115, 0, 0.15)',
           transition: 'all 0.3s ease'
         }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#3852de')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#4060ff')}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e56700')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#FF7300')}
         >
           Ana Sayfaya Dön
         </Link>
