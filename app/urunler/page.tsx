@@ -108,6 +108,18 @@ function UrunlerPageContent() {
             transform-origin: center center !important;
             margin-left: 0 !important;
           }
+          .urunler-hero-img-container {
+            position: relative !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            margin-top: 5px !important;
+            margin-bottom: -15px !important;
+          }
+          .urunler-hero-img-inner {
+            aspect-ratio: 16/7 !important;
+            width: 100% !important;
+          }
           .urunler-filter-row {
             gap: 16px !important;
             margin-bottom: 32px !important;
@@ -190,7 +202,7 @@ function UrunlerPageContent() {
               pointerEvents: 'none'
             }}
           >
-            <div style={{
+            <div className="urunler-hero-img-inner" style={{
               width: '90%',
               aspectRatio: '1',
               position: 'relative'

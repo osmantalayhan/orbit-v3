@@ -240,18 +240,19 @@ body {
 }
 
 .navbar-cta-blue {
-  background: #FF7300;
-  color: #fff;
+  color: #ff7300;
+  background-color: rgba(255, 115, 0, 0.12);
+  border-radius: 999px;
+  padding: 8px 18px;
   font-size: 13px;
   font-weight: 500;
-  padding: 8px 18px;
-  border-radius: 999px;
+  border: 1px solid rgba(255, 115, 0, 0.3);
   text-decoration: none;
-  transition: opacity 0.2s ease;
+  transition: opacity .2s;
 }
 
 .navbar-cta-blue:hover {
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 /* ── HERO ── */
@@ -296,15 +297,17 @@ body {
   padding: 0 20px;
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
-  background: #FF7300;
   border-radius: 8px;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
+  
+  color: #ff7300;
+  background-color: rgba(255, 115, 0, 0.12);
+  border: 1px solid rgba(255, 115, 0, 0.3);
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
+  opacity: 0.8;
 }
 
 .btn-secondary {
@@ -403,20 +406,21 @@ body {
 
 .cookie-btn-primary {
   width: 100%;
-  background: var(--blue-primary);
-  color: #fff;
-  border: none;
   border-radius: 10px;
   padding: 12px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   text-align: center;
-  transition: background 0.2s ease;
+  transition: opacity 0.2s ease;
+  
+  color: #ff7300;
+  background-color: rgba(255, 115, 0, 0.12);
+  border: 1px solid rgba(255, 115, 0, 0.3);
 }
 
 .cookie-btn-primary:hover {
-  background: var(--blue-hover);
+  opacity: 0.8;
 }
 
 .cookie-btn-secondary {

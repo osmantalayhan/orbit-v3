@@ -785,25 +785,33 @@ export default function Navbar() {
               );
             })}
 
-            <Link
+            <Link 
               href="/urunler"
               onClick={() => setIsMobileMenuOpen(false)}
               style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 width: "100%",
-                textAlign: "center",
-                marginTop: "16px",
-                background: "#FF7300",
-                color: "#fff",
-                fontSize: "15px",
+                height: "54px",
+                background: "rgba(255, 115, 0, 0.08)",
+                boxShadow: "inset 0 0 0 1px rgba(255, 115, 0, 0.4)",
+                color: "#FF7300",
+                fontSize: "16px",
                 fontWeight: "600",
-                padding: "12px 24px",
                 borderRadius: "999px",
                 textDecoration: "none",
-                boxShadow: "0 10px 25px rgba(255, 115, 0, 0.3)",
-                transition: "all 0.25s ease"
+                transition: "all 0.25s ease",
+                border: "none"
               }}
-              onMouseOver={(e) => e.currentTarget.style.background = "#E66600"}
-              onMouseOut={(e) => e.currentTarget.style.background = "#FF7300"}
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = "rgba(255, 115, 0, 0.15)";
+                e.currentTarget.style.boxShadow = "inset 0 0 0 1px rgba(255, 115, 0, 0.6)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = "rgba(255, 115, 0, 0.08)";
+                e.currentTarget.style.boxShadow = "inset 0 0 0 1px rgba(255, 115, 0, 0.4)";
+              }}
             >
               Mağaza
             </Link>

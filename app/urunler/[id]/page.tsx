@@ -1046,7 +1046,7 @@ export default function UrunDetayPage() {
               style={{
                 width: "100%",
                 height: "44px",
-                background: "#4060ff",
+                background: "#FF7300",
                 color: "#fff",
                 border: "none",
                 borderRadius: "14px",
@@ -1054,19 +1054,19 @@ export default function UrunDetayPage() {
                 fontWeight: "700",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
-                boxShadow: "0 4px 15px rgba(64,96,255,0.3)",
+                boxShadow: "0 4px 15px rgba(255,115,0,0.3)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 textDecoration: "none"
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.background = "#2a4bff";
-                e.currentTarget.style.boxShadow = "0 6px 20px rgba(64,96,255,0.45)";
+                e.currentTarget.style.background = "#E66600";
+                e.currentTarget.style.boxShadow = "0 6px 20px rgba(255,115,0,0.45)";
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.background = "#4060ff";
-                e.currentTarget.style.boxShadow = "0 4px 15px rgba(64,96,255,0.3)";
+                e.currentTarget.style.background = "#FF7300";
+                e.currentTarget.style.boxShadow = "0 4px 15px rgba(255,115,0,0.3)";
               }}
             >
               {product.campaign_button_text || "İncele"}
