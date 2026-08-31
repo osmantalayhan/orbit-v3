@@ -97,9 +97,9 @@ export default function AboutScroll() {
             className="hero-heading select-none pointer-events-none"
             style={{ marginBottom: '50px' }}
           >
-            <span className="text-white">Mühendislik,</span>
-            <span className="text-white">Donanım,</span>
-            <span className="text-white">Yazılım</span>
+            <span className="text-white">Geleceğin</span>
+            <span className="text-white">yörüngesinde</span>
+            <span className="text-white">yerli çözümler</span>
           </div>
           
           <div className="flex flex-col gap-4 w-full max-w-[400px]">

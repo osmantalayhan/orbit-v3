@@ -62,6 +62,9 @@ const MapComponent = ({ center, city, address, name, isSingle }: { center: [numb
           margin: 0 !important;
           width: auto !important;
         }
+        .leaflet-tile-pane {
+          filter: grayscale(100%) contrast(1.2) brightness(0.7) !important;
+        }
       `}</style>
       <MapContainer
         center={center}
@@ -72,7 +75,7 @@ const MapComponent = ({ center, city, address, name, isSingle }: { center: [numb
         style={{ height: "100%", width: "100%", background: '#000' }}
       >
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url={`https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png?api_key=${process.env.NEXT_PUBLIC_MAP_API_KEY}`}
         />
         <Marker position={center} eventHandlers={{ add: (e) => e.target.openPopup() }}>
           <Popup autoClose={false} closeOnClick={false}>
